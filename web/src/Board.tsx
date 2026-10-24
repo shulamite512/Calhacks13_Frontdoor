@@ -4,8 +4,14 @@ import type { Timestamp } from 'spacetimedb';
 import { reducers, tables } from './module_bindings';
 import type { Alert, Bed, Patient, Vitals } from './module_bindings/types';
 import { api } from './api';
+import IncomingMap from './IncomingMap';
 
 const RISK_RANK: Record<string, number> = { critical: 0, watch: 1, normal: 2 };
+const BED_HINT: Record<string, string> = {
+  occupied: 'Tap to discharge',
+  cleaning: 'Tap when clean',
+  reserved: 'Tap to release hold',
+};
 
 function ms(ts: Timestamp) {
   return Number(ts.microsSinceUnixEpoch / 1000n);
@@ -40,6 +46,7 @@ export default function Board() {
   const ackAlert = useReducer(reducers.ackAlert);
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
+  const holdBed = useReducer(reducers.holdBed);
   const [nurse, setNurse] = useState('Charge RN');
   const [now, setNow] = useState(Date.now());
 
@@ -62,7 +69,7 @@ export default function Board() {
   const sorted = [...patients].sort(
     (a, b) => RISK_RANK[a.risk] - RISK_RANK[b.risk] || a.acuity - b.acuity || Number(a.id - b.id)
   );
-  const incoming = sorted.filter(p => p.status === 'incoming');
+  const incoming = sorted.filter(p => p.status === 'incoming').sort((a, b) => a.etaMinutes - b.etaMinutes);
   const waiting = sorted.filter(p => p.status === 'waiting');
   const allOpen = [...alerts]
     .filter(a => a.ackedAt === undefined)
@@ -80,11 +87,22 @@ export default function Board() {
     .slice(0, 3);
   const f = forecasts[0];
 
+  const heldBed = (p: Patient) => beds.find(b => b.status === 'reserved' && b.patientId === p.id);
+
   function assign(p: Patient) {
-    const b = pickBed(p, beds);
+    const b = heldBed(p) ?? pickBed(p, beds);
     if (b) assignBed({ bedId: b.id, patientId: p.id });
     else alert('No free beds');
   }
+
+  function hold(p: Patient) {
+    const held = heldBed(p);
+    if (held) return freeBed({ bedId: held.id });  // second tap releases the hold
+    const b = pickBed(p, beds);
+    if (b) holdBed({ bedId: b.id, patientId: p.id });
+    else alert('No free beds');
+  }
+  const bedActions = { beds, onAssign: assign, onHold: hold };
 
   return (
     <div className="board">
@@ -121,17 +139,19 @@ export default function Board() {
       )}
 
       <main>
-        <Column title="Incoming" patients={incoming} vitals={byPatient} alerts={alerts} onAssign={assign} />
-        <Column title="Waiting room" patients={waiting} vitals={byPatient} alerts={alerts} onAssign={assign} />
+        <Column title="Incoming" patients={incoming} vitals={byPatient} alerts={alerts} {...bedActions}>
+          <IncomingMap patients={incoming} />
+        </Column>
+        <Column title="Waiting room" patients={waiting} vitals={byPatient} alerts={alerts} {...bedActions} />
         <section className="col">
           <h2>Beds <span className="muted">{beds.filter(b => b.status === 'free').length} free</span></h2>
           <div className="beds">
             {[...beds].sort((a, b) => a.id - b.id).map(b => (
               <button key={b.id} className={`bed ${b.status}`} onClick={() => freeBed({ bedId: b.id })}
-                title={b.status === 'occupied' ? 'Tap to discharge' : b.status === 'cleaning' ? 'Tap when clean' : 'Free'}>
+                title={BED_HINT[b.status] ?? 'Free'}>
                 <b>{b.label}</b>
                 <span>{b.zone}</span>
-                <em>{b.patientId !== undefined ? name(b.patientId) : b.status}</em>
+                <em>{b.patientId !== undefined ? `${b.status === 'reserved' ? 'Held: ' : ''}${name(b.patientId)}` : b.status}</em>
               </button>
             ))}
           </div>
@@ -146,18 +166,23 @@ export default function Board() {
   );
 }
 
-function Column(props: {
+type BedActions = { beds: readonly Bed[]; onAssign: (p: Patient) => void; onHold: (p: Patient) => void };
+
+function Column(props: BedActions & {
   title: string;
   patients: Patient[];
   vitals: Map<bigint, Vitals[]>;
   alerts: readonly Alert[];
-  onAssign: (p: Patient) => void;
+  children?: React.ReactNode;
 }) {
   return (
     <section className="col">
       <h2>{props.title} <span className="muted">{props.patients.length}</span></h2>
+      {props.children}
       {props.patients.map(p => (
-        <Tile key={String(p.id)} p={p} vitals={props.vitals.get(p.id) ?? []} onAssign={props.onAssign}
+        <Tile key={String(p.id)} p={p} vitals={props.vitals.get(p.id) ?? []}
+          beds={props.beds} onAssign={props.onAssign} onHold={props.onHold}
+          held={props.beds.find(b => b.status === 'reserved' && b.patientId === p.id)}
           openAlert={props.alerts.some(a => a.patientId === p.id && a.ackedAt === undefined)} />
       ))}
       {props.patients.length === 0 && <p className="muted">None</p>}
@@ -165,21 +190,30 @@ function Column(props: {
   );
 }
 
-function Tile({ p, vitals, onAssign, openAlert }: {
-  p: Patient; vitals: Vitals[]; onAssign: (p: Patient) => void; openAlert: boolean;
+function Tile({ p, vitals, onAssign, onHold, held, openAlert }: BedActions & {
+  p: Patient; vitals: Vitals[]; held?: Bed; openAlert: boolean;
 }) {
   const v = vitals[vitals.length - 1];
   const flags = p.redFlags.split(',').map(s => s.trim()).filter(Boolean);
+  const prep = p.prep.split(',').map(s => s.trim()).filter(Boolean);
+  const incoming = p.status === 'incoming';
   return (
     <div className={`tile ${p.risk} ${openAlert ? 'pulse' : ''}`}>
       <div className="tile-head">
         <span className={`esi esi${p.acuity}`}>ESI {p.acuity}</span>
+        <span className={`src ${p.source}`}>{p.source === 'ems' ? 'EMS' : 'Walk-in'}</span>
         <strong>{p.name}</strong> <span className="muted">{p.age}</span>
         {p.status === 'incoming' && <span className="eta">ETA {p.etaMinutes}m</span>}
       </div>
       <div className="complaint">{p.complaint}</div>
       <p className="summary">{p.summary}</p>
       {flags.length > 0 && <div className="flags">{flags.map(f => <span key={f}>{f}</span>)}</div>}
+      {incoming && prep.length > 0 && (
+        <div className="prep">
+          <b>Prepare before arrival:</b> {prep.join(' · ')}
+          {held && <span className="held">Bed {held.label} held</span>}
+        </div>
+      )}
       {v && (
         <div className="vitals">
           <span className={v.hr >= 110 ? 'bad' : ''}>HR <b>{v.hr}</b></span>
@@ -190,7 +224,13 @@ function Tile({ p, vitals, onAssign, openAlert }: {
         </div>
       )}
       <div className="actions">
-        <button className="primary" onClick={() => onAssign(p)}>Assign bed</button>
+        {incoming ? (
+          <button className={held ? 'ghost' : 'primary'} onClick={() => onHold(p)}>
+            {held ? `Release ${held.label}` : 'Hold bed'}
+          </button>
+        ) : (
+          <button className="primary" onClick={() => onAssign(p)}>Assign bed</button>
+        )}
         <button className="ghost" onClick={() => api.worsen(Number(p.id))}>Worsen</button>
       </div>
     </div>

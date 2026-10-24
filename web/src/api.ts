@@ -62,6 +62,9 @@ export const api = {
 
   followUp: (b: { patientId: number; question: string; answer: string }) => post<FollowUpResult>('/followup', b),
 
+  location: (b: { patientId: number; lat: number; lng: number }) =>
+    post<{ arrived: boolean; etaMinutes: number }>('/location', b),
+  drive: (patientId: number) => post('/demo/drive', { patientId }),
   worsen: (patientId: number) => post('/demo/worsen', { patientId }),
   arrive: (patientId: number) => post('/demo/arrive', { patientId }),
   reset: () => post('/demo/reset'),

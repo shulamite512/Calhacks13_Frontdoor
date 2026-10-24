@@ -14,9 +14,10 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 from fastapi import FastAPI, File, HTTPException, UploadFile  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import Response  # noqa: E402
+from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
+import routing  # noqa: E402
 import simulator  # noqa: E402
 import stdb  # noqa: E402
 import triage  # noqa: E402
@@ -29,15 +30,25 @@ HOSPITAL = {"name": "CPMC Van Ness Campus ED", "lat": 37.78598, "lng": -122.4223
 DEMO_START = (37.80292, -122.44840)
 
 # Background patients created by /demo/reset so the board isn't empty.
+# "drive" = (start lat, start lng, seconds the simulated drive takes) for patients still on the way.
 DEMO_PATIENTS = [
-    ("Maria Lopez", 34, "Ankle injury", "I twisted my ankle playing soccer and it's swollen.",
-     "Right ankle inversion injury, swelling, able to bear some weight.", 4, "", 0),
-    ("James Chen", 67, "Shortness of breath", "I've been more short of breath than usual since yesterday.",
-     "Increased dyspnea x1 day, history of COPD per patient.", 3, "shortness of breath", 0),
-    ("Aisha Patel", 8, "Fever", "My daughter has had a fever of 102 since this morning.",
-     "Pediatric fever 102F since AM, drinking fluids, no rash reported.", 4, "", 0),
-    ("Robert King", 52, "Abdominal pain", "Sharp pain in my lower right belly for six hours.",
-     "RLQ abdominal pain x6h, sharp, worsening.", 3, "", 15),
+    dict(name="Maria Lopez", age=34, complaint="Ankle injury", acuity=4,
+         transcript="I twisted my ankle playing soccer and it's swollen.",
+         summary="Right ankle inversion injury, swelling, able to bear some weight."),
+    dict(name="James Chen", age=67, complaint="Shortness of breath", acuity=3, flags="shortness of breath",
+         transcript="I've been more short of breath than usual since yesterday.",
+         summary="Increased dyspnea x1 day, history of COPD per patient.", prep="Nebulizer"),
+    dict(name="Aisha Patel", age=8, complaint="Fever", acuity=4,
+         transcript="My daughter has had a fever of 102 since this morning.",
+         summary="Pediatric fever 102F since AM, drinking fluids, no rash reported."),
+    dict(name="Robert King", age=52, complaint="Abdominal pain", acuity=3,
+         transcript="Sharp pain in my lower right belly for six hours.",
+         summary="RLQ abdominal pain x6h, sharp, worsening.", prep="IV access, CT abdomen",
+         drive=(*DEMO_START, 420)),
+    dict(name="EMS Medic 12: male ~70", age=70, complaint="Possible stroke", acuity=2, source="ems",
+         flags="facial droop, slurred speech", transcript="EMS report: left facial droop, slurred speech, onset 25 min ago.",
+         summary="Ambulance: suspected stroke, last known well 25 min ago, BP 182/96.",
+         prep="Stroke team, CT scanner", drive=(37.7605, -122.4680, 300)),
 ]
 
 
@@ -45,6 +56,7 @@ DEMO_PATIENTS = [
 async def lifespan(_app: FastAPI):
     task = asyncio.create_task(simulator.run())
     yield
+    _stop_drives()
     task.cancel()
     with suppress(asyncio.CancelledError):
         await task
@@ -52,6 +64,12 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="FrontDoor", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.exception_handler(stdb.ReducerError)
+async def reducer_error(_request, exc: stdb.ReducerError):
+    # e.g. "patient 1 not found" or "bed A4 is occupied": a bad request, not a server crash.
+    return JSONResponse({"error": str(exc)}, status_code=400)
 
 
 class SpeakIn(BaseModel):
@@ -75,6 +93,46 @@ class FollowUpIn(BaseModel):
 
 class PatientIdIn(BaseModel):
     patientId: int
+
+
+class LocationIn(BaseModel):
+    patientId: int
+    lat: float
+    lng: float
+
+
+ARRIVED_WITHIN_M = 150
+_drives: dict[int, asyncio.Task] = {}
+
+
+async def _drive(pid: int, lat: float, lng: float, seconds: float) -> None:
+    """Move a patient along the real route to the hospital, compressed into `seconds`."""
+    try:
+        duration, path = await routing.route(lat, lng, HOSPITAL["lat"], HOSPITAL["lng"])
+        steps = max(2, int(seconds / 2))
+        for i in range(1, steps + 1):
+            frac = i / steps
+            plat, plng = path[min(len(path) - 1, int(frac * (len(path) - 1)))]
+            eta = max(0, round(duration * (1 - frac) / 60))
+            await stdb.call("update_location", pid, plat, plng, eta)
+            await asyncio.sleep(2)
+        await stdb.call("mark_arrived", pid)
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        logging.exception("drive for patient %s failed", pid)
+
+
+def _start_drive(pid: int, lat: float, lng: float, seconds: float) -> None:
+    if pid in _drives:
+        _drives[pid].cancel()
+    _drives[pid] = asyncio.create_task(_drive(pid, lat, lng, seconds))
+
+
+def _stop_drives() -> None:
+    for t in _drives.values():
+        t.cancel()
+    _drives.clear()
 
 
 @app.get("/health")
@@ -107,7 +165,7 @@ async def checkin(body: CheckInIn):
     t = await triage.triage(body.transcript, body.age)
     await stdb.call(
         "check_in", body.name, body.age, t.complaint, body.transcript, t.summary, t.acuity,
-        ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng,
+        ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng, "walk-in", ", ".join(t.prep),
     )
     p = await _patient_by_name(body.name)
     return {"patientId": p["id"] if p else None, **t.model_dump()}
@@ -139,7 +197,27 @@ async def followup(body: FollowUpIn):
     return {**r.model_dump(), "heard": True}
 
 
+@app.post("/location")
+async def location(body: LocationIn):
+    """Live GPS from the patient's phone: update ETA, auto-arrive near the ER."""
+    left = routing.distance_m(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"])
+    if left <= ARRIVED_WITHIN_M:
+        await stdb.call("mark_arrived", body.patientId)
+        return {"arrived": True, "etaMinutes": 0}
+    duration, _ = await routing.route(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"])
+    eta = max(1, round(duration / 60))
+    await stdb.call("update_location", body.patientId, body.lat, body.lng, eta)
+    return {"arrived": False, "etaMinutes": eta}
+
+
 # ---------- Demo controls ----------
+
+@app.post("/demo/drive")
+async def demo_drive(body: PatientIdIn):
+    """Simulate the patient driving from the Palace of Fine Arts to the ER in about a minute."""
+    _start_drive(body.patientId, *DEMO_START, 60)
+    return {"ok": True}
+
 
 @app.post("/demo/worsen")
 async def demo_worsen(body: PatientIdIn):
@@ -155,9 +233,20 @@ async def demo_arrive(body: PatientIdIn):
 
 @app.post("/demo/reset")
 async def demo_reset():
+    _stop_drives()
     await stdb.call("reset_demo")
     simulator.reset()
-    for name, age, complaint, transcript, summary, acuity, flags, eta in DEMO_PATIENTS:
-        lat, lng = (DEMO_START if eta else (HOSPITAL["lat"], HOSPITAL["lng"]))
-        await stdb.call("check_in", name, age, complaint, transcript, summary, acuity, flags, eta, lat, lng)
+    for d in DEMO_PATIENTS:
+        lat, lng, secs = d.get("drive", (HOSPITAL["lat"], HOSPITAL["lng"], 0))
+        eta = 0
+        if secs:
+            duration, _ = await routing.route(lat, lng, HOSPITAL["lat"], HOSPITAL["lng"])
+            eta = max(1, round(duration / 60))
+        await stdb.call(
+            "check_in", d["name"], d["age"], d["complaint"], d["transcript"], d["summary"], d["acuity"],
+            d.get("flags", ""), eta, lat, lng, d.get("source", "walk-in"), d.get("prep", ""),
+        )
+        if secs:
+            p = await _patient_by_name(d["name"])
+            _start_drive(p["id"], lat, lng, secs)
     return {"ok": True}

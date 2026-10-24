@@ -40,10 +40,12 @@ import AddVitalsReducer from "./add_vitals_reducer";
 import AssignBedReducer from "./assign_bed_reducer";
 import CheckInReducer from "./check_in_reducer";
 import FreeBedReducer from "./free_bed_reducer";
+import HoldBedReducer from "./hold_bed_reducer";
 import MarkArrivedReducer from "./mark_arrived_reducer";
 import RaiseAlertReducer from "./raise_alert_reducer";
 import ResetDemoReducer from "./reset_demo_reducer";
 import SetForecastReducer from "./set_forecast_reducer";
+import UpdateLocationReducer from "./update_location_reducer";
 
 // Import all procedure arg schemas
 
@@ -144,10 +146,12 @@ const reducersSchema = __reducers(
   __reducerSchema("assign_bed", AssignBedReducer),
   __reducerSchema("check_in", CheckInReducer),
   __reducerSchema("free_bed", FreeBedReducer),
+  __reducerSchema("hold_bed", HoldBedReducer),
   __reducerSchema("mark_arrived", MarkArrivedReducer),
   __reducerSchema("raise_alert", RaiseAlertReducer),
   __reducerSchema("reset_demo", ResetDemoReducer),
   __reducerSchema("set_forecast", SetForecastReducer),
+  __reducerSchema("update_location", UpdateLocationReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

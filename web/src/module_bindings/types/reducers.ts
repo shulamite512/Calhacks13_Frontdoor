@@ -12,10 +12,12 @@ import AddVitalsReducer from "../add_vitals_reducer";
 import AssignBedReducer from "../assign_bed_reducer";
 import CheckInReducer from "../check_in_reducer";
 import FreeBedReducer from "../free_bed_reducer";
+import HoldBedReducer from "../hold_bed_reducer";
 import MarkArrivedReducer from "../mark_arrived_reducer";
 import RaiseAlertReducer from "../raise_alert_reducer";
 import ResetDemoReducer from "../reset_demo_reducer";
 import SetForecastReducer from "../set_forecast_reducer";
+import UpdateLocationReducer from "../update_location_reducer";
 
 export type AckAlertParams = __Infer<typeof AckAlertReducer>;
 export type AddFollowUpParams = __Infer<typeof AddFollowUpReducer>;
@@ -23,8 +25,10 @@ export type AddVitalsParams = __Infer<typeof AddVitalsReducer>;
 export type AssignBedParams = __Infer<typeof AssignBedReducer>;
 export type CheckInParams = __Infer<typeof CheckInReducer>;
 export type FreeBedParams = __Infer<typeof FreeBedReducer>;
+export type HoldBedParams = __Infer<typeof HoldBedReducer>;
 export type MarkArrivedParams = __Infer<typeof MarkArrivedReducer>;
 export type RaiseAlertParams = __Infer<typeof RaiseAlertReducer>;
 export type ResetDemoParams = __Infer<typeof ResetDemoReducer>;
 export type SetForecastParams = __Infer<typeof SetForecastReducer>;
+export type UpdateLocationParams = __Infer<typeof UpdateLocationReducer>;
 

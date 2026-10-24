@@ -27,4 +27,6 @@ export default __t.row({
   bedId: __t.option(__t.u32()).name("bed_id"),
   createdAt: __t.timestamp().name("created_at"),
   updatedAt: __t.timestamp().name("updated_at"),
+  source: __t.string(),
+  prep: __t.string(),
 });

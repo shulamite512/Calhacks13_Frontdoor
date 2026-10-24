@@ -53,13 +53,19 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
 
 ## Demo script (2 min)
 
-1. Board: click **Reset demo** (seeds 4 background patients).
+ER: CPMC Van Ness Campus, San Francisco. Demo walk-ins drive in from the Palace of Fine Arts.
+
+1. Board: click **Reset demo**. Seeds 3 waiting patients, 1 walk-in and 1 ambulance (EMS) moving on the map.
 2. Phone: enter name/age, tap the mic, say "I've had crushing chest pain for 20 minutes and I'm sweating." Check in.
-   The tile appears under **Incoming** with ESI 2 and red flags.
-3. Phone: tap **I've arrived**. Board: tap **Worsen** on the tile (heart rate climbs).
-4. Phone: tap **Check on me now**, answer "It's getting worse, it's spreading to my arm."
-   Tile turns red, critical banner appears. Nurse taps **I'm on it**.
-5. Header shows "N beds short in 30 min". Tap **Assign bed** on the tile (picks Resus/Acute automatically).
+   The tile appears under **Incoming** with ESI 2, red flags and a "Prepare before arrival" card (ECG, monitor).
+3. Phone: tap **Simulate drive**. The dot moves along the real route; ETA counts down. Board: tap **Hold bed**.
+   On arrival (~1 min) the tile moves to the waiting room automatically.
+4. Board: tap **Worsen** on the tile (heart rate climbs). Phone: tap **Check on me now**, answer
+   "It's getting worse, it's spreading to my arm." Tile turns red, critical banner. Nurse taps **I'm on it**;
+   the phone shows "Charge RN is coming to you now".
+5. Header shows "N beds short in 30 min". Tap **Assign bed** (uses the held bed). Phone shows "Your bed is ready".
+
+Pitch line: Twiage covers ambulances; FrontDoor covers everyone else, on the same board.
 
 Forecast hour can be pinned for the demo: set `FORECAST_HOUR=18` before starting the server.
 

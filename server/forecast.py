@@ -20,7 +20,9 @@ def compute(patients: list[dict], beds: list[dict]) -> dict:
     expected = round(per_hour * HORIZON_MIN / 60 * curve.get("bed_rate", 0.6))
 
     # ESI 4-5 patients are usually treated in chairs / fast track, so only ESI 1-3 need a bed.
-    needs_bed = [p for p in patients if p["acuity"] <= 3]
+    # A held bed is already counted as taken, so its patient doesn't need another one.
+    held_for = {b["patient_id"] for b in beds if b["status"] == "reserved"}
+    needs_bed = [p for p in patients if p["acuity"] <= 3 and p["id"] not in held_for]
     waiting = sum(1 for p in needs_bed if p["status"] == "waiting")
     incoming = sum(1 for p in needs_bed if p["status"] == "incoming" and p["eta_minutes"] <= HORIZON_MIN)
     free = sum(1 for b in beds if b["status"] == "free")

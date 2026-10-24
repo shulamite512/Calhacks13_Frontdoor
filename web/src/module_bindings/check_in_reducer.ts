@@ -21,4 +21,6 @@ export default {
   etaMinutes: __t.u32(),
   lat: __t.f64(),
   lng: __t.f64(),
+  source: __t.string(),
+  prep: __t.string(),
 };

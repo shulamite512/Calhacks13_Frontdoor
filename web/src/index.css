@@ -99,4 +99,14 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0; }
 .bed.occupied { opacity: .85; }
 .bed.cleaning { border: 2px dashed var(--warn); background: var(--warn-bg); }
 .board footer { padding: 10px 20px; display: flex; gap: 12px; align-items: center; border-top: 1px solid var(--line); background: var(--panel); font-size: 13px; }
+.map { height: 260px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 10px; z-index: 0; }
+.map-er { background: var(--crit); color: #fff; font-weight: 800; font-size: 12px; border-radius: 8px; display: flex !important; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.map-dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.map-dot.ems { border-radius: 4px; }
+.map-label { font-size: 12px; font-weight: 600; padding: 2px 6px; }
+.src { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); text-transform: uppercase; }
+.src.ems { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+.prep { margin: 8px 0 4px; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); border: 1px solid var(--warn); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.prep .held { margin-left: auto; font-weight: 700; color: var(--ok); }
+.bed.reserved { border: 2px solid #1d4ed8; background: rgba(29, 78, 216, .08); }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

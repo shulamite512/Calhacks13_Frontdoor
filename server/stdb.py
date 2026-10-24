@@ -19,11 +19,15 @@ async def _auth() -> dict:
     return {"Authorization": f"Bearer {_token}"}
 
 
+class ReducerError(RuntimeError):
+    pass
+
+
 async def call(reducer: str, *args) -> None:
     """Call a reducer by its snake_case name with positional args."""
     r = await _client.post(f"/v1/database/{DB}/call/{reducer}", json=list(args), headers=await _auth())
     if r.status_code >= 400:
-        raise RuntimeError(f"{reducer} failed ({r.status_code}): {r.text}")
+        raise ReducerError(f"{reducer} failed: {r.text}")
 
 
 def _decode(value, typ):

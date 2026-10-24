@@ -151,8 +151,30 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
   const [arrived, setArrived] = useState(false);
   const [log, setLog] = useState<Array<{ a: string; r: FollowUpResult }>>([]);
   const [listening, setListening] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const rec = useRecorder();
   const pid = result.patientId;
+
+  // Send GPS to the ER every ~10s until we're close enough to count as arrived.
+  function shareLocation(patientId: number) {
+    if (!navigator.geolocation) return;
+    setSharing(true);
+    let last = 0;
+    const watch = navigator.geolocation.watchPosition(
+      async pos => {
+        if (Date.now() - last < 10_000) return;
+        last = Date.now();
+        const r = await api.location({ patientId, lat: pos.coords.latitude, lng: pos.coords.longitude });
+        if (r.arrived) {
+          navigator.geolocation.clearWatch(watch);
+          setSharing(false);
+          setArrived(true);
+        }
+      },
+      () => setSharing(false),
+      { enableHighAccuracy: true }
+    );
+  }
 
   async function checkOnMe() {
     if (rec.recording) return rec.stop();
@@ -184,10 +206,18 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
 
       {pid != null && <LiveStatus patientId={pid} />}
 
-      {!arrived && (
-        <button className="primary" onClick={() => pid != null && api.arrive(pid).then(() => setArrived(true))}>
-          I've arrived
-        </button>
+      {!arrived && pid != null && (
+        <>
+          <button className="primary" onClick={() => api.arrive(pid).then(() => setArrived(true))}>
+            I've arrived
+          </button>
+          <div className="row">
+            <button onClick={() => shareLocation(pid)} disabled={sharing}>
+              {sharing ? 'Sharing location' : 'Share my location'}
+            </button>
+            <button className="ghost" onClick={() => api.drive(pid)}>Simulate drive</button>
+          </div>
+        </>
       )}
 
       <button className={`mic ${listening ? 'on' : ''}`} onClick={checkOnMe} disabled={busy && !listening}>

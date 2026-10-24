@@ -18,6 +18,10 @@ class Triage(BaseModel):
     summary: str = Field(description="One sentence for the triage nurse: symptoms, onset, key negatives")
     acuity: int = Field(description="Emergency Severity Index 1 (most urgent) to 5")
     red_flags: list[str] = Field(description="Short labels of red-flag findings; empty if none")
+    prep: list[str] = Field(
+        description="0-3 short things the ED should have ready on arrival, e.g. 'ECG', 'cardiac monitor'; "
+        "empty for minor complaints"
+    )
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
 
 
@@ -74,6 +78,7 @@ def _fallback_triage(transcript: str) -> Triage:
         summary=transcript[:200],
         acuity=2 if critical or flags else 3,
         red_flags=[f for f, _ in flags],
+        prep=[],
         spoken_reply="You're checked in and the team has your information. "
         + ("If your symptoms get worse, pull over and call 911." if flags else "See you soon."),
     )

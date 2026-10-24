@@ -69,6 +69,8 @@ export const Patient = __t.object("Patient", {
   bedId: __t.option(__t.u32()),
   createdAt: __t.timestamp(),
   updatedAt: __t.timestamp(),
+  source: __t.string(),
+  prep: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
 

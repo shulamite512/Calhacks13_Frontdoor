@@ -23,6 +23,9 @@ const patient = table(
     bedId: t.option(t.u32()),
     createdAt: t.timestamp(),
     updatedAt: t.timestamp(),
+    // Appended later; defaults keep existing rows valid.
+    source: t.string().default('walk-in'),  // 'walk-in' | 'ems'
+    prep: t.string().default(''),           // comma separated things to have ready on arrival
   }
 );
 
@@ -68,7 +71,7 @@ const followUp = table(
   }
 );
 
-// status: 'free' | 'occupied' | 'cleaning'
+// status: 'free' | 'reserved' (held for an incoming patient) | 'occupied' | 'cleaning'
 const bed = table(
   { name: 'bed', public: true },
   {
@@ -124,6 +127,15 @@ function seedBeds(ctx: Ctx) {
   });
 }
 
+// Release any bed held (not yet occupied) for this patient.
+function releaseHeld(ctx: Ctx, patientId: bigint) {
+  for (const b of [...ctx.db.bed.iter()]) {
+    if (b.status === 'reserved' && b.patientId === patientId) {
+      ctx.db.bed.id.update({ ...b, status: 'free', patientId: undefined });
+    }
+  }
+}
+
 function getPatient(ctx: Ctx, id: bigint) {
   const p = ctx.db.patient.id.find(id);
   if (!p) throw new SenderError(`patient ${id} not found`);
@@ -158,6 +170,8 @@ export const checkIn = spacetimedb.reducer(
     etaMinutes: t.u32(),
     lat: t.f64(),
     lng: t.f64(),
+    source: t.string(),
+    prep: t.string(),
   },
   (ctx, args) => {
     const risk = args.acuity <= 2 ? 'watch' : 'normal';
@@ -170,6 +184,28 @@ export const checkIn = spacetimedb.reducer(
       createdAt: ctx.timestamp,
       updatedAt: ctx.timestamp,
     });
+  }
+);
+
+export const updateLocation = spacetimedb.reducer(
+  { patientId: t.u64(), lat: t.f64(), lng: t.f64(), etaMinutes: t.u32() },
+  (ctx, { patientId, lat, lng, etaMinutes }) => {
+    const p = getPatient(ctx, patientId);
+    if (p.status !== 'incoming') return;
+    ctx.db.patient.id.update({ ...p, lat, lng, etaMinutes, updatedAt: ctx.timestamp });
+  }
+);
+
+// Hold a free bed for an incoming patient so it's ready when they arrive.
+export const holdBed = spacetimedb.reducer(
+  { bedId: t.u32(), patientId: t.u64() },
+  (ctx, { bedId, patientId }) => {
+    const b = ctx.db.bed.id.find(bedId);
+    if (!b) throw new SenderError(`bed ${bedId} not found`);
+    if (b.status !== 'free') throw new SenderError(`bed ${b.label} is ${b.status}`);
+    getPatient(ctx, patientId);
+    releaseHeld(ctx, patientId);
+    ctx.db.bed.id.update({ ...b, status: 'reserved', patientId });
   }
 );
 
@@ -247,8 +283,10 @@ export const assignBed = spacetimedb.reducer(
   (ctx, { bedId, patientId }) => {
     const b = ctx.db.bed.id.find(bedId);
     if (!b) throw new SenderError(`bed ${bedId} not found`);
-    if (b.status !== 'free') throw new SenderError(`bed ${b.label} is ${b.status}`);
+    const heldForThem = b.status === 'reserved' && b.patientId === patientId;
+    if (b.status !== 'free' && !heldForThem) throw new SenderError(`bed ${b.label} is ${b.status}`);
     const p = getPatient(ctx, patientId);
+    if (!heldForThem) releaseHeld(ctx, patientId);
     // Free the patient's previous bed, if any.
     if (p.bedId !== undefined) {
       const prev = ctx.db.bed.id.find(p.bedId);
@@ -259,10 +297,14 @@ export const assignBed = spacetimedb.reducer(
   }
 );
 
-// Frees a bed. Occupied -> cleaning (patient discharged), cleaning -> free.
+// Frees a bed. Reserved -> free (hold released), occupied -> cleaning (patient discharged), cleaning -> free.
 export const freeBed = spacetimedb.reducer({ bedId: t.u32() }, (ctx, { bedId }) => {
   const b = ctx.db.bed.id.find(bedId);
   if (!b) throw new SenderError(`bed ${bedId} not found`);
+  if (b.status === 'reserved') {
+    ctx.db.bed.id.update({ ...b, status: 'free', patientId: undefined });
+    return;
+  }
   if (b.patientId !== undefined) {
     const p = ctx.db.patient.id.find(b.patientId);
     if (p) ctx.db.patient.id.update({ ...p, status: 'discharged', bedId: undefined, updatedAt: ctx.timestamp });
