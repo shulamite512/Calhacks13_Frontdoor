@@ -64,6 +64,7 @@ export const api = {
 
   location: (b: { patientId: number; lat: number; lng: number }) =>
     post<{ arrived: boolean; etaMinutes: number }>('/location', b),
+  suggestRedirect: (patientId: number) => post('/redirect/suggest', { patientId }),
   drive: (patientId: number) => post('/demo/drive', { patientId }),
   worsen: (patientId: number) => post('/demo/worsen', { patientId }),
   arrive: (patientId: number) => post('/demo/arrive', { patientId }),

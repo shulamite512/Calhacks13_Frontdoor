@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
+import network  # noqa: E402
 import routing  # noqa: E402
 import simulator  # noqa: E402
 import stdb  # noqa: E402
@@ -210,6 +211,21 @@ async def location(body: LocationIn):
     return {"arrived": False, "etaMinutes": eta}
 
 
+@app.post("/redirect/suggest")
+async def redirect_suggest(body: PatientIdIn):
+    """Find the nearby ER with the best drive + wait and offer it to the patient's phone."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
+    if not rows:
+        raise HTTPException(404, "patient not found")
+    p = rows[0]
+    best = await network.best_alternative(p["lat"], p["lng"])
+    if not best:
+        raise HTTPException(409, "no nearby ER has free beds")
+    # The module re-checks eligibility (incoming, walk-in, ESI 3-5) and rejects anything else.
+    await stdb.call("offer_redirect", body.patientId, best["hospitalId"], best["driveMinutes"], best["waitMinutes"])
+    return best
+
+
 # ---------- Demo controls ----------
 
 @app.post("/demo/drive")
@@ -236,6 +252,7 @@ async def demo_reset():
     _stop_drives()
     await stdb.call("reset_demo")
     simulator.reset()
+    await network.seed()
     for d in DEMO_PATIENTS:
         lat, lng, secs = d.get("drive", (HOSPITAL["lat"], HOSPITAL["lng"], 0))
         eta = 0

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Patient } from './module_bindings/types';
+import type { Hospital, Patient } from './module_bindings/types';
 import { HOSPITAL } from './config';
 
 const COLORS: Record<string, string> = { critical: '#c62828', watch: '#c77700', normal: '#1f8a4c' };
@@ -11,11 +11,12 @@ function color(p: Patient) {
 }
 
 // Live map of everyone on the way to the ER: walk-ins (circles) and ambulances (squares).
-export default function IncomingMap({ patients }: { patients: Patient[] }) {
+export default function IncomingMap({ patients, hospitals }: { patients: Patient[]; hospitals: readonly Hospital[] }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const markers = useRef(new Map<bigint, L.Marker>());
   const count = useRef(-1);
+  const others = useRef(new Map<number, L.Marker>());
 
   useEffect(() => {
     if (!el.current || map.current) return;
@@ -36,8 +37,28 @@ export default function IncomingMap({ patients }: { patients: Patient[] }) {
       m.remove();
       map.current = null;
       markers.current.clear();
+      others.current.clear();
     };
   }, []);
+
+  // Other nearby ERs, labeled with their simulated wait.
+  useEffect(() => {
+    const m = map.current;
+    if (!m) return;
+    for (const h of hospitals) {
+      const label = `${h.name.split(' (')[0]} · ~${h.waitMinutes}m wait`;
+      let mk = others.current.get(h.id);
+      if (!mk) {
+        mk = L.marker([h.lat, h.lng], {
+          icon: L.divIcon({ className: 'map-other', html: 'ER', iconSize: [24, 24] }),
+        }).addTo(m);
+        mk.bindTooltip(label, { direction: 'top', offset: [0, -10] });
+        others.current.set(h.id, mk);
+      } else {
+        mk.setTooltipContent(label);
+      }
+    }
+  }, [hospitals]);
 
   useEffect(() => {
     const m = map.current;

@@ -4,12 +4,14 @@ import logging
 import random
 
 import forecast
+import network
 import red_flags
 import stdb
 
 log = logging.getLogger("simulator")
 
 TICK_SECONDS = 3
+NETWORK_EVERY_TICKS = 10  # nudge other hospitals' simulated capacity every ~30s
 LEVELS = {"none": 0, "warning": 1, "critical": 2}
 
 # patient_id -> {"v": current vitals, "worsening": bool, "raised": highest level alerted}
@@ -70,7 +72,7 @@ async def _tick() -> None:
     global _last_forecast
     patients = await stdb.sql("SELECT * FROM patient")
     beds = await stdb.sql("SELECT * FROM bed")
-    active = [p for p in patients if p["status"] != "discharged"]
+    active = [p for p in patients if p["status"] not in ("discharged", "redirected")]
 
     for p in active:
         pid = p["id"]
@@ -94,9 +96,13 @@ async def _tick() -> None:
 
 
 async def run() -> None:
+    ticks = 0
     while True:
         try:
             await _tick()
+            ticks += 1
+            if ticks % NETWORK_EVERY_TICKS == 0:
+                await network.drift()
         except Exception:
             log.exception("simulator tick failed")
         await asyncio.sleep(TICK_SECONDS)

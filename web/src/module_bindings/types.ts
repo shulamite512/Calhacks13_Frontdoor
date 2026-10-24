@@ -52,6 +52,17 @@ export const Forecast = __t.object("Forecast", {
 });
 export type Forecast = __Infer<typeof Forecast>;
 
+export const Hospital = __t.object("Hospital", {
+  id: __t.u32(),
+  name: __t.string(),
+  lat: __t.f64(),
+  lng: __t.f64(),
+  bedsFree: __t.u32(),
+  waitMinutes: __t.u32(),
+  updatedAt: __t.timestamp(),
+});
+export type Hospital = __Infer<typeof Hospital>;
+
 export const Patient = __t.object("Patient", {
   id: __t.u64(),
   name: __t.string(),
@@ -73,6 +84,17 @@ export const Patient = __t.object("Patient", {
   prep: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
+
+export const RedirectOffer = __t.object("RedirectOffer", {
+  id: __t.u64(),
+  patientId: __t.u64(),
+  hospitalId: __t.u32(),
+  driveMinutes: __t.u32(),
+  waitMinutes: __t.u32(),
+  status: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type RedirectOffer = __Infer<typeof RedirectOffer>;
 
 export const Vitals = __t.object("Vitals", {
   id: __t.u64(),

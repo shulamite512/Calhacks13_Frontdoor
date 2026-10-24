@@ -3,6 +3,7 @@ import { schema, table, t, SenderError, type InferSchema, type ReducerCtx } from
 // ---------- Tables ----------
 
 // status: 'incoming' (on the way) | 'waiting' (in lobby) | 'roomed' (has a bed) | 'discharged'
+//         | 'redirected' (accepted a suggestion to go to another ER)
 // risk:   'normal' | 'watch' | 'critical'
 const patient = table(
   { name: 'patient', public: true },
@@ -98,7 +99,37 @@ const forecast = table(
   }
 );
 
-const spacetimedb = schema({ patient, vitals, alert, followUp, bed, forecast });
+// Nearby emergency departments we can suggest when we're full. Written by the Python server
+// (capacity is simulated for the demo).
+const hospital = table(
+  { name: 'hospital', public: true },
+  {
+    id: t.u32().primaryKey(),
+    name: t.string(),
+    lat: t.f64(),
+    lng: t.f64(),
+    bedsFree: t.u32(),
+    waitMinutes: t.u32(),
+    updatedAt: t.timestamp(),
+  }
+);
+
+// A suggestion to an incoming walk-in to go to another ER instead.
+// status: 'pending' | 'accepted' | 'declined'
+const redirectOffer = table(
+  { name: 'redirect_offer', public: true },
+  {
+    id: t.u64().primaryKey().autoInc(),
+    patientId: t.u64().index('btree'),
+    hospitalId: t.u32(),
+    driveMinutes: t.u32(),
+    waitMinutes: t.u32(),
+    status: t.string(),
+    createdAt: t.timestamp(),
+  }
+);
+
+const spacetimedb = schema({ patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer });
 export default spacetimedb;
 
 type Ctx = ReducerCtx<InferSchema<typeof spacetimedb>>;
@@ -109,6 +140,8 @@ const BEDS: Array<[string, string]> = [
   ['A1', 'Acute'], ['A2', 'Acute'], ['A3', 'Acute'], ['A4', 'Acute'],
   ['B1', 'Fast track'], ['B2', 'Fast track'], ['B3', 'Fast track'],
   ['R1', 'Resus'],
+  // Overflow stretchers, used only when no regular bed is free.
+  ['H1', 'Hallway'], ['H2', 'Hallway'], ['H3', 'Hallway'],
 ];
 const VITALS_KEEP = 40;
 
@@ -328,6 +361,47 @@ export const setForecast = spacetimedb.reducer(
   }
 );
 
+export const setHospital = spacetimedb.reducer(
+  { id: t.u32(), name: t.string(), lat: t.f64(), lng: t.f64(), bedsFree: t.u32(), waitMinutes: t.u32() },
+  (ctx, args) => {
+    const row = { ...args, updatedAt: ctx.timestamp };
+    if (ctx.db.hospital.id.find(args.id)) ctx.db.hospital.id.update(row);
+    else ctx.db.hospital.insert(row);
+  }
+);
+
+// Only stable walk-ins who haven't arrived can be offered another ER. Once someone is at our
+// door we must see them (EMTALA), and ambulance diversion is a hospital-level decision.
+export const offerRedirect = spacetimedb.reducer(
+  { patientId: t.u64(), hospitalId: t.u32(), driveMinutes: t.u32(), waitMinutes: t.u32() },
+  (ctx, { patientId, hospitalId, driveMinutes, waitMinutes }) => {
+    const p = getPatient(ctx, patientId);
+    if (p.status !== 'incoming') throw new SenderError('only patients still on the way can be redirected');
+    if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by FrontDoor');
+    if (p.acuity <= 2 || p.risk === 'critical') throw new SenderError('ESI 1-2 / critical patients are never redirected');
+    if (!ctx.db.hospital.id.find(hospitalId)) throw new SenderError(`hospital ${hospitalId} not found`);
+    const pending = [...ctx.db.redirectOffer.patientId.filter(patientId)].find(o => o.status === 'pending');
+    if (pending) ctx.db.redirectOffer.id.update({ ...pending, status: 'declined' });
+    ctx.db.redirectOffer.insert({
+      id: 0n, patientId, hospitalId, driveMinutes, waitMinutes, status: 'pending', createdAt: ctx.timestamp,
+    });
+  }
+);
+
+export const respondRedirect = spacetimedb.reducer(
+  { offerId: t.u64(), accept: t.bool() },
+  (ctx, { offerId, accept }) => {
+    const o = ctx.db.redirectOffer.id.find(offerId);
+    if (!o) throw new SenderError(`offer ${offerId} not found`);
+    if (o.status !== 'pending') return;
+    ctx.db.redirectOffer.id.update({ ...o, status: accept ? 'accepted' : 'declined' });
+    if (!accept) return;
+    const p = getPatient(ctx, o.patientId);
+    releaseHeld(ctx, p.id);
+    ctx.db.patient.id.update({ ...p, status: 'redirected', etaMinutes: 0, updatedAt: ctx.timestamp });
+  }
+);
+
 export const resetDemo = spacetimedb.reducer(ctx => {
   for (const r of [...ctx.db.vitals.iter()]) ctx.db.vitals.id.delete(r.id);
   for (const r of [...ctx.db.alert.iter()]) ctx.db.alert.id.delete(r.id);
@@ -335,5 +409,6 @@ export const resetDemo = spacetimedb.reducer(ctx => {
   for (const r of [...ctx.db.patient.iter()]) ctx.db.patient.id.delete(r.id);
   for (const r of [...ctx.db.bed.iter()]) ctx.db.bed.id.delete(r.id);
   for (const r of [...ctx.db.forecast.iter()]) ctx.db.forecast.id.delete(r.id);
+  for (const r of [...ctx.db.redirectOffer.iter()]) ctx.db.redirectOffer.id.delete(r.id);
   seedBeds(ctx);
 });

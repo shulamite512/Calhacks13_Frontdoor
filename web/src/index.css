@@ -49,6 +49,9 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0; }
 .card.status .big { font-size: 20px; font-weight: 700; margin-top: 4px; }
 .card.status.go { background: var(--brand); border-color: var(--brand); color: #fff; }
 .card.status.go .muted { color: #d6f3f3; }
+.card.offer-card { background: var(--warn-bg); border-color: var(--warn); }
+.card.offer-card .row button { flex: 1; margin-top: 8px; }
+.directions { display: inline-block; margin-top: 6px; color: #fff; font-weight: 700; }
 
 /* ---------- Board ---------- */
 .board { min-height: 100vh; display: flex; flex-direction: column; }
@@ -109,4 +112,13 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0; }
 .prep { margin: 8px 0 4px; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); border: 1px solid var(--warn); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
 .prep .held { margin-left: auto; font-weight: 700; color: var(--ok); }
 .bed.reserved { border: 2px solid #1d4ed8; background: rgba(29, 78, 216, .08); }
+.col h2.sub { margin-top: 18px; }
+.network { display: flex; flex-direction: column; gap: 6px; }
+.er { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; }
+.er span { color: var(--muted); }
+.er.full { opacity: .55; }
+button.warn { background: var(--warn); border-color: var(--warn); color: #fff; font-weight: 600; }
+.offer { margin-top: 8px; font-size: 13px; color: var(--warn); font-weight: 600; }
+.map-other { background: #64748b; color: #fff; font-weight: 800; font-size: 10px; border-radius: 6px; display: flex !important; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.connecting { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

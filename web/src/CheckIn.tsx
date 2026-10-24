@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useTable } from 'spacetimedb/react';
-import { tables } from './module_bindings';
+import { useReducer, useTable } from 'spacetimedb/react';
+import { reducers, tables } from './module_bindings';
 import { api, type FollowUpResult, type TriageResult } from './api';
 import { useRecorder } from './useRecorder';
 
@@ -110,6 +110,9 @@ function LiveStatus({ patientId }: { patientId: number }) {
   const [patients] = useTable(tables.patient);
   const [alerts] = useTable(tables.alert);
   const [beds] = useTable(tables.bed);
+  const [offers] = useTable(tables.redirectOffer);
+  const [hospitals] = useTable(tables.hospital);
+  const respond = useReducer(reducers.respondRedirect);
   const pid = BigInt(patientId);
   const p = patients.find(x => x.id === pid);
   if (!p) return null;
@@ -118,6 +121,35 @@ function LiveStatus({ patientId }: { patientId: number }) {
     .filter(a => a.patientId === pid && a.ackedBy !== undefined)
     .sort((a, b) => Number(b.id - a.id))[0]?.ackedBy;
   const bed = p.bedId !== undefined ? beds.find(b => b.id === p.bedId) : undefined;
+  const offer = [...offers].filter(o => o.patientId === pid).sort((a, b) => Number(b.id - a.id))[0];
+  const other = offer ? hospitals.find(h => h.id === offer.hospitalId) : undefined;
+
+  if (p.status === 'redirected' && other) {
+    const directions = `https://www.google.com/maps/dir/?api=1&destination=${other.lat},${other.lng}`;
+    return (
+      <div className="card status go">
+        <div className="muted">Change of plan</div>
+        <div className="big">Head to {other.name}</div>
+        <p>About {offer.driveMinutes} min away, ~{offer.waitMinutes} min wait. Tell their front desk your symptoms when you arrive.</p>
+        <a className="directions" href={directions} target="_blank" rel="noreferrer">Open directions</a>
+      </div>
+    );
+  }
+  if (offer?.status === 'pending' && other) {
+    return (
+      <div className="card status offer-card">
+        <div className="muted">Our ER is very busy right now</div>
+        <div className="big">{other.name} can likely see you sooner</div>
+        <p>About {offer.driveMinutes} min away with a ~{offer.waitMinutes} min wait. It's your choice.</p>
+        <div className="row">
+          <button className="primary" onClick={() => respond({ offerId: offer.id, accept: true })}>
+            Go to {other.name.split(' (')[0]}
+          </button>
+          <button onClick={() => respond({ offerId: offer.id, accept: false })}>Keep my spot</button>
+        </div>
+      </div>
+    );
+  }
 
   if (p.status === 'roomed' && bed) {
     return (

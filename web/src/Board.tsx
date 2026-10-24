@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import type { Timestamp } from 'spacetimedb';
 import { reducers, tables } from './module_bindings';
-import type { Alert, Bed, Patient, Vitals } from './module_bindings/types';
+import type { Alert, Bed, Hospital, Patient, RedirectOffer, Vitals } from './module_bindings/types';
 import { api } from './api';
 import IncomingMap from './IncomingMap';
 
@@ -23,17 +23,23 @@ function ago(ts: Timestamp, now: number) {
 }
 
 // Resus for the sickest, fast track for minor problems, acute otherwise.
-function pickBed(p: Patient, beds: readonly Bed[]) {
+// Hallway stretchers are a last resort and only when allowed (never for holds).
+function pickBed(p: Patient, beds: readonly Bed[], allowHallway = false) {
   const free = beds.filter(b => b.status === 'free');
   const zones =
     p.risk === 'critical' || p.acuity <= 1 ? ['Resus', 'Acute', 'Fast track']
     : p.acuity >= 4 ? ['Fast track', 'Acute', 'Resus']
     : ['Acute', 'Resus', 'Fast track'];
-  for (const z of zones) {
+  for (const z of allowHallway ? [...zones, 'Hallway'] : zones) {
     const b = free.find(b => b.zone === z);
     if (b) return b;
   }
   return undefined;
+}
+
+// Can FrontDoor suggest another ER? Only stable walk-ins who haven't arrived (EMTALA).
+function canRedirect(p: Patient) {
+  return p.status === 'incoming' && p.source === 'walk-in' && p.acuity >= 3 && p.risk !== 'critical';
 }
 
 export default function Board() {
@@ -43,6 +49,8 @@ export default function Board() {
   const [alerts] = useTable(tables.alert);
   const [beds] = useTable(tables.bed);
   const [forecasts] = useTable(tables.forecast);
+  const [hospitals] = useTable(tables.hospital);
+  const [offers] = useTable(tables.redirectOffer);
   const ackAlert = useReducer(reducers.ackAlert);
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
@@ -90,9 +98,9 @@ export default function Board() {
   const heldBed = (p: Patient) => beds.find(b => b.status === 'reserved' && b.patientId === p.id);
 
   function assign(p: Patient) {
-    const b = heldBed(p) ?? pickBed(p, beds);
+    const b = heldBed(p) ?? pickBed(p, beds, true);
     if (b) assignBed({ bedId: b.id, patientId: p.id });
-    else alert('No free beds');
+    else alert('No free beds, including hallway. Consider suggesting another ER to incoming walk-ins.');
   }
 
   function hold(p: Patient) {
@@ -100,9 +108,17 @@ export default function Board() {
     if (held) return freeBed({ bedId: held.id });  // second tap releases the hold
     const b = pickBed(p, beds);
     if (b) holdBed({ bedId: b.id, patientId: p.id });
-    else alert('No free beds');
+    else alert('No free beds to hold');
   }
-  const bedActions = { beds, onAssign: assign, onHold: hold };
+
+  function suggest(p: Patient) {
+    api.suggestRedirect(Number(p.id)).catch(e => alert(String(e)));
+  }
+  const short = (f?.bedsShort ?? 0) > 0;
+  const bedActions = { beds, offers, hospitals, short, onAssign: assign, onHold: hold, onSuggest: suggest };
+  const redirected = sorted.filter(p => p.status === 'redirected');
+  const rooms = [...beds].filter(b => b.zone !== 'Hallway').sort((a, b) => a.id - b.id);
+  const hallway = [...beds].filter(b => b.zone === 'Hallway').sort((a, b) => a.id - b.id);
 
   return (
     <div className="board">
@@ -140,13 +156,13 @@ export default function Board() {
 
       <main>
         <Column title="Incoming" patients={incoming} vitals={byPatient} alerts={alerts} {...bedActions}>
-          <IncomingMap patients={incoming} />
+          <IncomingMap patients={incoming} hospitals={hospitals} />
         </Column>
         <Column title="Waiting room" patients={waiting} vitals={byPatient} alerts={alerts} {...bedActions} />
         <section className="col">
-          <h2>Beds <span className="muted">{beds.filter(b => b.status === 'free').length} free</span></h2>
+          <h2>Beds <span className="muted">{rooms.filter(b => b.status === 'free').length} free</span></h2>
           <div className="beds">
-            {[...beds].sort((a, b) => a.id - b.id).map(b => (
+            {[...rooms, ...hallway].map(b => (
               <button key={b.id} className={`bed ${b.status}`} onClick={() => freeBed({ bedId: b.id })}
                 title={BED_HINT[b.status] ?? 'Free'}>
                 <b>{b.label}</b>
@@ -155,6 +171,31 @@ export default function Board() {
               </button>
             ))}
           </div>
+
+          <h2 className="sub">Nearby ERs <span className="muted">simulated capacity</span></h2>
+          <div className="network">
+            {[...hospitals].sort((a, b) => a.waitMinutes - b.waitMinutes).map(h => (
+              <div key={h.id} className={`er ${h.bedsFree === 0 ? 'full' : ''}`}>
+                <b>{h.name}</b>
+                <span>{h.bedsFree} beds · ~{h.waitMinutes} min wait</span>
+              </div>
+            ))}
+          </div>
+
+          {redirected.length > 0 && (
+            <>
+              <h2 className="sub">Redirected <span className="muted">{redirected.length}</span></h2>
+              {redirected.map(p => {
+                const o = [...offers].reverse().find(o => o.patientId === p.id && o.status === 'accepted');
+                const h = hospitals.find(h => h.id === o?.hospitalId);
+                return (
+                  <div key={String(p.id)} className="er">
+                    <b>{p.name}</b> <span>{p.complaint} → {h?.name ?? 'another ER'}</span>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </section>
       </main>
 
@@ -166,7 +207,15 @@ export default function Board() {
   );
 }
 
-type BedActions = { beds: readonly Bed[]; onAssign: (p: Patient) => void; onHold: (p: Patient) => void };
+type BedActions = {
+  beds: readonly Bed[];
+  offers: readonly RedirectOffer[];
+  hospitals: readonly Hospital[];
+  short: boolean;
+  onAssign: (p: Patient) => void;
+  onHold: (p: Patient) => void;
+  onSuggest: (p: Patient) => void;
+};
 
 function Column(props: BedActions & {
   title: string;
@@ -181,7 +230,8 @@ function Column(props: BedActions & {
       {props.children}
       {props.patients.map(p => (
         <Tile key={String(p.id)} p={p} vitals={props.vitals.get(p.id) ?? []}
-          beds={props.beds} onAssign={props.onAssign} onHold={props.onHold}
+          beds={props.beds} offers={props.offers} hospitals={props.hospitals} short={props.short}
+          onAssign={props.onAssign} onHold={props.onHold} onSuggest={props.onSuggest}
           held={props.beds.find(b => b.status === 'reserved' && b.patientId === p.id)}
           openAlert={props.alerts.some(a => a.patientId === p.id && a.ackedAt === undefined)} />
       ))}
@@ -190,13 +240,15 @@ function Column(props: BedActions & {
   );
 }
 
-function Tile({ p, vitals, onAssign, onHold, held, openAlert }: BedActions & {
+function Tile({ p, vitals, offers, hospitals, short, onAssign, onHold, onSuggest, held, openAlert }: BedActions & {
   p: Patient; vitals: Vitals[]; held?: Bed; openAlert: boolean;
 }) {
   const v = vitals[vitals.length - 1];
   const flags = p.redFlags.split(',').map(s => s.trim()).filter(Boolean);
   const prep = p.prep.split(',').map(s => s.trim()).filter(Boolean);
   const incoming = p.status === 'incoming';
+  const offer = [...offers].reverse().find(o => o.patientId === p.id);
+  const offerTo = hospitals.find(h => h.id === offer?.hospitalId)?.name;
   return (
     <div className={`tile ${p.risk} ${openAlert ? 'pulse' : ''}`}>
       <div className="tile-head">
@@ -231,8 +283,13 @@ function Tile({ p, vitals, onAssign, onHold, held, openAlert }: BedActions & {
         ) : (
           <button className="primary" onClick={() => onAssign(p)}>Assign bed</button>
         )}
+        {canRedirect(p) && offer?.status !== 'pending' && (
+          <button className={short ? 'warn' : 'ghost'} onClick={() => onSuggest(p)}>Suggest another ER</button>
+        )}
         <button className="ghost" onClick={() => api.worsen(Number(p.id))}>Worsen</button>
       </div>
+      {offer?.status === 'pending' && <div className="offer">Offered {offerTo}: waiting for patient…</div>}
+      {offer?.status === 'declined' && <div className="offer muted">Patient kept their spot here.</div>}
     </div>
   );
 }

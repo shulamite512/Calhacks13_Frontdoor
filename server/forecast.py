@@ -25,8 +25,11 @@ def compute(patients: list[dict], beds: list[dict]) -> dict:
     needs_bed = [p for p in patients if p["acuity"] <= 3 and p["id"] not in held_for]
     waiting = sum(1 for p in needs_bed if p["status"] == "waiting")
     incoming = sum(1 for p in needs_bed if p["status"] == "incoming" and p["eta_minutes"] <= HORIZON_MIN)
-    free = sum(1 for b in beds if b["status"] == "free")
-    cleaning = sum(1 for b in beds if b["status"] == "cleaning")  # back in service within the horizon
+    # Hallway stretchers are overflow, not real capacity, so they don't count as available.
+    rooms = [b for b in beds if b["zone"] != "Hallway"]
+    free = sum(1 for b in rooms if b["status"] == "free")
+    cleaning = sum(1 for b in rooms if b["status"] == "cleaning")  # back in service within the horizon
+    hallway = sum(1 for b in beds if b["zone"] == "Hallway" and b["status"] == "occupied")
 
     needed = waiting + incoming + expected
     available = free + cleaning
@@ -37,5 +40,7 @@ def compute(patients: list[dict], beds: list[dict]) -> dict:
         "bedsNeeded": needed,
         "bedsShort": needed - available,
         "basis": f"{waiting} waiting + {incoming} incoming (ESI 1-3) + ~{expected} expected walk-ins "
-        f"vs {free} free + {cleaning} cleaning beds ({curve['source']}, {hour}:00)",
+        f"vs {free} free + {cleaning} cleaning beds"
+        + (f", {hallway} in hallway beds" if hallway else "")
+        + f" ({curve['source']}, {hour}:00)",
     }
