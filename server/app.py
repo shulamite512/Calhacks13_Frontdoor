@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
+import departments  # noqa: E402
 import network  # noqa: E402
 import routing  # noqa: E402
 import simulator  # noqa: E402
@@ -43,15 +44,15 @@ DEMO_PATIENTS = [
          summary="Increased dyspnea x1 day, history of COPD per patient.", prep="Nebulizer"),
     dict(name="Aisha Patel", age=8, complaint="Fever", acuity=4,
          transcript="My daughter has had a fever of 102 since this morning.",
-         summary="Pediatric fever 102F since AM, drinking fluids, no rash reported."),
+         summary="Pediatric fever 102F since AM, drinking fluids, no rash reported.", specialty="Pediatrics"),
     dict(name="Robert King", age=52, complaint="Abdominal pain", acuity=3,
          transcript="Sharp pain in my lower right belly for six hours.",
-         summary="RLQ abdominal pain x6h, sharp, worsening.", prep="IV access, CT abdomen",
+         summary="RLQ abdominal pain x6h, sharp, worsening.", prep="IV access, CT abdomen", specialty="Surgery",
          drive=(*DEMO_START, 420)),
     dict(name="EMS Medic 12: male ~70", age=70, complaint="Possible stroke", acuity=2, source="ems",
          flags="facial droop, slurred speech", transcript="EMS report: left facial droop, slurred speech, onset 25 min ago.",
          summary="Ambulance: suspected stroke, last known well 25 min ago, BP 182/96.",
-         prep="Stroke team, CT scanner", drive=(37.7605, -122.4680, 300)),
+         prep="Stroke team, CT scanner", specialty="Neurology", drive=(37.7605, -122.4680, 300)),
 ]
 
 
@@ -194,7 +195,7 @@ async def checkin(body: CheckInIn):
     await stdb.call(
         "check_in", body.name, body.age, t.complaint, body.transcript, t.summary, t.acuity,
         ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng, "walk-in", ", ".join(t.prep),
-        body.phoneId.lower().removeprefix("0x"),
+        body.phoneId.lower().removeprefix("0x"), "" if t.specialty == "Emergency" else t.specialty,
     )
     p = await _patient_by_name(body.name)
     return {"patientId": p["id"] if p else None, **t.model_dump()}
@@ -296,6 +297,7 @@ async def demo_reset(body: PinIn):
     await stdb.call("reset_demo")
     simulator.reset()
     await network.seed()
+    await departments.seed()
     for d in DEMO_PATIENTS:
         lat, lng, secs = d.get("drive", (HOSPITAL["lat"], HOSPITAL["lng"], 0))
         eta = 0
@@ -305,6 +307,7 @@ async def demo_reset(body: PinIn):
         await stdb.call(
             "check_in", d["name"], d["age"], d["complaint"], d["transcript"], d["summary"], d["acuity"],
             d.get("flags", ""), eta, lat, lng, d.get("source", "walk-in"), d.get("prep", ""), "",
+            d.get("specialty", ""),
         )
         if secs:
             p = await _patient_by_name(d["name"])

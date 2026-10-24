@@ -123,4 +123,16 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .connecting { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
 .login { margin-top: 10vh; }
 .nurse button { padding: 4px 8px; font-size: 13px; }
+.depts { display: flex; flex-direction: column; gap: 6px; }
+.dept { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; }
+.dept.none { opacity: .75; }
+.dept-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); }
+.dept-controls button { padding: 0 6px; font-size: 12px; line-height: 18px; margin: 0 3px; }
+.dept-controls .bad { color: var(--crit); font-weight: 700; }
+.dept-controls button.res { padding: 2px 8px; font-weight: 600; }
+.res.ready { color: var(--ok); border-color: var(--ok); }
+.res.busy { color: var(--crit); border-color: var(--crit); }
+.ready { margin: 6px 0; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
+.ready.ok { background: var(--ok-bg); color: var(--ok); }
+.ready.gap { background: var(--crit-bg); color: var(--crit); }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

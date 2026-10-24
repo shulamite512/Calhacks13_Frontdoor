@@ -24,4 +24,5 @@ export default {
   source: __t.string(),
   prep: __t.string(),
   phoneId: __t.string(),
+  specialty: __t.string(),
 };

@@ -47,15 +47,18 @@ import OfferRedirectReducer from "./offer_redirect_reducer";
 import RaiseAlertReducer from "./raise_alert_reducer";
 import ResetDemoReducer from "./reset_demo_reducer";
 import RespondRedirectReducer from "./respond_redirect_reducer";
+import SetDepartmentReducer from "./set_department_reducer";
 import SetForecastReducer from "./set_forecast_reducer";
 import SetHospitalReducer from "./set_hospital_reducer";
 import StaffLogoutReducer from "./staff_logout_reducer";
+import UpdateDepartmentReducer from "./update_department_reducer";
 import UpdateLocationReducer from "./update_location_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
 import BedRow from "./bed_table";
+import DepartmentRow from "./department_table";
 import ForecastRow from "./forecast_table";
 import HospitalRow from "./hospital_table";
 import MyAlertsRow from "./my_alerts_table";
@@ -79,6 +82,17 @@ const tablesSchema = __schema({
       { name: 'bed_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, BedRow),
+  department: __table({
+    name: 'department',
+    indexes: [
+      { accessor: 'id', name: 'department_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'department_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, DepartmentRow),
   forecast: __table({
     name: 'forecast',
     indexes: [
@@ -153,9 +167,11 @@ const reducersSchema = __reducers(
   __reducerSchema("raise_alert", RaiseAlertReducer),
   __reducerSchema("reset_demo", ResetDemoReducer),
   __reducerSchema("respond_redirect", RespondRedirectReducer),
+  __reducerSchema("set_department", SetDepartmentReducer),
   __reducerSchema("set_forecast", SetForecastReducer),
   __reducerSchema("set_hospital", SetHospitalReducer),
   __reducerSchema("staff_logout", StaffLogoutReducer),
+  __reducerSchema("update_department", UpdateDepartmentReducer),
   __reducerSchema("update_location", UpdateLocationReducer),
 );
 

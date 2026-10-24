@@ -19,9 +19,11 @@ import OfferRedirectReducer from "../offer_redirect_reducer";
 import RaiseAlertReducer from "../raise_alert_reducer";
 import ResetDemoReducer from "../reset_demo_reducer";
 import RespondRedirectReducer from "../respond_redirect_reducer";
+import SetDepartmentReducer from "../set_department_reducer";
 import SetForecastReducer from "../set_forecast_reducer";
 import SetHospitalReducer from "../set_hospital_reducer";
 import StaffLogoutReducer from "../staff_logout_reducer";
+import UpdateDepartmentReducer from "../update_department_reducer";
 import UpdateLocationReducer from "../update_location_reducer";
 
 export type AckAlertParams = __Infer<typeof AckAlertReducer>;
@@ -37,8 +39,10 @@ export type OfferRedirectParams = __Infer<typeof OfferRedirectReducer>;
 export type RaiseAlertParams = __Infer<typeof RaiseAlertReducer>;
 export type ResetDemoParams = __Infer<typeof ResetDemoReducer>;
 export type RespondRedirectParams = __Infer<typeof RespondRedirectReducer>;
+export type SetDepartmentParams = __Infer<typeof SetDepartmentReducer>;
 export type SetForecastParams = __Infer<typeof SetForecastReducer>;
 export type SetHospitalParams = __Infer<typeof SetHospitalReducer>;
 export type StaffLogoutParams = __Infer<typeof StaffLogoutReducer>;
+export type UpdateDepartmentParams = __Infer<typeof UpdateDepartmentReducer>;
 export type UpdateLocationParams = __Infer<typeof UpdateLocationReducer>;
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import type { Timestamp } from 'spacetimedb';
 import { reducers, tables } from './module_bindings';
-import type { Alert, Bed, Hospital, Patient, RedirectOffer, Vitals } from './module_bindings/types';
+import type { Alert, Bed, Department, Hospital, Patient, RedirectOffer, Vitals } from './module_bindings/types';
 import { api } from './api';
 import IncomingMap from './IncomingMap';
 
@@ -35,6 +35,21 @@ function pickBed(p: Patient, beds: readonly Bed[], allowHallway = false) {
     if (b) return b;
   }
   return undefined;
+}
+
+// Is the department this patient needs ready (doctor on call, a specialty bed, key resource)?
+function readiness(p: Patient, departments: readonly Department[]) {
+  if (!p.specialty) return null;
+  const d = departments.find(d => d.name === p.specialty);
+  if (!d) return null;
+  if (d.bedsTotal === 0) return { ok: false, text: `Needs ${d.name}: not offered here. ${d.note}` };
+  const gaps = [];
+  if (d.doctorsOnCall === 0) gaps.push('no doctor on call');
+  if (d.bedsFree === 0) gaps.push(`no ${d.bedLabel} free`);
+  if (!d.resourceReady) gaps.push(`${d.resource} not ready`);
+  return gaps.length
+    ? { ok: false, text: `Needs ${d.name}: ${gaps.join(' · ')}` }
+    : { ok: true, text: `Needs ${d.name}: ${d.doctorsOnCall} on call · ${d.bedsFree} ${d.bedLabel} · ${d.resource} ready` };
 }
 
 // Can FrontDoor suggest another ER? Only stable walk-ins who haven't arrived (EMTALA).
@@ -91,6 +106,8 @@ function BoardInner({ nurse }: { nurse: string }) {
   const [forecasts] = useTable(tables.forecast);
   const [hospitals] = useTable(tables.hospital);
   const [offers] = useTable(tables.myOffers);
+  const [departments] = useTable(tables.department);
+  const updateDepartment = useReducer(reducers.updateDepartment);
   const ackAlert = useReducer(reducers.ackAlert);
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
@@ -155,7 +172,17 @@ function BoardInner({ nurse }: { nurse: string }) {
     api.suggestRedirect(Number(p.id)).catch(e => alert(String(e)));
   }
   const short = (f?.bedsShort ?? 0) > 0;
-  const bedActions = { beds, offers, hospitals, short, onAssign: assign, onHold: hold, onSuggest: suggest };
+  const bedActions = { beds, offers, hospitals, departments, short, onAssign: assign, onHold: hold, onSuggest: suggest };
+
+  function adjust(d: Department, change: Partial<Pick<Department, 'bedsFree' | 'doctorsOnCall' | 'resourceReady'>>) {
+    const next = { bedsFree: d.bedsFree, doctorsOnCall: d.doctorsOnCall, resourceReady: d.resourceReady, ...change };
+    updateDepartment({
+      id: d.id,
+      bedsFree: Math.max(0, Math.min(d.bedsTotal, next.bedsFree)),
+      doctorsOnCall: Math.max(0, next.doctorsOnCall),
+      resourceReady: next.resourceReady,
+    });
+  }
   const redirected = sorted.filter(p => p.status === 'redirected');
   const rooms = [...beds].filter(b => b.zone !== 'Hallway').sort((a, b) => a.id - b.id);
   const hallway = [...beds].filter(b => b.zone === 'Hallway').sort((a, b) => a.id - b.id);
@@ -214,6 +241,35 @@ function BoardInner({ nurse }: { nurse: string }) {
             ))}
           </div>
 
+          <h2 className="sub">Departments <span className="muted">specialty readiness</span></h2>
+          <div className="depts">
+            {[...departments].sort((a, b) => a.id - b.id).map(d => (
+              <div key={d.id} className={`dept ${d.bedsTotal === 0 ? 'none' : ''}`} title={d.note}>
+                <b>{d.name}</b>
+                {d.bedsTotal === 0 ? (
+                  <span className="muted">{d.note}</span>
+                ) : (
+                  <span className="dept-controls">
+                    <span className={d.doctorsOnCall ? '' : 'bad'}>
+                      <button onClick={() => adjust(d, { doctorsOnCall: d.doctorsOnCall - 1 })}>−</button>
+                      {d.doctorsOnCall} dr
+                      <button onClick={() => adjust(d, { doctorsOnCall: d.doctorsOnCall + 1 })}>+</button>
+                    </span>
+                    <span className={d.bedsFree ? '' : 'bad'}>
+                      <button onClick={() => adjust(d, { bedsFree: d.bedsFree - 1 })}>−</button>
+                      {d.bedsFree}/{d.bedsTotal} {d.bedLabel}
+                      <button onClick={() => adjust(d, { bedsFree: d.bedsFree + 1 })}>+</button>
+                    </span>
+                    <button className={`res ${d.resourceReady ? 'ready' : 'busy'}`}
+                      onClick={() => adjust(d, { resourceReady: !d.resourceReady })}>
+                      {d.resource}: {d.resourceReady ? 'ready' : 'busy'}
+                    </button>
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
           <h2 className="sub">Nearby ERs <span className="muted">simulated capacity</span></h2>
           <div className="network">
             {[...hospitals].sort((a, b) => a.waitMinutes - b.waitMinutes).map(h => (
@@ -253,6 +309,7 @@ type BedActions = {
   beds: readonly Bed[];
   offers: readonly RedirectOffer[];
   hospitals: readonly Hospital[];
+  departments: readonly Department[];
   short: boolean;
   onAssign: (p: Patient) => void;
   onHold: (p: Patient) => void;
@@ -272,7 +329,8 @@ function Column(props: BedActions & {
       {props.children}
       {props.patients.map(p => (
         <Tile key={String(p.id)} p={p} vitals={props.vitals.get(p.id) ?? []}
-          beds={props.beds} offers={props.offers} hospitals={props.hospitals} short={props.short}
+          beds={props.beds} offers={props.offers} hospitals={props.hospitals} departments={props.departments}
+          short={props.short}
           onAssign={props.onAssign} onHold={props.onHold} onSuggest={props.onSuggest}
           held={props.beds.find(b => b.status === 'reserved' && b.patientId === p.id)}
           openAlert={props.alerts.some(a => a.patientId === p.id && a.ackedAt === undefined)} />
@@ -282,7 +340,7 @@ function Column(props: BedActions & {
   );
 }
 
-function Tile({ p, vitals, offers, hospitals, short, onAssign, onHold, onSuggest, held, openAlert }: BedActions & {
+function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHold, onSuggest, held, openAlert }: BedActions & {
   p: Patient; vitals: Vitals[]; held?: Bed; openAlert: boolean;
 }) {
   const v = vitals[vitals.length - 1];
@@ -291,6 +349,7 @@ function Tile({ p, vitals, offers, hospitals, short, onAssign, onHold, onSuggest
   const incoming = p.status === 'incoming';
   const offer = [...offers].reverse().find(o => o.patientId === p.id);
   const offerTo = hospitals.find(h => h.id === offer?.hospitalId)?.name;
+  const ready = readiness(p, departments);
   return (
     <div className={`tile ${p.risk} ${openAlert ? 'pulse' : ''}`}>
       <div className="tile-head">
@@ -302,6 +361,7 @@ function Tile({ p, vitals, offers, hospitals, short, onAssign, onHold, onSuggest
       <div className="complaint">{p.complaint}</div>
       <p className="summary">{p.summary}</p>
       {flags.length > 0 && <div className="flags">{flags.map(f => <span key={f}>{f}</span>)}</div>}
+      {ready && <div className={`ready ${ready.ok ? 'ok' : 'gap'}`}>{ready.ok ? '✓' : '⚠'} {ready.text}</div>}
       {incoming && prep.length > 0 && (
         <div className="prep">
           <b>Prepare before arrival:</b> {prep.join(' · ')}

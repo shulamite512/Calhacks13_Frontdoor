@@ -36,6 +36,20 @@ export const Config = __t.object("Config", {
 });
 export type Config = __Infer<typeof Config>;
 
+export const Department = __t.object("Department", {
+  id: __t.u32(),
+  name: __t.string(),
+  bedLabel: __t.string(),
+  bedsFree: __t.u32(),
+  bedsTotal: __t.u32(),
+  doctorsOnCall: __t.u32(),
+  resource: __t.string(),
+  resourceReady: __t.bool(),
+  note: __t.string(),
+  updatedAt: __t.timestamp(),
+});
+export type Department = __Infer<typeof Department>;
+
 export const FollowUp = __t.object("FollowUp", {
   id: __t.u64(),
   patientId: __t.u64(),
@@ -104,6 +118,7 @@ export const Patient = __t.object("Patient", {
   source: __t.string(),
   prep: __t.string(),
   phoneId: __t.string(),
+  specialty: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
 

@@ -13,6 +13,9 @@ MODEL = "claude-opus-5-5"
 _client = anthropic.AsyncAnthropic()
 
 
+Specialty = Literal["Cardiology", "Neurology", "Surgery", "ICU", "Pediatrics", "Trauma", "Emergency"]
+
+
 class Triage(BaseModel):
     complaint: str = Field(description="Chief complaint in 2-5 words, e.g. 'Chest pain'")
     summary: str = Field(description="One sentence for the triage nurse: symptoms, onset, key negatives")
@@ -21,6 +24,11 @@ class Triage(BaseModel):
     prep: list[str] = Field(
         description="0-3 short things the ED should have ready on arrival, e.g. 'ECG', 'cardiac monitor'; "
         "empty for minor complaints"
+    )
+    specialty: Specialty = Field(
+        description="Department most likely needed beyond the ED: Cardiology (suspected ACS/arrhythmia), "
+        "Neurology (stroke signs), Surgery (acute abdomen, appendicitis), ICU (likely critical care), "
+        "Pediatrics (patient under 18), Trauma (major injury), Emergency (ED care only)"
     )
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
 
@@ -79,6 +87,7 @@ def _fallback_triage(transcript: str) -> Triage:
         acuity=2 if critical or flags else 3,
         red_flags=[f for f, _ in flags],
         prep=[],
+        specialty="Cardiology" if any("chest" in f or "arm" in f for f, _ in flags) else "Emergency",
         spoken_reply="You're checked in and the team has your information. "
         + ("If your symptoms get worse, pull over and call 911." if flags else "See you soon."),
     )

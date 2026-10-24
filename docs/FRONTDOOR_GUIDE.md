@@ -601,3 +601,35 @@ Scripts: [fetch_popular_times.py](../server/scripts/fetch_popular_times.py) (nee
 
 Judge line: "The volume is real state data; Google won't publish hospital busyness, so in production the hourly pattern would come from the hospital's own arrival logs."
 
+---
+
+## 14. Department readiness (does the specialty have a doctor and a bed?)
+
+**Question it answers:** "This patient needs a cardiologist. Do we have one on call, a CCU bed, and is the cath lab free?"
+
+| Part | What it does |
+|---|---|
+| Claude triage ([server/triage.py](../server/triage.py)) | Adds `specialty`: Cardiology (suspected ACS), Neurology (stroke signs), Surgery (acute abdomen), ICU, Pediatrics (under 18), Trauma (major injury) or Emergency (ED only). Stored on the patient. |
+| `department` table (public, no patient data) | Per department: doctors on call, specialty beds free/total, key resource and whether it's ready, note. Seeded on **Reset demo** by [server/departments.py](../server/departments.py). |
+| Board tile | One line per patient: green **"✓ Needs Cardiology: 1 on call · 2 CCU beds · Cath lab ready"** or red **"⚠ Needs Surgery: Operating room not ready"**. |
+| Departments panel (right column) | Staff tap **− / +** for doctors and beds and toggle the resource (ready/busy). `update_department` is **staff-only** (tested: outsider rejected). |
+
+Seeded departments (simulated status):
+
+| Department | Beds | Doctors | Resource | Note |
+|---|---|---|---|---|
+| Cardiology | 2/4 CCU | 1 | Cath lab: ready | Interventional cardiologist on call |
+| Neurology | 1/2 Neuro ICU | 1 | CT scanner: ready | Stroke team; tele-neurology backup |
+| Surgery | 2/6 post-op | 1 | Operating room: **busy** | Shows the red warning in the demo |
+| ICU | 1/12 | 1 | Ventilators: ready | |
+| Pediatrics | 3/8 | 2 | Peds ED bay: ready | |
+| Trauma | not offered | – | – | **Real:** CPMC Van Ness isn't a trauma center; SF's Level I trauma center is Zuckerberg SF General |
+
+Tested: chest pain → Cardiology ✓, abdominal pain → Surgery ⚠ (OR busy), EMS stroke → Neurology ✓, 8-year-old → Pediatrics ✓, motorcycle crash → Trauma (ESI 1, "not offered here").
+
+**Demo idea:** after the chest-pain check-in, tap **Cath lab: ready** to make it busy. The tile turns red ("Cath lab not ready"), showing the charge nurse would know before the patient arrives.
+
+**Judge Q&A**
+- *Where would real department status come from?* The hospital's on-call schedule (e.g. Amion/QGenda), bed management system and OR/cath-lab scheduling. In the demo it's simulated and staff-editable.
+- *What if the specialty isn't available?* The tile says so before arrival. For a stable walk-in, **Suggest another ER** is there; for ESI 1–2 (like the trauma patient) a nurse would call the transfer center. We never auto-redirect critical patients.
+

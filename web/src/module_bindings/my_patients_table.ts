@@ -30,4 +30,5 @@ export default __t.row({
   source: __t.string(),
   prep: __t.string(),
   phoneId: __t.string().name("phone_id"),
+  specialty: __t.string(),
 });

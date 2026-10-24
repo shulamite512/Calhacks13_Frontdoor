@@ -36,6 +36,7 @@ const patient = table(
     source: t.string().default('walk-in'),  // 'walk-in' | 'ems'
     prep: t.string().default(''),           // comma separated things to have ready on arrival
     phoneId: t.string().default(''),        // hex identity of the phone that checked in ('' for demo seeds)
+    specialty: t.string().default(''),      // department the patient likely needs (department.name), '' = ED only
   }
 );
 
@@ -138,6 +139,24 @@ const redirectOffer = table(
   }
 );
 
+// Specialty readiness: does the department this patient needs have a doctor, a bed and its key
+// resource right now? No patient data, so it's public. Seeded by the server, updated by staff.
+const department = table(
+  { name: 'department', public: true },
+  {
+    id: t.u32().primaryKey(),
+    name: t.string(),            // 'Cardiology', 'Neurology', ...
+    bedLabel: t.string(),        // 'CCU beds', 'Neuro ICU beds', ...
+    bedsFree: t.u32(),
+    bedsTotal: t.u32(),          // 0 = service not offered here
+    doctorsOnCall: t.u32(),
+    resource: t.string(),        // 'Cath lab', 'CT scanner', ...
+    resourceReady: t.bool(),
+    note: t.string(),
+    updatedAt: t.timestamp(),
+  }
+);
+
 // Single row (id = 0): who owns the database (the Python server signs in as this identity).
 const config = table(
   { name: 'config' },
@@ -157,7 +176,7 @@ const staff = table(
 );
 
 const spacetimedb = schema({
-  patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer, config, staff,
+  patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer, config, staff, department,
 });
 export default spacetimedb;
 
@@ -323,6 +342,7 @@ export const checkIn = spacetimedb.reducer(
     source: t.string(),
     prep: t.string(),
     phoneId: t.string(),
+    specialty: t.string(),
   },
   (ctx, args) => {
     requireServer(ctx);
@@ -530,6 +550,32 @@ export const respondRedirect = spacetimedb.reducer(
     const p = getPatient(ctx, o.patientId);
     releaseHeld(ctx, p.id);
     ctx.db.patient.id.update({ ...p, status: 'redirected', etaMinutes: 0, updatedAt: ctx.timestamp });
+  }
+);
+
+export const setDepartment = spacetimedb.reducer(
+  {
+    id: t.u32(), name: t.string(), bedLabel: t.string(), bedsFree: t.u32(), bedsTotal: t.u32(),
+    doctorsOnCall: t.u32(), resource: t.string(), resourceReady: t.bool(), note: t.string(),
+  },
+  (ctx, args) => {
+    requireServer(ctx);
+    const row = { ...args, updatedAt: ctx.timestamp };
+    if (ctx.db.department.id.find(args.id)) ctx.db.department.id.update(row);
+    else ctx.db.department.insert(row);
+  }
+);
+
+// Staff update a department's live status from the board (e.g. "cath lab busy", "1 CCU bed left").
+export const updateDepartment = spacetimedb.reducer(
+  { id: t.u32(), bedsFree: t.u32(), doctorsOnCall: t.u32(), resourceReady: t.bool() },
+  (ctx, { id, bedsFree, doctorsOnCall, resourceReady }) => {
+    requireStaff(ctx);
+    const d = ctx.db.department.id.find(id);
+    if (!d) throw new SenderError(`department ${id} not found`);
+    ctx.db.department.id.update({
+      ...d, bedsFree: Math.min(bedsFree, d.bedsTotal), doctorsOnCall, resourceReady, updatedAt: ctx.timestamp,
+    });
   }
 );
 
