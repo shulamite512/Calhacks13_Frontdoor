@@ -1,0 +1,5 @@
+{
+  "source": "placeholder curve, replace with Apify popular-times",
+  "bed_rate": 0.6,
+  "arrivals_per_hour": [4, 3, 3, 2, 2, 2, 3, 5, 7, 9, 10, 11, 11, 11, 10, 10, 10, 11, 11, 10, 9, 8, 6, 5]
+}

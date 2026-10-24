@@ -1,0 +1,39 @@
+"""Bed-demand forecast: will we have enough beds in the next 30 minutes?"""
+import json
+import os
+from datetime import datetime
+from pathlib import Path
+
+CURVE_FILE = Path(__file__).parent / "data" / "arrival_curve.json"
+HORIZON_MIN = 30
+
+
+def _load_curve() -> dict:
+    return json.loads(CURVE_FILE.read_text())
+
+
+def compute(patients: list[dict], beds: list[dict]) -> dict:
+    curve = _load_curve()
+    hour = int(os.getenv("FORECAST_HOUR", datetime.now().hour))
+    per_hour = curve["arrivals_per_hour"][hour]
+    # Not every walk-in needs a bed; bed_rate is the share that does.
+    expected = round(per_hour * HORIZON_MIN / 60 * curve.get("bed_rate", 0.6))
+
+    # ESI 4-5 patients are usually treated in chairs / fast track, so only ESI 1-3 need a bed.
+    needs_bed = [p for p in patients if p["acuity"] <= 3]
+    waiting = sum(1 for p in needs_bed if p["status"] == "waiting")
+    incoming = sum(1 for p in needs_bed if p["status"] == "incoming" and p["eta_minutes"] <= HORIZON_MIN)
+    free = sum(1 for b in beds if b["status"] == "free")
+    cleaning = sum(1 for b in beds if b["status"] == "cleaning")  # back in service within the horizon
+
+    needed = waiting + incoming + expected
+    available = free + cleaning
+    return {
+        "horizonMinutes": HORIZON_MIN,
+        "expectedArrivals": expected,
+        "bedsFree": free,
+        "bedsNeeded": needed,
+        "bedsShort": needed - available,
+        "basis": f"{waiting} waiting + {incoming} incoming (ESI 1-3) + ~{expected} expected walk-ins "
+        f"vs {free} free + {cleaning} cleaning beds ({curve['source']}, {hour}:00)",
+    }
