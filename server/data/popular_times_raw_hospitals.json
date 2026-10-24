@@ -1,0 +1,1596 @@
+[
+ {
+  "title": "Kaiser Permanente San Francisco Medical Center",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "Your health and safety are always our top priority. To help you protect yourself and your loved ones, we\u2019ve gathered the most important information and guidance on the coronavirus and COVID-19. Go to our website. You have many ways to get care without leaving the comfort of your home - including an e-visit, phone, video appointments and email. This allows you to still get great care while helping to address the community spread of COVID-19. To book an in-person appointment, or if you\u2019re concerned about your specific health condition, visit our website for your local information on appointments and 24/7 advice.",
+  "price": null,
+  "categoryName": "Medical Center",
+  "address": "2425 Geary Blvd, San Francisco, CA 94115",
+  "neighborhood": "Anza Vista",
+  "street": "2425 Geary Blvd",
+  "city": "San Francisco",
+  "postalCode": "94115",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://healthy.kaiserpermanente.org/northern-california/facilities/San-Francisco-Medical-Center-100328",
+  "phone": "(415) 833-2000",
+  "phoneUnformatted": "+14158332000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7826471,
+   "lng": -122.4432378
+  },
+  "locatedIn": "Emergency Room | Kaiser Permanente San Francisco Medical Center and Medical Offices",
+  "floor": null,
+  "plusCode": "QHM4+3P Anza Vista, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 4.6,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJ0d8NvLWAhYARyhkR_BPz5Y0",
+  "categories": [
+   "Medical Center",
+   "Hospital"
+  ],
+  "fid": "0x808580b5bc0ddfd1:0x8de5f313fc1119ca",
+  "cid": "10224845796173486538",
+  "reviewsCount": 1341,
+  "reviewsDistribution": {
+   "oneStar": 102,
+   "twoStar": 18,
+   "threeStar": 25,
+   "fourStar": 55,
+   "fiveStar": 1141
+  },
+  "imagesCount": 6,
+  "imageCategories": [
+   "All",
+   "Reception",
+   "Videos",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:41.333Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "additionalOpeningHours": {
+   "Emergency Room | Kaiser Permanente San Francisco Medical Center and Medical Offices": [
+    {
+     "day": "Monday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Tuesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Wednesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Thursday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Friday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Saturday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Sunday",
+     "hours": "Open 24 hours"
+    }
+   ]
+  },
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "Urgent Care | Kaiser Permanente San Francisco Medical Center",
+    "reviewsCount": 28,
+    "totalScore": 3.2
+   },
+   {
+    "category": "People also search for",
+    "title": "Emergency Room | Kaiser Permanente San Francisco Medical Center and Medical Offices",
+    "reviewsCount": 86,
+    "totalScore": 2.5
+   },
+   {
+    "category": "People also search for",
+    "title": "Kaiser Hospital pickup",
+    "reviewsCount": 1,
+    "totalScore": 5
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Medical Center",
+    "reviewsCount": 361,
+    "totalScore": 3.5
+   },
+   {
+    "category": "People also search for",
+    "title": "Kaiser Permanente Medical Center: Hari Anil K MD",
+    "reviewsCount": 5,
+    "totalScore": 3
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "attentive doctor",
+    "count": 92
+   },
+   {
+    "title": "clear explanations",
+    "count": 30
+   },
+   {
+    "title": "professional staff",
+    "count": 197
+   },
+   {
+    "title": "colonoscopy",
+    "count": 14
+   },
+   {
+    "title": "audiologist",
+    "count": 12
+   },
+   {
+    "title": "caring staff",
+    "count": 95
+   },
+   {
+    "title": "acupuncture",
+    "count": 10
+   },
+   {
+    "title": "wait time",
+    "count": 29
+   },
+   {
+    "title": "thorough doctor",
+    "count": 12
+   },
+   {
+    "title": "physical therapy",
+    "count": 10
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    },
+    {
+     "Wheelchair accessible restroom": true
+    }
+   ],
+   "Offerings": [
+    {
+     "Medication disposal": true
+    }
+   ],
+   "Amenities": [
+    {
+     "Restroom": true
+    }
+   ],
+   "Planning": [
+    {
+     "Appointment required": true
+    },
+    {
+     "Appointments recommended": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=Kaiser%20Permanente%20San%20Francisco%20Medical%20Center&query_place_id=ChIJ0d8NvLWAhYARyhkR_BPz5Y0",
+  "searchPageUrl": "https://www.google.com/maps/search/Kaiser%20Permanente%20San%20Francisco%20Medical%20Center,%202425%20Geary%20Blvd?hl=en",
+  "searchString": "Kaiser Permanente San Francisco Medical Center, 2425 Geary Blvd",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLfcQHImf_DAYzJhBBpawJlXqN7eETU8FM8Qe0k-0eNGKG-q1pvX-dbWnaZfu5jtVnsWYIQATTIYECCepAVVD14C_d5SygKo2LuzG76bzK2akJa0AQyrnU295KfPVMVgxMv6FdN0=w411-h308-k-no",
+  "kgmid": "/g/1tdgvmf3",
+  "businessProfileId": "8874544889846412322",
+  "questionsAndAnswers": [],
+  "updatesFromCustomers": {
+   "text": null,
+   "language": null,
+   "postDate": "a month ago",
+   "postedBy": {
+    "name": "The Shilovs",
+    "url": "https://www.google.com/maps/contrib/111450400844156591550?hl=en-US",
+    "title": null,
+    "totalReviews": 3
+   },
+   "media": [
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLc7tcykEIX5yp55mdmowa-R1GrjLJ6Ti9vkEfrNd8jBoDCpLt8L_DmP2jphhRPi-hJKdObx78xGxbC_nDAAnHmr5eL8FEXSZxFHhWmnKqMJWTB4zRp6Hjm25v3pW7M3fpJxY1fGKTnhdULW=k-no",
+     "postDate": "a month ago"
+    }
+   ]
+  },
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [
+   {
+    "text": "Bringing your baby into the world is unforgettable.\u00a0That's\u00a0why\u00a0it's\u00a0important that your hospital is one of the nation's best for maternity and newborn care. This year, 29 Kaiser Permanente hospitals were recognized\u00a0among Newsweek\u2019s America\u2019s Best Maternity Care Hospitals. From your first appointment to\u00a0recovery\u00a0at home, our teams provide guidance, support, and safe, high-quality care.\u00a0\u00a0",
+    "buttonText": "Learn more",
+    "buttonLink": "https://k-p.li/NCALMaternityAccoladeGooglePostPhase2",
+    "date": "2026-06-29T15:00:04.000Z",
+    "imageUrl": "https://gz0.googleusercontent.com/geougc/AF1QipMKF_nNHRWqBx2cQb467trRr_CoabKaFT_k5-Ts=h400-no"
+   },
+   {
+    "text": "Every pregnancy is different\u00a0and finding care that fits your unique needs matters.\u00a0Did you know\u00a0that 29 Kaiser Permanente hospitals were recognized among\u00a0Newsweek\u2019s America\u2019s Best Maternity Care Hospitals for 2026?\u00a0With personalized birth plans, coordinated teams, and\u00a0compassionate\u00a0postpartum support,\u00a0we\u2019re\u00a0here for your unique journey.",
+    "buttonText": "Learn more",
+    "buttonLink": "https://k-p.li/NCALMaternityAccoladeGooglePostPhase1",
+    "date": "2026-06-08T15:00:11.000Z",
+    "imageUrl": "https://gz0.googleusercontent.com/geougc/AF1QipMP6lU5ITxcnyTtCUVfEZvlrHT9QEhR1LruFKVB=h400-no"
+   }
+  ],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "CPMC Van Ness Campus",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "Our CPMC Van Ness Campus in SF is the premier destination for our most advanced specialty care. This 274-bed hospital brings together emergency care and award-winning organ transplant programs, groundbreaking technologies and innovative therapies available at only a few centers across the U.S. Named as one of America\u2019s 250 Best Hospital by Healthgrades, our nationally recognized services set our campus apart. Our teams provide world-class care in liver, kidney, pancreas and heart transplantation, hepatobiliary surgery, advanced interventional endoscopy, head and neck surgery, and metabolic health. As a hub for research and clinical trials, we\u2019re pioneering first-in-the-nation treatments such as integrated therapies for complex liver cancers",
+  "price": null,
+  "categoryName": "Hospital",
+  "address": "1101 Van Ness Ave, San Francisco, CA 94109",
+  "neighborhood": "Cathedral Hill",
+  "street": "1101 Van Ness Ave",
+  "city": "San Francisco",
+  "postalCode": "94109",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.sutterhealth.org/find-location/facility/cpmc-van-ness-campus-1043247265",
+  "phone": "(415) 600-6000",
+  "phoneUnformatted": "+14156006000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.785997,
+   "lng": -122.422302
+  },
+  "locatedIn": null,
+  "floor": null,
+  "plusCode": "QHPH+93 Cathedral Hill, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 3.6,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJkRbB3r2AhYARWgtBJ-WjAyQ",
+  "categories": [
+   "Hospital"
+  ],
+  "fid": "0x808580bddec11691:0x2403a3e527410b5a",
+  "cid": "2595098014896950106",
+  "reviewsCount": 299,
+  "reviewsDistribution": {
+   "oneStar": 86,
+   "twoStar": 10,
+   "threeStar": 5,
+   "fourStar": 20,
+   "fiveStar": 178
+  },
+  "imagesCount": 331,
+  "imageCategories": [
+   "All",
+   "Reception",
+   "Videos",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:42.208Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "CPMC Davies Campus",
+    "reviewsCount": 233,
+    "totalScore": 3.8
+   },
+   {
+    "category": "People also search for",
+    "title": "Sutter Health - CPMC/PAMF Medical Office Building",
+    "reviewsCount": 29,
+    "totalScore": 2.4
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF",
+    "reviewsCount": 1,
+    "totalScore": 5
+   },
+   {
+    "category": "People also search for",
+    "title": "University of California San Francisco Medical Center",
+    "reviewsCount": 4,
+    "totalScore": 3
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Hyde Hospital",
+    "reviewsCount": 809,
+    "totalScore": 4.2
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "emergency room",
+    "count": 47
+   },
+   {
+    "title": "liver transplant",
+    "count": 3
+   },
+   {
+    "title": "wait time",
+    "count": 11
+   },
+   {
+    "title": "endoscopy",
+    "count": 2
+   },
+   {
+    "title": "anesthesiologist",
+    "count": 2
+   },
+   {
+    "title": "surgery",
+    "count": 13
+   },
+   {
+    "title": "wound care",
+    "count": 2
+   },
+   {
+    "title": "clean building",
+    "count": 4
+   },
+   {
+    "title": "caring staff",
+    "count": 11
+   },
+   {
+    "title": "triage nurses",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    },
+    {
+     "Wheelchair accessible restroom": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=CPMC%20Van%20Ness%20Campus&query_place_id=ChIJkRbB3r2AhYARWgtBJ-WjAyQ",
+  "searchPageUrl": "https://www.google.com/maps/search/California%20Pacific%20Medical%20Center%20Van%20Ness%20Campus,%20San%20Francisco?hl=en",
+  "searchString": "California Pacific Medical Center Van Ness Campus, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLdtUquxMWNpWq3iVCOLO_iPeqCm_A6fOOLYovkVDvDDiFseay0SRMtPqazgAEfa2WLoLsjzU0LcoemctA_zvQazquzey0aTGINAy-UdJn864oRDqnXiOZqKztMQkBwMqbKad9FZhg=w411-h231-k-no",
+  "kgmid": "/g/11gcmrsjmw",
+  "businessProfileId": "13110761603813634403",
+  "questionsAndAnswers": [],
+  "updatesFromCustomers": {
+   "text": null,
+   "language": null,
+   "postDate": "2 months ago",
+   "postedBy": {
+    "name": "Marina",
+    "url": "https://www.google.com/maps/contrib/114985247654813520369?hl=en-US",
+    "title": "Local Guide",
+    "totalReviews": 2
+   },
+   "media": [
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLc__1knn1jGudJi8Z-Yd2FP8NrgkTHi5n4RqXBFBsIj6FVAw1yoMRwvF-2Nk--pFo5AdAo0ZLpX5Frat7gS6VNqSaxJGWW9BL-BeCDhOfVyhpJH9dTnQhXx0YOLrNqkbCOZtDTyHWQLjVwm=k-no",
+     "postDate": "2 months ago"
+    },
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLfTtHMUBQto_DtICotvgf896V8M0MHNMT7FKuoETt4xfa07Q8GkX68C8l9FRJuPAcooektfwCIntjTJgbJbhemLNydEiTgDCMan6huemVS1BFcfIj2zZHFg8Szsk4cN0JvXs3DEbyssXDk=k-no",
+     "postDate": "2 months ago"
+    }
+   ]
+  },
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "UCSF Helen Diller Medical Center at Parnassus Heights",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "UCSF Health is internationally renowned for providing patients with specialized and innovative medical care. We support our community's health with hospitals and clinics in San Francisco as well as a regional network of clinics and outpatient centers. Consistently ranked among the nation's best hospitals, UCSF is particularly recognized for excellence in neurology and neurosurgery; cancer care; heart care; diabetes; ear, nose and throat care; and psychiatry and psychology, among other services. We are part of the University of California, San Francisco, one of the nation\u2019s top universities for health sciences research and higher education.",
+  "price": null,
+  "categoryName": "Hospital",
+  "address": "400 Parnassus Ave, San Francisco, CA 94143",
+  "neighborhood": "Sunset District",
+  "street": "400 Parnassus Ave",
+  "city": "San Francisco",
+  "postalCode": "94143",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.ucsfhealth.org/locations/parnassus",
+  "phone": "(415) 476-1000",
+  "phoneUnformatted": "+14154761000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7642229,
+   "lng": -122.4573276
+  },
+  "locatedIn": "University of California San Francisco Parnassus Campus",
+  "floor": "Floor 1",
+  "plusCode": "QG7V+M3 Sunset District, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 4.2,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJYTTv-PiHhYARTHm7Y7ebCPQ",
+  "categories": [
+   "Hospital"
+  ],
+  "fid": "0x808587f8f8ef3461:0xf4089bb763bb794c",
+  "cid": "17584475957022652748",
+  "reviewsCount": 15,
+  "reviewsDistribution": {
+   "oneStar": 2,
+   "twoStar": 0,
+   "threeStar": 1,
+   "fourStar": 2,
+   "fiveStar": 10
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "Reception",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:46.425Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [],
+  "wasOpenAtScrapeTime": null,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "UCSF Helen Diller Family Comprehensive Cancer Center",
+    "reviewsCount": 10,
+    "totalScore": 4.9
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Parnassus Medical Office Building 2",
+    "reviewsCount": 1,
+    "totalScore": 5
+   },
+   {
+    "category": "People also search for",
+    "title": "Elvisle",
+    "reviewsCount": 0,
+    "totalScore": 0
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Medical Center at Mission Bay",
+    "reviewsCount": 276,
+    "totalScore": 4.3
+   },
+   {
+    "category": "People also search for",
+    "title": "Ucsf Medical Center Rad",
+    "reviewsCount": 0,
+    "totalScore": 0
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "hospital",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    },
+    {
+     "Wheelchair accessible restroom": true
+    }
+   ],
+   "Crowd": [
+    {
+     "LGBTQ+ friendly": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    },
+    {
+     "Paid street parking": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=UCSF%20Helen%20Diller%20Medical%20Center%20at%20Parnassus%20Heights&query_place_id=ChIJYTTv-PiHhYARTHm7Y7ebCPQ",
+  "searchPageUrl": "https://www.google.com/maps/search/UCSF%20Helen%20Diller%20Medical%20Center%20at%20Parnassus%20Heights?hl=en",
+  "searchString": "UCSF Helen Diller Medical Center at Parnassus Heights",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLcOVhuaGaoYLY-DV4DClZE8IB6mFV01_Y-hchO8CI5lK7fs1yMWoPqAX7GDePi5QQiqcymQwQxPVYopZLh7DVfO5XdGGrDh4fZ8rCMb_5UocH0x5Ra6yWJDrg7j0vr4w9RKaNVvgB6Qcwqt=w411-h308-k-no",
+  "kgmid": "/g/11fkw97xtv",
+  "businessProfileId": "15742646256940560560",
+  "questionsAndAnswers": [],
+  "updatesFromCustomers": {
+   "text": null,
+   "language": null,
+   "postDate": "3 years ago",
+   "postedBy": {
+    "name": "josue gutierrez",
+    "url": "https://www.google.com/maps/contrib/116236829542831074625?hl=en-US",
+    "title": "Local Guide",
+    "totalReviews": 24
+   },
+   "media": [
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLc-H4rL3s2BJVjvXiQnL8H0I50cyqLMzDkDvWQhZJDF2mUCWamV4-z68oELFl1C-nPTsQ6qbODciFVZWYiYh8g3jugfrlanCz4SImaB-Fg0i07RrLi_J9GxDLI3VRvJL2e1us6bGw=k-no",
+     "postDate": "3 years ago"
+    },
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLcIxinYFBYWR19O-Ij-ICnbgPzePL_w5AQrJV0kKFQjUrjVfL-UY33y4dLoYK3Od_a3oqCreFx8Vb0DqIZILA07uBi5iQ1vc59Y1M2vrP2RtTBUTflcg4u0h-BLGGA0iLV9yqQd=k-no",
+     "postDate": "3 years ago"
+    }
+   ]
+  },
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "Zuckerberg San Francisco General Hospital and Trauma Center",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": null,
+  "price": null,
+  "categoryName": "General hospital",
+  "address": "1001 Potrero Ave, San Francisco, CA 94110",
+  "neighborhood": "Potrero Hill",
+  "street": "1001 Potrero Ave",
+  "city": "San Francisco",
+  "postalCode": "94110",
+  "state": "California",
+  "countryCode": "US",
+  "website": "http://zuckerbergsanfranciscogeneral.org/",
+  "phone": "(628) 206-8000",
+  "phoneUnformatted": "+16282068000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7553498,
+   "lng": -122.4054036
+  },
+  "locatedIn": "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room",
+  "floor": null,
+  "plusCode": "QH4V+4R Potrero Hill, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 3.4,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJG9bTskt-j4ARBhzzHMYn48c",
+  "categories": [
+   "General hospital"
+  ],
+  "fid": "0x808f7e4bb2d3d61b:0xc7e327c61cf31c06",
+  "cid": "14403399765103680518",
+  "reviewsCount": 702,
+  "reviewsDistribution": {
+   "oneStar": 214,
+   "twoStar": 30,
+   "threeStar": 48,
+   "fourStar": 65,
+   "fiveStar": 345
+  },
+  "imagesCount": 1405,
+  "imageCategories": [
+   "All",
+   "Latest",
+   "Videos",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:46.666Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "additionalOpeningHours": {
+   "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room": [
+    {
+     "day": "Monday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Tuesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Wednesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Thursday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Friday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Saturday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Sunday",
+     "hours": "Open 24 hours"
+    }
+   ]
+  },
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "UCSF Medical Center",
+    "reviewsCount": 361,
+    "totalScore": 3.5
+   },
+   {
+    "category": "People also search for",
+    "title": "ZSFG - Adult Urgent Care Center",
+    "reviewsCount": 51,
+    "totalScore": 3.3
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Hyde Hospital",
+    "reviewsCount": 809,
+    "totalScore": 4.2
+   },
+   {
+    "category": "People also search for",
+    "title": "San Francisco General Hospital Gastroenterology",
+    "reviewsCount": 6,
+    "totalScore": 4.8
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF at San Francisco General Hospital",
+    "reviewsCount": 5,
+    "totalScore": 3.6
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "urgent care",
+    "count": 56
+   },
+   {
+    "title": "wait time",
+    "count": 23
+   },
+   {
+    "title": "cat scan",
+    "count": 2
+   },
+   {
+    "title": "trauma care",
+    "count": 4
+   },
+   {
+    "title": "kind staff",
+    "count": 16
+   },
+   {
+    "title": "covid vaccine",
+    "count": 2
+   },
+   {
+    "title": "physical therapy",
+    "count": 2
+   },
+   {
+    "title": "pain management",
+    "count": 3
+   },
+   {
+    "title": "dedicated staff",
+    "count": 4
+   },
+   {
+    "title": "efficient doctors",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    },
+    {
+     "Wheelchair accessible restroom": true
+    }
+   ],
+   "Amenities": [
+    {
+     "Restroom": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    },
+    {
+     "Offers free or low-cost care based on individual circumstances": true
+    }
+   ],
+   "Parking": [
+    {
+     "Free street parking": true
+    },
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    },
+    {
+     "Paid street parking": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=Zuckerberg%20San%20Francisco%20General%20Hospital%20and%20Trauma%20Center&query_place_id=ChIJG9bTskt-j4ARBhzzHMYn48c",
+  "searchPageUrl": "https://www.google.com/maps/search/Zuckerberg%20San%20Francisco%20General%20Hospital%20and%20Trauma%20Center?hl=en",
+  "searchString": "Zuckerberg San Francisco General Hospital and Trauma Center",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLeV3LM_dlegJGwhD4jCa4YicSh2QLX2TmBsyYyOSbVZIQgUKhHrPdCNf8Ru8jl3_CL_BWuov1GfW8kKHJwluFR-xmeWey8tP_xguq18BASVWPfunSS1QzCs-qadlYdzFLj1W8NV=w411-h308-k-no",
+  "kgmid": "/m/026q5zz",
+  "businessProfileId": "9629783825602629089",
+  "questionsAndAnswers": [],
+  "updatesFromCustomers": {
+   "text": null,
+   "language": null,
+   "postDate": "a month ago",
+   "postedBy": {
+    "name": "David Elkin",
+    "url": "https://www.google.com/maps/contrib/100815763144395275219?hl=en-US",
+    "title": "Local Guide",
+    "totalReviews": 92
+   },
+   "media": [
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLdJyZuYmgl9oJqKIiK-ygbVQyD4qCXjmE-i_5UFRXosK1HF2CmEnxnfzTp2fjj5oUbt-oqT4XbcIcb7Hq_B856VQ1ko3o_NsTj9Dvn2VZ16WPitA5lIlGTFS6S0NBSF6n6h915Lehehi4wz=k-no",
+     "postDate": "a month ago"
+    }
+   ]
+  },
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "UCSF Health Hyde Hospital",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "UCSF Health Hyde Hospital offers many services, including cancer care, orthopedic and sports medicine care, heart care, neurologic care, acute physical rehab services, gender-affirming care and more. It also has the largest burn care center in Northern California. Located on Nob Hill in downtown San Francisco, Hyde Hospital has a long, proud history of providing convenient, specialized care to the community.",
+  "price": null,
+  "categoryName": "Medical Center",
+  "address": "900 Hyde St, San Francisco, CA 94109",
+  "neighborhood": "Lower Nob Hill",
+  "street": "900 Hyde St",
+  "city": "San Francisco",
+  "postalCode": "94109",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.ucsfhealth.org/locations/hyde-hospital",
+  "phone": "(415) 353-6000",
+  "phoneUnformatted": "+14153536000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7900511,
+   "lng": -122.4167513
+  },
+  "locatedIn": "UCSF Health Hyde Hospital Emergency Care",
+  "floor": "Floor 1",
+  "plusCode": "QHRM+27 Lower Nob Hill, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 4.2,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJGTLadJOAhYARng57neGhjk0",
+  "categories": [
+   "Medical Center",
+   "Emergency room",
+   "Hospital"
+  ],
+  "fid": "0x8085809374da3219:0x4d8ea1e19d7b0e9e",
+  "cid": "5588582177995165342",
+  "reviewsCount": 809,
+  "reviewsDistribution": {
+   "oneStar": 118,
+   "twoStar": 22,
+   "threeStar": 22,
+   "fourStar": 70,
+   "fiveStar": 577
+  },
+  "imagesCount": 1,
+  "imageCategories": [
+   "All",
+   "Latest",
+   "Videos",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:51.650Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "additionalOpeningHours": {
+   "UCSF Health Hyde Hospital Emergency Care": [
+    {
+     "day": "Monday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Tuesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Wednesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Thursday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Friday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Saturday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Sunday",
+     "hours": "Open 24 hours"
+    }
+   ]
+  },
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "UCSF Medical Center",
+    "reviewsCount": 361,
+    "totalScore": 3.5
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Medical Center at Mission Bay",
+    "reviewsCount": 276,
+    "totalScore": 4.3
+   },
+   {
+    "category": "People also search for",
+    "title": "Zuckerberg San Francisco General Hospital and Trauma Center",
+    "reviewsCount": 714,
+    "totalScore": 3.4
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Hyde Hospital Center for Pain Management",
+    "reviewsCount": 0,
+    "totalScore": 0
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "kind staff",
+    "count": 51
+   },
+   {
+    "title": "surgery",
+    "count": 33
+   },
+   {
+    "title": "sports medicine",
+    "count": 8
+   },
+   {
+    "title": "wait time",
+    "count": 18
+   },
+   {
+    "title": "emergency room",
+    "count": 10
+   },
+   {
+    "title": "billing practices",
+    "count": 8
+   },
+   {
+    "title": "podiatrist",
+    "count": 2
+   },
+   {
+    "title": "itemized bill",
+    "count": 5
+   },
+   {
+    "title": "outpatient registration",
+    "count": 2
+   },
+   {
+    "title": "pain management",
+    "count": 6
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    },
+    {
+     "Wheelchair accessible restroom": true
+    }
+   ],
+   "Amenities": [
+    {
+     "Restroom": true
+    }
+   ],
+   "Planning": [
+    {
+     "Appointment required": true
+    },
+    {
+     "Appointments recommended": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Free parking lot": true
+    },
+    {
+     "Paid parking lot": true
+    },
+    {
+     "Paid street parking": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=UCSF%20Health%20Hyde%20Hospital&query_place_id=ChIJGTLadJOAhYARng57neGhjk0",
+  "searchPageUrl": "https://www.google.com/maps/search/UCSF%20Health%20Saint%20Francis%20Hospital,%20San%20Francisco?hl=en",
+  "searchString": "UCSF Health Saint Francis Hospital, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLcS6HTdFcuy3CbItbIqSgfJ6gW6QpSVjkOHJalBT2YbGt6m6FyQQHnJlY80MggUvTXjwIW2IPtPvx4F4AilKhO6KzYogEr_AiBWLhfhMGGgshwCaRc_hYdjWp5dhB77f-JeabYh=w411-h231-k-no",
+  "kgmid": "/m/02rp3xp",
+  "businessProfileId": "2183896032300601704",
+  "questionsAndAnswers": [],
+  "updatesFromCustomers": {
+   "text": null,
+   "language": null,
+   "postDate": "4 months ago",
+   "postedBy": {
+    "name": "Jigneshlala",
+    "url": "https://www.google.com/maps/contrib/106153607534469222569?hl=en-US",
+    "title": null,
+    "totalReviews": 0
+   },
+   "media": [
+    {
+     "link": "https://gz0.googleusercontent.com/grass-cs/AABkmLfAoQVpA6eLppFURDu8zHGDog5ggXk11BPVhmryyZ36iCGtPTXm3vixq-hIGPx2Nl9C4eOu2YVfYgPHX-lwPFNCkAofG7VafvNj0p8-DS469Bxh9_nKVnvMBxXi8TKsK6c8MwkVZUgxKNQx=k-no",
+     "postDate": "4 months ago"
+    }
+   ]
+  },
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "CPMC Mission Bernal Campus & Orthopedic Institute",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "This location is a modern, 120-bed hospital built to serve the Mission and surrounding communities. With a 24/7 emergency department, dedicated Acute Care for the Elderly (ACE) unit, comprehensive women\u2019s services and our award-winning Orthopedic Institute, the campus offers advanced care in a sustainable, community-centered setting. The main hospital entrance is at 555 San Jose Ave. The 3555 Cesar Chavez entrance is closed. CPMC Mission Bernal is one of the few hospitals in California accredited as a Level II Geriatric Emergency Department, recognized for excellence in senior-focused emergency care. Our specialized ACE unit further supports older adults during hospital stays, with an emphasis on safety, independence and overall well-being",
+  "price": null,
+  "categoryName": "Hospital",
+  "address": "3555 Cesar Chavez St, San Francisco, CA 94110",
+  "neighborhood": "Bernal Heights",
+  "street": "3555 Cesar Chavez St",
+  "city": "San Francisco",
+  "postalCode": "94110",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.sutterhealth.org/find-location/facility/cpmc-mission-bernal-campus-orthopedic-institute-1043246991",
+  "phone": "(415) 600-6000",
+  "phoneUnformatted": "+14156006000",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7471003,
+   "lng": -122.4208842
+  },
+  "locatedIn": "CPMC Emergency, Mission Bernal Campus",
+  "floor": "Floor 1",
+  "plusCode": "PHWH+RJ Bernal Heights, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 3.3,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJF44O2EN-j4ARxRa0y_8juwY",
+  "categories": [
+   "Hospital"
+  ],
+  "fid": "0x808f7e43d80e8e17:0x6bb23ffcbb416c5",
+  "cid": "485020966413670085",
+  "reviewsCount": 97,
+  "reviewsDistribution": {
+   "oneStar": 32,
+   "twoStar": 8,
+   "threeStar": 0,
+   "fourStar": 12,
+   "fiveStar": 45
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "Reception",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:29:52.488Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "additionalOpeningHours": {
+   "CPMC Emergency, Mission Bernal Campus": [
+    {
+     "day": "Monday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Tuesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Wednesday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Thursday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Friday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Saturday",
+     "hours": "Open 24 hours"
+    },
+    {
+     "day": "Sunday",
+     "hours": "Open 24 hours"
+    }
+   ]
+  },
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "CPMC Van Ness Campus",
+    "reviewsCount": 299,
+    "totalScore": 3.6
+   },
+   {
+    "category": "People also search for",
+    "title": "St. Luke's Hospital",
+    "reviewsCount": 53,
+    "totalScore": 3.2
+   },
+   {
+    "category": "People also search for",
+    "title": "Orthopedic Trauma Clinic: California Pacific Medical Center: St Luke's Campus",
+    "reviewsCount": 0,
+    "totalScore": 0
+   },
+   {
+    "category": "People also search for",
+    "title": "Sutter Health Cpmc",
+    "reviewsCount": 0,
+    "totalScore": 0
+   },
+   {
+    "category": "People also search for",
+    "title": "Sutter Health - CPMC/PAMF Medical Office Building",
+    "reviewsCount": 29,
+    "totalScore": 2.4
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "surgery",
+    "count": 15
+   },
+   {
+    "title": "room cleanliness",
+    "count": 4
+   },
+   {
+    "title": "nice room",
+    "count": 7
+   },
+   {
+    "title": "er doctor",
+    "count": 3
+   },
+   {
+    "title": "wait time",
+    "count": 4
+   },
+   {
+    "title": "clean room",
+    "count": 3
+   },
+   {
+    "title": "hospital size",
+    "count": 2
+   },
+   {
+    "title": "caring staff",
+    "count": 5
+   },
+   {
+    "title": "emergency care",
+    "count": 2
+   },
+   {
+    "title": "post op",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Free street parking": true
+    },
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    },
+    {
+     "Paid street parking": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=CPMC%20Mission%20Bernal%20Campus%20%26%20Orthopedic%20Institute&query_place_id=ChIJF44O2EN-j4ARxRa0y_8juwY",
+  "searchPageUrl": "https://www.google.com/maps/search/CPMC%20Mission%20Bernal%20Campus,%20San%20Francisco?hl=en",
+  "searchString": "CPMC Mission Bernal Campus, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLcODH-1liKrrSc_wLIxAvXUpHs6sf1oTEXixa4NQ1Fa7ghS3Ayt-5HOwOL8fUFeXSQKTutgAyfRP1hZR5Q6DuFHu9-NR4kAZgeD2FknxVWhzLaL2luGsK0MdOM6rKPWpgeynZ9v8INDdYYh=w411-h273-k-no",
+  "kgmid": "/g/11vj600jh",
+  "businessProfileId": "9577398240854194976",
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ }
+]

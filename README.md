@@ -48,7 +48,7 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
 | LLM triage + follow-up | `server/triage.py` |
 | Red-flag rules | `server/red_flags.py` |
 | Vitals simulator | `server/simulator.py` |
-| Bed forecast | `server/forecast.py`, `server/data/arrival_curve.json` (replace with Apify data) |
+| Bed forecast | `server/forecast.py`, `server/data/arrival_curve.json` (built by `server/scripts/build_arrival_curve.py` from HCAI volume) |
 | Phone page | `web/src/CheckIn.tsx` |
 | Nurse board | `web/src/Board.tsx`, `web/src/index.css` |
 

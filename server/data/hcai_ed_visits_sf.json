@@ -1,0 +1,97 @@
+{
+ "source": "HCAI Hospital Emergency Department - Encounters by Facility (data.chhs.ca.gov), file encounters-by-facility_2012-2025_20260902.csv",
+ "facilities": {
+  "KAISER FOUNDATION HOSPITAL - SAN FRANCISCO": {
+   "2024": {
+    "ED_Visit": 32510,
+    "ED_Admit": 5399
+   },
+   "2025": {
+    "ED_Visit": 33458,
+    "ED_Admit": 4692
+   }
+  },
+  "CALIFORNIA PACIFIC MEDICAL CENTER - DAVIES CAMPUS HOSPITAL": {
+   "2024": {
+    "ED_Visit": 11206,
+    "ED_Admit": 1973
+   },
+   "2025": {
+    "ED_Visit": 11303,
+    "ED_Admit": 1895
+   }
+  },
+  "PRISCILLA CHAN & MARK ZUCKERBERG SAN FRANCISCO GENERAL HOSPITAL & TRAUMA CENTER": {
+   "2024": {
+    "ED_Visit": 46818,
+    "ED_Admit": 11985
+   },
+   "2025": {
+    "ED_Visit": 50799,
+    "ED_Admit": 11256
+   }
+  },
+  "UCSF HEALTH SAINT FRANCIS HOSPITAL": {
+   "2024": {
+    "ED_Visit": 20663,
+    "ED_Admit": 2688
+   }
+  },
+  "UCSF HEALTH - ST. MARY'S HOSPITAL": {
+   "2024": {
+    "ED_Visit": 12301,
+    "ED_Admit": 3220
+   },
+   "2025": {
+    "ED_Visit": 12836,
+    "ED_Admit": 3651
+   }
+  },
+  "UCSF MEDICAL CENTER": {
+   "2024": {
+    "ED_Visit": 41404,
+    "ED_Admit": 12664
+   },
+   "2025": {
+    "ED_Visit": 39855,
+    "ED_Admit": 12313
+   }
+  },
+  "CHINESE HOSPITAL": {
+   "2024": {
+    "ED_Visit": 6302,
+    "ED_Admit": 995
+   },
+   "2025": {
+    "ED_Visit": 6110,
+    "ED_Admit": 924
+   }
+  },
+  "CALIFORNIA PACIFIC MEDICAL CENTER - VAN NESS CAMPUS": {
+   "2024": {
+    "ED_Visit": 32577,
+    "ED_Admit": 6694
+   },
+   "2025": {
+    "ED_Visit": 34742,
+    "ED_Admit": 6674
+   }
+  },
+  "CALIFORNIA PACIFIC MEDICAL CENTER - MISSION BERNAL CAMPUS": {
+   "2024": {
+    "ED_Visit": 19828,
+    "ED_Admit": 3363
+   },
+   "2025": {
+    "ED_Visit": 19979,
+    "ED_Admit": 3405
+   }
+  },
+  "UCSF HEALTH HYDE HOSPITAL": {
+   "2025": {
+    "ED_Visit": 18769,
+    "ED_Admit": 2605
+   }
+  }
+ }
+}

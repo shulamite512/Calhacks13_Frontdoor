@@ -1,0 +1,1071 @@
+[
+ {
+  "title": "CPMC Emergency, Van Ness Campus",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "Our emergency teams provide nationally recognized critical care in your neighborhood. Located in San Francisco, we\u2019re available 24/7 to treat all types of medical emergencies. Our CPMC Emergency, Van Ness Campus staff is specially trained in advanced life support and critical care. In addition to 24-hour emergency care for kids and adults, our campus also offers exceptional specialty care. We have a dedicated pediatric ER has child-sized equipment and is staffed with doctors who are board-certified in both pediatrics and emergency medicine. Please call 911 or go to the nearest ER if you\u2019re experiencing a medical emergency.",
+  "price": null,
+  "categoryName": "Emergency room",
+  "address": "1260 Franklin St, San Francisco, CA 94109",
+  "neighborhood": "Cathedral Hill",
+  "street": "1260 Franklin St",
+  "city": "San Francisco",
+  "postalCode": "94109",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.sutterhealth.org/find-location/facility/cpmc-emergency-van-ness-campus-1043247589",
+  "phone": "(415) 600-3333",
+  "phoneUnformatted": "+14156003333",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7861649,
+   "lng": -122.4228463
+  },
+  "locatedIn": null,
+  "floor": null,
+  "plusCode": "QHPG+FV Cathedral Hill, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 4.1,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJtYyvVjGBhYARAngoXIYNgMw",
+  "categories": [
+   "Emergency room",
+   "Emergency care service"
+  ],
+  "fid": "0x8085813156af8cb5:0xcc800d865c287802",
+  "cid": "14735792851479197698",
+  "reviewsCount": 142,
+  "reviewsDistribution": {
+   "oneStar": 25,
+   "twoStar": 4,
+   "threeStar": 3,
+   "fourStar": 8,
+   "fiveStar": 102
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:27:08.711Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "CPMC Van Ness Campus",
+    "reviewsCount": 299,
+    "totalScore": 3.6
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Hyde Hospital Emergency Care",
+    "reviewsCount": 56,
+    "totalScore": 3.6
+   },
+   {
+    "category": "People also search for",
+    "title": "Sutter Health - CPMC/PAMF Medical Office Building",
+    "reviewsCount": 29,
+    "totalScore": 2.4
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Emergency Department",
+    "reviewsCount": 179,
+    "totalScore": 2.4
+   },
+   {
+    "category": "People also search for",
+    "title": "CPMC Van Ness Ambulance Bay",
+    "reviewsCount": 0,
+    "totalScore": 0
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "quick triage",
+    "count": 5
+   },
+   {
+    "title": "orthopedic surgeon referral",
+    "count": 2
+   },
+   {
+    "title": "blood transfusion",
+    "count": 2
+   },
+   {
+    "title": "cardiovascular symptoms",
+    "count": 2
+   },
+   {
+    "title": "wait time",
+    "count": 17
+   },
+   {
+    "title": "efficient team",
+    "count": 2
+   },
+   {
+    "title": "outstanding doctor",
+    "count": 3
+   },
+   {
+    "title": "friendly staff",
+    "count": 20
+   },
+   {
+    "title": "clear explanations",
+    "count": 2
+   },
+   {
+    "title": "x-rays",
+    "count": 9
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=CPMC%20Emergency%2C%20Van%20Ness%20Campus&query_place_id=ChIJtYyvVjGBhYARAngoXIYNgMw",
+  "searchPageUrl": "https://www.google.com/maps/search/CPMC%20Van%20Ness%20Campus%20Emergency%20Department,%201101%20Van%20Ness%20Ave,%20San%20Francisco?hl=en",
+  "searchString": "CPMC Van Ness Campus Emergency Department, 1101 Van Ness Ave, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLe52dicq-xJJyYdJ8sg97-p8UK-Fkulb--yA_2FS-jN3L1azns7Tz4hcDdAH2ot-xLA9C-SLkoV8W07HaHrw3L519sGOgXfHzVfiSTOKVZH9NrV1MTF8kE9Y6_6xtO5wzSX-vB11g=w411-h308-k-no",
+  "kgmid": "/g/11h15lchft",
+  "businessProfileId": "6652907058825497312",
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "Emergency Room | Kaiser Permanente San Francisco Medical Center and Medical Offices",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "Your health and safety are always our top priority. To help you protect yourself and your loved ones, we\u2019ve gathered the most important information and guidance on the coronavirus and COVID-19. Go to our website. You have many ways to get care without leaving the comfort of your home - including an e-visit, phone, video appointments and email. This allows you to still get great care while helping to address the community spread of COVID-19. To book an in-person appointment, or if you\u2019re concerned about your specific health condition, visit our website for your local information on appointments and 24/7 advice.",
+  "price": null,
+  "categoryName": "Emergency room",
+  "address": "2425 Geary Blvd 2nd Floor, San Francisco, CA 94115",
+  "neighborhood": "Anza Vista",
+  "street": "2425 Geary Blvd 2nd Floor",
+  "city": "San Francisco",
+  "postalCode": "94115",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://thrive.kaiserpermanente.org/care-near-you/northern-california/sanfrancisco/departments/emergency/",
+  "phone": "(415) 833-3304",
+  "phoneUnformatted": "+14158333304",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7822023,
+   "lng": -122.442629
+  },
+  "locatedIn": "Kaiser Permanente San Francisco Medical Center",
+  "floor": null,
+  "plusCode": "QHJ4+VW Anza Vista, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 2.5,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJuUBot7WAhYAR7cRSgn-nvCA",
+  "categories": [
+   "Emergency room"
+  ],
+  "fid": "0x808580b5b76840b9:0x20bca77f8252c4ed",
+  "cid": "2358944470924444909",
+  "reviewsCount": 85,
+  "reviewsDistribution": {
+   "oneStar": 45,
+   "twoStar": 5,
+   "threeStar": 5,
+   "fourStar": 4,
+   "fiveStar": 26
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:27:09.585Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "Urgent Care | Kaiser Permanente San Francisco Medical Center",
+    "reviewsCount": 28,
+    "totalScore": 3.2
+   },
+   {
+    "category": "People also search for",
+    "title": "Kaiser Permanente San Francisco Medical Center",
+    "reviewsCount": 1343,
+    "totalScore": 4.6
+   },
+   {
+    "category": "People also search for",
+    "title": "Kaiser Geary Ambulance Bay",
+    "reviewsCount": 3,
+    "totalScore": 2.3
+   },
+   {
+    "category": "People also search for",
+    "title": "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room",
+    "reviewsCount": 62,
+    "totalScore": 3
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Emergency Department",
+    "reviewsCount": 179,
+    "totalScore": 2.4
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "wait time",
+    "count": 22
+   },
+   {
+    "title": "triage nurse",
+    "count": 2
+   },
+   {
+    "title": "security guards",
+    "count": 4
+   },
+   {
+    "title": "kind staff",
+    "count": 7
+   },
+   {
+    "title": "quick admission",
+    "count": 2
+   },
+   {
+    "title": "waiting room",
+    "count": 8
+   },
+   {
+    "title": "insurance processing",
+    "count": 2
+   },
+   {
+    "title": "nursing staff",
+    "count": 26
+   },
+   {
+    "title": "listening",
+    "count": 2
+   },
+   {
+    "title": "patient care",
+    "count": 4
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=Emergency%20Room%20%7C%20Kaiser%20Permanente%20San%20Francisco%20Medical%20Center%20and%20Medical%20Offices&query_place_id=ChIJuUBot7WAhYAR7cRSgn-nvCA",
+  "searchPageUrl": "https://www.google.com/maps/search/Kaiser%20Permanente%20San%20Francisco%20Medical%20Center%20Emergency,%202425%20Geary%20Blvd,%20San%20Francisco?hl=en",
+  "searchString": "Kaiser Permanente San Francisco Medical Center Emergency, 2425 Geary Blvd, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLeujUh-qPS21uDWAPPXZeBHWr-eI4-Idj-9qjgnwzYCWdT_WKebSjJfUHMrofmjS5ksUj8IAE2HX3-kyWFhQ37NHsrjogF8FszPHzP258co_inSMNpArTObrmG7-L-qnXWBSuQ=w411-h404-k-no",
+  "kgmid": "/g/11b7rxgvr4",
+  "businessProfileId": "8918482664455951903",
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "UCSF Emergency Department",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "UCSF Health is internationally renowned for providing patients with specialized and innovative medical care. We support our community's health with hospitals and clinics in San Francisco as well as a regional network of clinics and outpatient centers. Consistently ranked among the nation's best hospitals, UCSF is particularly recognized for excellence in neurology and neurosurgery; cancer care; heart care; diabetes; ear, nose and throat care; and psychiatry and psychology, among other services. We are part of the University of California, San Francisco, one of the nation\u2019s top universities for health sciences research and higher education.",
+  "price": null,
+  "categoryName": "Emergency room",
+  "address": "505 Parnassus Ave, San Francisco, CA 94143",
+  "neighborhood": "Parnassus Heights",
+  "street": "505 Parnassus Ave",
+  "city": "San Francisco",
+  "postalCode": "94143",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://www.ucsfhealth.org/clinics/emergency-department",
+  "phone": "(415) 353-1037",
+  "phoneUnformatted": "+14153531037",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.7633654,
+   "lng": -122.4574224
+  },
+  "locatedIn": "UCSF Medical Center",
+  "floor": "Floor 1",
+  "plusCode": "QG7V+82 Parnassus Heights, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 2.4,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJLSWrfVeHhYARviljK8lCsxE",
+  "categories": [
+   "Emergency room"
+  ],
+  "fid": "0x808587577dab252d:0x11b342c92b6329be",
+  "cid": "1275436551259761086",
+  "reviewsCount": 177,
+  "reviewsDistribution": {
+   "oneStar": 104,
+   "twoStar": 8,
+   "threeStar": 5,
+   "fourStar": 12,
+   "fiveStar": 48
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "By owner"
+  ],
+  "scrapedAt": "2026-10-24T23:27:13.433Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Stanyan Hospital Emergency Care",
+    "reviewsCount": 16,
+    "totalScore": 3.2
+   },
+   {
+    "category": "People also search for",
+    "title": "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room",
+    "reviewsCount": 62,
+    "totalScore": 3
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Children's Emergency Department",
+    "reviewsCount": 41,
+    "totalScore": 3.5
+   },
+   {
+    "category": "People also search for",
+    "title": "CPMC Emergency, Van Ness Campus",
+    "reviewsCount": 144,
+    "totalScore": 4.1
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Parnassus Ambulance Bay",
+    "reviewsCount": 1,
+    "totalScore": 5
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "wait time",
+    "count": 34
+   },
+   {
+    "title": "ultrasound",
+    "count": 2
+   },
+   {
+    "title": "triage nurse",
+    "count": 2
+   },
+   {
+    "title": "blood work",
+    "count": 2
+   },
+   {
+    "title": "nurse practitioner",
+    "count": 3
+   },
+   {
+    "title": "kind staff",
+    "count": 8
+   },
+   {
+    "title": "genuine care",
+    "count": 2
+   },
+   {
+    "title": "staff knowledge",
+    "count": 2
+   },
+   {
+    "title": "security",
+    "count": 3
+   },
+   {
+    "title": "cleanliness",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Service options": [
+    {
+     "Onsite services": true
+    }
+   ],
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Crowd": [
+    {
+     "LGBTQ+ friendly": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=UCSF%20Emergency%20Department&query_place_id=ChIJLSWrfVeHhYARviljK8lCsxE",
+  "searchPageUrl": "https://www.google.com/maps/search/UCSF%20Medical%20Center%20Parnassus%20Emergency%20Department,%20505%20Parnassus%20Ave,%20San%20Francisco?hl=en",
+  "searchString": "UCSF Medical Center Parnassus Emergency Department, 505 Parnassus Ave, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLf2HWh3aW4iYiWEiCfUmUQJkH-jmSN9LFB92AsXA25dctBAKSuQpgLCmRuh9HVajVcLjobCJiL8MTfiSTQdhxLljGaJ43d5Tlypd6arC40s93nY_-cPmYoyNBv0FRsOyv-zDJLLjw=w411-h231-k-no",
+  "kgmid": "/g/1tkrm0hh",
+  "businessProfileId": "4601702569355650410",
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": null,
+  "price": null,
+  "categoryName": "Emergency room",
+  "address": "1001 Potrero Ave, San Francisco, CA 94110",
+  "neighborhood": "Potrero Hill",
+  "street": "1001 Potrero Ave",
+  "city": "San Francisco",
+  "postalCode": "94110",
+  "state": "California",
+  "countryCode": "US",
+  "website": "http://zuckerbergsanfranciscogeneral.org/",
+  "phone": "(628) 206-8000",
+  "phoneUnformatted": "+16282068000",
+  "claimThisBusiness": true,
+  "location": {
+   "lat": 37.75559,
+   "lng": -122.4054942
+  },
+  "locatedIn": "Zuckerberg San Francisco General Hospital and Trauma Center",
+  "floor": null,
+  "plusCode": "QH4V+6R Potrero Hill, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 3,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJXQmeRkp-j4ARW620O2uqQos",
+  "categories": [
+   "Emergency room"
+  ],
+  "fid": "0x808f7e4a469e095d:0x8b42aa6b3bb4ad5b",
+  "cid": "10034770297274805595",
+  "reviewsCount": 62,
+  "reviewsDistribution": {
+   "oneStar": 22,
+   "twoStar": 4,
+   "threeStar": 8,
+   "fourStar": 6,
+   "fiveStar": 22
+  },
+  "imagesCount": 4,
+  "imageCategories": [
+   "All",
+   "By owner",
+   "Videos"
+  ],
+  "scrapedAt": "2026-10-24T23:27:15.593Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "ZSFG - Adult Urgent Care Center",
+    "reviewsCount": 51,
+    "totalScore": 3.3
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Emergency Department",
+    "reviewsCount": 179,
+    "totalScore": 2.4
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Hyde Hospital Emergency Care",
+    "reviewsCount": 56,
+    "totalScore": 3.6
+   },
+   {
+    "category": "People also search for",
+    "title": "San Francisco General Hospital Gastroenterology",
+    "reviewsCount": 6,
+    "totalScore": 4.8
+   },
+   {
+    "category": "People also search for",
+    "title": "SFGH Building 1",
+    "reviewsCount": 12,
+    "totalScore": 3.8
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "antibiotics prescription",
+    "count": 2
+   },
+   {
+    "title": "kind doctors",
+    "count": 2
+   },
+   {
+    "title": "wait times",
+    "count": 2
+   },
+   {
+    "title": "polite staff",
+    "count": 2
+   },
+   {
+    "title": "efficient",
+    "count": 2
+   },
+   {
+    "title": "rate",
+    "count": 2
+   },
+   {
+    "title": "infection",
+    "count": 2
+   },
+   {
+    "title": "chairs",
+    "count": 2
+   },
+   {
+    "title": "doctor",
+    "count": 2
+   },
+   {
+    "title": "staff",
+    "count": 8
+   }
+  ],
+  "additionalInfo": {
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ],
+   "Parking": [
+    {
+     "Free street parking": true
+    },
+    {
+     "Paid parking garage": true
+    },
+    {
+     "Paid parking lot": true
+    },
+    {
+     "Paid street parking": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=Zuckerberg%20San%20Francisco%20General%20Hospital%20and%20Trauma%20Center%20Emergency%20Room&query_place_id=ChIJXQmeRkp-j4ARW620O2uqQos",
+  "searchPageUrl": "https://www.google.com/maps/search/Zuckerberg%20San%20Francisco%20General%20Hospital%20Emergency,%201001%20Potrero%20Ave,%20San%20Francisco?hl=en",
+  "searchString": "Zuckerberg San Francisco General Hospital Emergency, 1001 Potrero Ave, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLdg0p5UvVuvd-757YckmygwXlKlgYFZvfAzk3nj3p0IirdZ_m8UYp-qHROoMz9WrtO7RuWjIicL_4CsREO0Ea7e5V3YPlU946xNaOb8VFH1kPsBsbZ6nbmWvwkpMuhmj4ygcbej=w411-h308-k-no",
+  "kgmid": "/g/11c0vdgns8",
+  "businessProfileId": null,
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ },
+ {
+  "title": "UCSF Health Stanyan Hospital Emergency Care",
+  "subTitle": null,
+  "description": null,
+  "ownerDescription": "UCSF Health Stanyan Hospital offers many services, including cancer care, heart care, orthopedic care, surgical services, physical rehab and therapy services, adolescent psychiatric services and more. Working to heal and support the people of the San Francisco Bay Area since 1857, Stanyan Hospital is dedicated to delivering high-quality, compassionate care to the community.",
+  "price": null,
+  "categoryName": "Emergency room",
+  "address": "450 Stanyan St, San Francisco, CA 94117",
+  "neighborhood": "Lone Mountain",
+  "street": "450 Stanyan St",
+  "city": "San Francisco",
+  "postalCode": "94117",
+  "state": "California",
+  "countryCode": "US",
+  "website": "https://sfcommunityhospitals.ucsfhealth.org/st-marys/services/er-and-urgent-care",
+  "phone": "(415) 750-5700",
+  "phoneUnformatted": "+14157505700",
+  "claimThisBusiness": false,
+  "location": {
+   "lat": 37.774288,
+   "lng": -122.4544049
+  },
+  "locatedIn": "UCSF Health Stanyan Hospital",
+  "floor": "Floor 1",
+  "plusCode": "QGFW+P6 Lone Mountain, San Francisco, CA",
+  "menu": null,
+  "servicesLink": null,
+  "totalScore": 3.2,
+  "permanentlyClosed": false,
+  "temporarilyClosed": false,
+  "placeId": "ChIJoy8h7U6HhYARMf24E1dFZDw",
+  "categories": [
+   "Emergency room"
+  ],
+  "fid": "0x8085874eed212fa3:0x3c64455713b8fd31",
+  "cid": "4351679380242103601",
+  "reviewsCount": 16,
+  "reviewsDistribution": {
+   "oneStar": 6,
+   "twoStar": 1,
+   "threeStar": 1,
+   "fourStar": 0,
+   "fiveStar": 8
+  },
+  "imagesCount": 0,
+  "imageCategories": [
+   "All",
+   "By owner",
+   "Street View & 360\u00b0"
+  ],
+  "scrapedAt": "2026-10-24T23:28:27.173Z",
+  "reserveTableUrl": null,
+  "googleFoodUrl": null,
+  "hotelStars": null,
+  "hotelDescription": null,
+  "checkInDate": null,
+  "checkOutDate": null,
+  "hotelAds": [],
+  "popularTimesLiveText": null,
+  "popularTimesLivePercent": null,
+  "popularTimesHistogram": {},
+  "openingHours": [
+   {
+    "day": "Monday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Tuesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Wednesday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Thursday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Friday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Saturday",
+    "hours": "Open 24 hours"
+   },
+   {
+    "day": "Sunday",
+    "hours": "Open 24 hours"
+   }
+  ],
+  "wasOpenAtScrapeTime": true,
+  "peopleAlsoSearch": [
+   {
+    "category": "People also search for",
+    "title": "UCSF Emergency Department",
+    "reviewsCount": 179,
+    "totalScore": 2.4
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Health Stanyan Hospital Cardiac Care",
+    "reviewsCount": 0,
+    "totalScore": 0
+   },
+   {
+    "category": "People also search for",
+    "title": "Zuckerberg San Francisco General Hospital and Trauma Center Emergency Room",
+    "reviewsCount": 62,
+    "totalScore": 3
+   },
+   {
+    "category": "People also search for",
+    "title": "CPMC Emergency, Van Ness Campus",
+    "reviewsCount": 144,
+    "totalScore": 4.1
+   },
+   {
+    "category": "People also search for",
+    "title": "UCSF Children's Emergency Department",
+    "reviewsCount": 41,
+    "totalScore": 3.5
+   }
+  ],
+  "placesTags": [],
+  "reviewsTags": [
+   {
+    "title": "pain",
+    "count": 3
+   },
+   {
+    "title": "staff",
+    "count": 2
+   },
+   {
+    "title": "doctor",
+    "count": 2
+   },
+   {
+    "title": "nurses",
+    "count": 2
+   },
+   {
+    "title": "patient care",
+    "count": 2
+   }
+  ],
+  "additionalInfo": {
+   "Accessibility": [
+    {
+     "Wheelchair accessible entrance": true
+    },
+    {
+     "Wheelchair accessible parking lot": true
+    }
+   ],
+   "Payments": [
+    {
+     "Credit cards": true
+    },
+    {
+     "Debit cards": true
+    },
+    {
+     "NFC mobile payments": true
+    }
+   ]
+  },
+  "gasPrices": [],
+  "url": "https://www.google.com/maps/search/?api=1&query=UCSF%20Health%20Stanyan%20Hospital%20Emergency%20Care&query_place_id=ChIJoy8h7U6HhYARMf24E1dFZDw",
+  "searchPageUrl": "https://www.google.com/maps/search/Saint%20Mary's%20Medical%20Center%20Emergency,%20450%20Stanyan%20St,%20San%20Francisco?hl=en",
+  "searchString": "Saint Mary's Medical Center Emergency, 450 Stanyan St, San Francisco",
+  "language": "en",
+  "rank": 1,
+  "isAdvertisement": false,
+  "imageUrl": "https://gz0.googleusercontent.com/grass-cs/AABkmLfDftLk8mZFyjtMTU19XxE46WTjbFY4W1GgPY0QJnRHxyxj-6Q7NMz8WpsYuxh4pqZXC8Hqp44ok0YWvvjzGlZoT9BFY-k5qDWYeSaRrqWY0lqVb6g1uOJaXTBSyT-HwMJXt7bUadPTq5o=w411-h548-k-no",
+  "kgmid": "/g/11c0vbsmkj",
+  "businessProfileId": "4362871701648810836",
+  "questionsAndAnswers": [],
+  "webResults": [],
+  "tableReservationLinks": [],
+  "tableReservationProviders": [],
+  "bookingLinks": [],
+  "restaurantData": {
+   "tableReservationProvider": null
+  },
+  "ownerUpdates": [],
+  "imageUrls": [],
+  "reviews": [],
+  "leadsEnrichment": []
+ }
+]

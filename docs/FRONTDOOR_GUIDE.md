@@ -300,7 +300,7 @@ available  = free + cleaning
 bedsShort  = needed − available
 ```
 
-- The arrival curve lives in [server/data/arrival_curve.json](../server/data/arrival_curve.json). **It's a placeholder** until we have the Apify popular-times data.
+- The arrival curve lives in [server/data/arrival_curve.json](../server/data/arrival_curve.json), built by [server/scripts/build_arrival_curve.py](../server/scripts/build_arrival_curve.py): **real daily volume** (CPMC Van Ness, 34,742 ED visits in 2025 ≈ 95/day, California HCAI) spread over an **assumed typical-ED hourly shape** (quiet 3–6 am, busy late morning to evening). See section 13 for why the shape isn't scraped.
 - `FORECAST_HOUR=18` pins the hour for demos.
 
 **[routing.py](../server/routing.py)**
@@ -411,7 +411,7 @@ The board shows them in a **Nearby ERs (simulated capacity)** panel and as grey 
 - **Never** offered to ESI 1–2, critical-risk, or EMS patients. Ambulance diversion is a hospital-level decision, not something our app does.
 - **EMTALA:** a US federal law that requires any ER to screen and stabilize anyone who comes to it. So we only *suggest* an alternative **before arrival**, the patient decides, and nobody at the door is turned away.
 
-**Data honesty:** other hospitals' capacity is **simulated**; there's no public real-time bed feed. Apify Google Maps "popular times" for those hospitals could make the simulated busyness follow real patterns. In production, the data would come from hospital partnerships or health-information exchanges.
+**Data honesty:** other hospitals' beds and waits are **simulated**; there's no public real-time bed feed. Their ER-entrance locations come from the Apify Google Maps scrape and their annual ED volumes from HCAI (real). In production, live capacity would come from hospital partnerships or health-information exchanges.
 
 ---
 
@@ -469,7 +469,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 ### Next
 1. **Overflow + diversion** (section 7): done.
 2. **Auth and permissions**: done (section 12).
-3. **Apify data:** Google Maps popular times for San Francisco EDs → `arrival_curve.json` and the busyness of the diversion network.
+3. **Forecast data:** done with real HCAI volume (section 13). A real hourly shape would need the hospital's own arrival logs or EHR feed.
 4. **Figma:** Person 3 restyles to match the designs (Figma MCP if connected, or screenshots).
 5. **Stretch:** a FrontDoor MCP server ("which patients are deteriorating?").
 6. **Scale story only:** Kafka + Flink for multi-hospital, high-volume vitals streams. Not built.
@@ -506,10 +506,10 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 
 ### Data and forecast honesty
 18. **Where does "5 beds short" come from?** Waiting + incoming patients who need beds (ESI 1–3) + expected walk-ins from an hourly arrival curve, minus free and cleaning beds. The formula is shown under the number.
-19. **Is the arrival curve real?** Currently a placeholder typical-ED curve, and the board says so. We're replacing it with Apify-scraped Google Maps popular times for SF EDs.
+19. **Is the arrival curve real?** The volume is: CPMC Van Ness logged 34,742 ED visits in 2025 (California HCAI), about 95 a day. The hour-by-hour shape is a typical-ED assumption: we scraped Google popular times with Apify for 60+ ER and hospital listings in SF and five other US cities, and Google hides them for hospitals. The board shows the source on the forecast.
 20. **What's real vs simulated?**
     - **Real:** voice STT/TTS, LLM triage, red-flag rules, live database sync, real-road routing/ETA, GPS sharing.
-    - **Simulated:** vitals, bed occupancy, other hospitals' capacity, the arrival curve (for now), the EMS patient.
+    - **Simulated:** vitals, bed occupancy, other hospitals' beds/waits, the hourly shape of arrivals, the EMS patient. **Real:** CPMC's daily ED volume (HCAI), hospital locations, drive times (OSRM), voice, AI triage.
 
 ### Business and adoption
 21. **Who pays?** Hospitals: it reduces left-without-being-seen rates, waiting-room adverse events and boarding chaos. Priced per ED per month.
@@ -530,7 +530,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 ## 11. Known limitations (be honest)
 
 - **Auth is hackathon-grade:** one shared staff PIN (not per-nurse accounts or hospital SSO). The phone-facing server endpoints (`/followup`, `/location`, `/demo/drive`, `/demo/arrive`) take a patient id without proving the caller is that patient's phone.
-- **Simulated data:** vitals, starting bed occupancy, the arrival curve, the EMS feed, and other hospitals' capacity (diversion).
+- **Simulated data:** vitals, starting bed occupancy, the hourly arrival shape (daily volume is real HCAI data), the EMS feed, and other hospitals' beds and waits (diversion).
 - **Mic on real phones needs HTTPS** (tunnel). The demo runs best on the laptop.
 - **Real GPS from San Jose** gives an hour-long ETA to San Francisco, so use **Simulate drive** in the demo.
 - **The Python server's in-memory state** (simulator alert levels, drives) is lost on restart. Reset the demo after restarting.
@@ -580,3 +580,24 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 
 ### Pitch line
 "Every action is tied to a SpacetimeDB identity: the server is the database owner, nurses get a staff role, and patients can only see themselves. In production we'd swap the PIN for hospital SSO and add HIPAA-grade audit logging."
+
+---
+
+## 13. Forecast data: what we scraped and what we used
+
+| Step | What happened |
+|---|---|
+| Apify, SF ER listings | Google Maps scraper (`compass/crawler-google-places`, place details on) for CPMC Van Ness ER + 4 nearby ERs. All 5 found, **no popular times** for any. |
+| Apify, SF main hospital listings | 6 main hospital listings. **No popular times.** |
+| Apify, US cities | "emergency room" in San Jose, Houston, Phoenix, Chicago, Atlanta, Dallas (48 places). **1 hit**: a downtown Atlanta 24/7 urgent care, busiest around midnight (nightlife area). Not ER-like, so not used. |
+| California HCAI | Downloaded "Hospital Emergency Department – Encounters by Facility" (2012–2025). **CPMC Van Ness: 34,742 ED visits in 2025 (~95/day)**, 6,674 admitted. Saved in [server/data/hcai_ed_visits_sf.json](../server/data/hcai_ed_visits_sf.json). |
+| Result | `arrival_curve.json` = real HCAI daily volume × typical-ED hourly shape. With the demo patients, the board shows **"3 beds short in 30 min"**. |
+
+Side benefits of the scrape: the exact **ER entrance** for CPMC (1260 Franklin St, used on the map) and the other EDs, and the discovery that Saint Mary's is now **UCSF Health St. Mary's**.
+
+SF ED volumes, 2025 (HCAI): Zuckerberg SF General 50,799 · UCSF Medical Center 39,855 · CPMC Van Ness 34,742 · Kaiser SF 33,458 · CPMC Mission Bernal 19,979 · UCSF Health Hyde 18,769 · UCSF Health St. Mary's 12,836 · CPMC Davies 11,303 · Chinese Hospital 6,110.
+
+Scripts: [fetch_popular_times.py](../server/scripts/fetch_popular_times.py) (needs `APIFY_TOKEN`), [build_arrival_curve.py](../server/scripts/build_arrival_curve.py) (set `USE_APIFY_SHAPE = True` to try the scraped shape).
+
+Judge line: "The volume is real state data; Google won't publish hospital busyness, so in production the hourly pattern would come from the hospital's own arrival logs."
+

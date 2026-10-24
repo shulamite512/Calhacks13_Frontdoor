@@ -6,6 +6,7 @@ from pathlib import Path
 
 CURVE_FILE = Path(__file__).parent / "data" / "arrival_curve.json"
 HORIZON_MIN = 30
+DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
 
 def _load_curve() -> dict:
@@ -14,8 +15,11 @@ def _load_curve() -> dict:
 
 def compute(patients: list[dict], beds: list[dict]) -> dict:
     curve = _load_curve()
-    hour = int(os.getenv("FORECAST_HOUR", datetime.now().hour))
-    per_hour = curve["arrivals_per_hour"][hour]
+    now = datetime.now()
+    hour = int(os.getenv("FORECAST_HOUR", now.hour))
+    day = DAYS[now.weekday()]
+    # Prefer the real per-weekday curve (Apify popular times); fall back to the daily average.
+    per_hour = curve.get("by_weekday", {}).get(day, curve["arrivals_per_hour"])[hour]
     # Not every walk-in needs a bed; bed_rate is the share that does.
     expected = round(per_hour * HORIZON_MIN / 60 * curve.get("bed_rate", 0.6))
 
@@ -42,5 +46,5 @@ def compute(patients: list[dict], beds: list[dict]) -> dict:
         "basis": f"{waiting} waiting + {incoming} incoming (ESI 1-3) + ~{expected} expected walk-ins "
         f"vs {free} free + {cleaning} cleaning beds"
         + (f", {hallway} in hallway beds" if hallway else "")
-        + f" ({curve['source']}, {hour}:00)",
+        + f" ({curve['source']}, {day} {hour}:00)",
     }

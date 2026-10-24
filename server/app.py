@@ -29,7 +29,7 @@ import voice  # noqa: E402
 logging.basicConfig(level=logging.INFO)
 
 # The ER this demo runs for, and where demo patients start (Palace of Fine Arts, SF).
-HOSPITAL = {"name": "CPMC Van Ness Campus ED", "lat": 37.78598, "lng": -122.42235}
+HOSPITAL = {"name": "CPMC Van Ness Campus ED", "lat": 37.78616, "lng": -122.42285}  # ER entrance, 1260 Franklin St
 DEMO_START = (37.80292, -122.44840)
 
 # Background patients created by /demo/reset so the board isn't empty.
