@@ -1,4 +1,12 @@
-import { schema, table, t, SenderError, type InferSchema, type ReducerCtx } from 'spacetimedb/server';
+import { schema, table, t, SenderError, type InferSchema, type ReducerCtx, type ViewCtx } from 'spacetimedb/server';
+
+// ---------- Access model ----------
+// - The Python server signs in as the database OWNER (recorded in `config` at publish). Only it
+//   can write patient data, vitals, alerts, the forecast and the hospital network.
+// - Nurses become STAFF by entering a PIN; the server checks it and calls grantStaff. Only staff
+//   can acknowledge alerts and assign / hold / free beds, and only staff can read all patients.
+// - A patient's phone sees only its own rows (matched by `phoneId`) through the my_* views.
+// Patient tables are private; clients read them through the views below.
 
 // ---------- Tables ----------
 
@@ -6,7 +14,7 @@ import { schema, table, t, SenderError, type InferSchema, type ReducerCtx } from
 //         | 'redirected' (accepted a suggestion to go to another ER)
 // risk:   'normal' | 'watch' | 'critical'
 const patient = table(
-  { name: 'patient', public: true },
+  { name: 'patient' },
   {
     id: t.u64().primaryKey().autoInc(),
     name: t.string(),
@@ -27,11 +35,12 @@ const patient = table(
     // Appended later; defaults keep existing rows valid.
     source: t.string().default('walk-in'),  // 'walk-in' | 'ems'
     prep: t.string().default(''),           // comma separated things to have ready on arrival
+    phoneId: t.string().default(''),        // hex identity of the phone that checked in ('' for demo seeds)
   }
 );
 
 const vitals = table(
-  { name: 'vitals', public: true },
+  { name: 'vitals' },
   {
     id: t.u64().primaryKey().autoInc(),
     patientId: t.u64().index('btree'),
@@ -47,7 +56,7 @@ const vitals = table(
 
 // level: 'warning' | 'critical'
 const alert = table(
-  { name: 'alert', public: true },
+  { name: 'alert' },
   {
     id: t.u64().primaryKey().autoInc(),
     patientId: t.u64().index('btree'),
@@ -61,7 +70,7 @@ const alert = table(
 
 // Waiting-room voice check-ins ("How are you feeling now?")
 const followUp = table(
-  { name: 'follow_up', public: true },
+  { name: 'follow_up' },
   {
     id: t.u64().primaryKey().autoInc(),
     patientId: t.u64().index('btree'),
@@ -117,7 +126,7 @@ const hospital = table(
 // A suggestion to an incoming walk-in to go to another ER instead.
 // status: 'pending' | 'accepted' | 'declined'
 const redirectOffer = table(
-  { name: 'redirect_offer', public: true },
+  { name: 'redirect_offer' },
   {
     id: t.u64().primaryKey().autoInc(),
     patientId: t.u64().index('btree'),
@@ -129,10 +138,31 @@ const redirectOffer = table(
   }
 );
 
-const spacetimedb = schema({ patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer });
+// Single row (id = 0): who owns the database (the Python server signs in as this identity).
+const config = table(
+  { name: 'config' },
+  {
+    id: t.u32().primaryKey(),
+    owner: t.identity(),
+  }
+);
+
+const staff = table(
+  { name: 'staff' },
+  {
+    identity: t.identity().primaryKey(),
+    name: t.string(),
+    grantedAt: t.timestamp(),
+  }
+);
+
+const spacetimedb = schema({
+  patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer, config, staff,
+});
 export default spacetimedb;
 
 type Ctx = ReducerCtx<InferSchema<typeof spacetimedb>>;
+type VCtx = ViewCtx<InferSchema<typeof spacetimedb>>;
 
 // ---------- Helpers ----------
 
@@ -169,6 +199,28 @@ function releaseHeld(ctx: Ctx, patientId: bigint) {
   }
 }
 
+function requireServer(ctx: Ctx) {
+  const c = ctx.db.config.id.find(0);
+  if (!c || !c.owner.equals(ctx.sender)) throw new SenderError('only the FrontDoor server can do this');
+}
+
+function requireStaff(ctx: Ctx) {
+  const s = ctx.db.staff.identity.find(ctx.sender);
+  if (!s) throw new SenderError('staff login required');
+  return s;
+}
+
+function isStaffView(ctx: VCtx) {
+  return !!ctx.db.staff.identity.find(ctx.sender);
+}
+
+// Patient ids this viewer may see: all for staff, otherwise only those checked in from this phone.
+function visiblePatientIds(ctx: VCtx): Set<bigint> | 'all' {
+  if (isStaffView(ctx)) return 'all';
+  const me = ctx.sender.toHexString();
+  return new Set([...ctx.db.patient.iter()].filter(p => p.phoneId === me).map(p => p.id));
+}
+
 function getPatient(ctx: Ctx, id: bigint) {
   const p = ctx.db.patient.id.find(id);
   if (!p) throw new SenderError(`patient ${id} not found`);
@@ -186,7 +238,72 @@ function raiseRisk(ctx: Ctx, id: bigint, risk: string) {
 // ---------- Lifecycle ----------
 
 export const init = spacetimedb.init(ctx => {
+  ctx.db.config.insert({ id: 0, owner: ctx.sender });
   seedBeds(ctx);
+});
+
+// ---------- Views (what each client may read) ----------
+
+export const myPatients = spacetimedb.view(
+  { name: 'my_patients', public: true },
+  t.array(patient.rowType),
+  ctx => {
+    const ids = visiblePatientIds(ctx);
+    return [...ctx.db.patient.iter()].filter(p => ids === 'all' || ids.has(p.id));
+  }
+);
+
+export const myVitals = spacetimedb.view(
+  { name: 'my_vitals', public: true },
+  t.array(vitals.rowType),
+  ctx => {
+    const ids = visiblePatientIds(ctx);
+    return [...ctx.db.vitals.iter()].filter(v => ids === 'all' || ids.has(v.patientId));
+  }
+);
+
+export const myAlerts = spacetimedb.view(
+  { name: 'my_alerts', public: true },
+  t.array(alert.rowType),
+  ctx => {
+    const ids = visiblePatientIds(ctx);
+    return [...ctx.db.alert.iter()].filter(a => ids === 'all' || ids.has(a.patientId));
+  }
+);
+
+export const myOffers = spacetimedb.view(
+  { name: 'my_offers', public: true },
+  t.array(redirectOffer.rowType),
+  ctx => {
+    const ids = visiblePatientIds(ctx);
+    return [...ctx.db.redirectOffer.iter()].filter(o => ids === 'all' || ids.has(o.patientId));
+  }
+);
+
+// The caller's own staff record (empty if not logged in as staff).
+export const myStaff = spacetimedb.view(
+  { name: 'my_staff', public: true },
+  t.array(staff.rowType),
+  ctx => {
+    const s = ctx.db.staff.identity.find(ctx.sender);
+    return s ? [s] : [];
+  }
+);
+
+// ---------- Staff ----------
+
+export const grantStaff = spacetimedb.reducer(
+  { identity: t.identity(), name: t.string() },
+  (ctx, { identity, name }) => {
+    requireServer(ctx);
+    const row = { identity, name, grantedAt: ctx.timestamp };
+    if (ctx.db.staff.identity.find(identity)) ctx.db.staff.identity.update(row);
+    else ctx.db.staff.insert(row);
+  }
+);
+
+export const staffLogout = spacetimedb.reducer(ctx => {
+  if (ctx.db.staff.identity.find(ctx.sender)) ctx.db.staff.identity.delete(ctx.sender);
 });
 
 // ---------- Reducers ----------
@@ -205,8 +322,10 @@ export const checkIn = spacetimedb.reducer(
     lng: t.f64(),
     source: t.string(),
     prep: t.string(),
+    phoneId: t.string(),
   },
   (ctx, args) => {
+    requireServer(ctx);
     const risk = args.acuity <= 2 ? 'watch' : 'normal';
     ctx.db.patient.insert({
       id: 0n,
@@ -223,6 +342,7 @@ export const checkIn = spacetimedb.reducer(
 export const updateLocation = spacetimedb.reducer(
   { patientId: t.u64(), lat: t.f64(), lng: t.f64(), etaMinutes: t.u32() },
   (ctx, { patientId, lat, lng, etaMinutes }) => {
+    requireServer(ctx);
     const p = getPatient(ctx, patientId);
     if (p.status !== 'incoming') return;
     ctx.db.patient.id.update({ ...p, lat, lng, etaMinutes, updatedAt: ctx.timestamp });
@@ -233,6 +353,7 @@ export const updateLocation = spacetimedb.reducer(
 export const holdBed = spacetimedb.reducer(
   { bedId: t.u32(), patientId: t.u64() },
   (ctx, { bedId, patientId }) => {
+    requireStaff(ctx);
     const b = ctx.db.bed.id.find(bedId);
     if (!b) throw new SenderError(`bed ${bedId} not found`);
     if (b.status !== 'free') throw new SenderError(`bed ${b.label} is ${b.status}`);
@@ -243,6 +364,7 @@ export const holdBed = spacetimedb.reducer(
 );
 
 export const markArrived = spacetimedb.reducer({ patientId: t.u64() }, (ctx, { patientId }) => {
+  requireServer(ctx);
   const p = getPatient(ctx, patientId);
   if (p.status === 'incoming') {
     ctx.db.patient.id.update({ ...p, status: 'waiting', etaMinutes: 0, updatedAt: ctx.timestamp });
@@ -260,6 +382,7 @@ export const addVitals = spacetimedb.reducer(
     tempC: t.f64(),
   },
   (ctx, args) => {
+    requireServer(ctx);
     getPatient(ctx, args.patientId);
     ctx.db.vitals.insert({ id: 0n, ...args, recordedAt: ctx.timestamp });
     // Keep only the most recent readings per patient so the table stays small.
@@ -274,6 +397,7 @@ export const addVitals = spacetimedb.reducer(
 export const addFollowUp = spacetimedb.reducer(
   { patientId: t.u64(), question: t.string(), answer: t.string(), flagged: t.bool() },
   (ctx, args) => {
+    requireServer(ctx);
     getPatient(ctx, args.patientId);
     ctx.db.followUp.insert({ id: 0n, ...args, createdAt: ctx.timestamp });
   }
@@ -282,6 +406,7 @@ export const addFollowUp = spacetimedb.reducer(
 export const raiseAlert = spacetimedb.reducer(
   { patientId: t.u64(), level: t.string(), reason: t.string() },
   (ctx, { patientId, level, reason }) => {
+    requireServer(ctx);
     getPatient(ctx, patientId);
     // Don't stack duplicates: skip if an open alert of the same level already exists.
     const open = [...ctx.db.alert.patientId.filter(patientId)].find(
@@ -301,19 +426,19 @@ export const raiseAlert = spacetimedb.reducer(
   }
 );
 
-export const ackAlert = spacetimedb.reducer(
-  { alertId: t.u64(), nurse: t.string() },
-  (ctx, { alertId, nurse }) => {
-    const a = ctx.db.alert.id.find(alertId);
-    if (!a) throw new SenderError(`alert ${alertId} not found`);
-    if (a.ackedAt !== undefined) return;
-    ctx.db.alert.id.update({ ...a, ackedBy: nurse, ackedAt: ctx.timestamp });
-  }
-);
+// The responder's name comes from their staff record, so "who's on it" can't be faked.
+export const ackAlert = spacetimedb.reducer({ alertId: t.u64() }, (ctx, { alertId }) => {
+  const nurse = requireStaff(ctx);
+  const a = ctx.db.alert.id.find(alertId);
+  if (!a) throw new SenderError(`alert ${alertId} not found`);
+  if (a.ackedAt !== undefined) return;
+  ctx.db.alert.id.update({ ...a, ackedBy: nurse.name, ackedAt: ctx.timestamp });
+});
 
 export const assignBed = spacetimedb.reducer(
   { bedId: t.u32(), patientId: t.u64() },
   (ctx, { bedId, patientId }) => {
+    requireStaff(ctx);
     const b = ctx.db.bed.id.find(bedId);
     if (!b) throw new SenderError(`bed ${bedId} not found`);
     const heldForThem = b.status === 'reserved' && b.patientId === patientId;
@@ -332,6 +457,7 @@ export const assignBed = spacetimedb.reducer(
 
 // Frees a bed. Reserved -> free (hold released), occupied -> cleaning (patient discharged), cleaning -> free.
 export const freeBed = spacetimedb.reducer({ bedId: t.u32() }, (ctx, { bedId }) => {
+  requireStaff(ctx);
   const b = ctx.db.bed.id.find(bedId);
   if (!b) throw new SenderError(`bed ${bedId} not found`);
   if (b.status === 'reserved') {
@@ -355,6 +481,7 @@ export const setForecast = spacetimedb.reducer(
     basis: t.string(),
   },
   (ctx, args) => {
+    requireServer(ctx);
     const row = { id: 0, ...args, updatedAt: ctx.timestamp };
     if (ctx.db.forecast.id.find(0)) ctx.db.forecast.id.update(row);
     else ctx.db.forecast.insert(row);
@@ -364,6 +491,7 @@ export const setForecast = spacetimedb.reducer(
 export const setHospital = spacetimedb.reducer(
   { id: t.u32(), name: t.string(), lat: t.f64(), lng: t.f64(), bedsFree: t.u32(), waitMinutes: t.u32() },
   (ctx, args) => {
+    requireServer(ctx);
     const row = { ...args, updatedAt: ctx.timestamp };
     if (ctx.db.hospital.id.find(args.id)) ctx.db.hospital.id.update(row);
     else ctx.db.hospital.insert(row);
@@ -375,6 +503,7 @@ export const setHospital = spacetimedb.reducer(
 export const offerRedirect = spacetimedb.reducer(
   { patientId: t.u64(), hospitalId: t.u32(), driveMinutes: t.u32(), waitMinutes: t.u32() },
   (ctx, { patientId, hospitalId, driveMinutes, waitMinutes }) => {
+    requireServer(ctx);
     const p = getPatient(ctx, patientId);
     if (p.status !== 'incoming') throw new SenderError('only patients still on the way can be redirected');
     if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by FrontDoor');
@@ -393,6 +522,8 @@ export const respondRedirect = spacetimedb.reducer(
   (ctx, { offerId, accept }) => {
     const o = ctx.db.redirectOffer.id.find(offerId);
     if (!o) throw new SenderError(`offer ${offerId} not found`);
+    const owner = getPatient(ctx, o.patientId);
+    if (owner.phoneId !== ctx.sender.toHexString()) throw new SenderError('only the patient can answer this offer');
     if (o.status !== 'pending') return;
     ctx.db.redirectOffer.id.update({ ...o, status: accept ? 'accepted' : 'declined' });
     if (!accept) return;
@@ -402,7 +533,9 @@ export const respondRedirect = spacetimedb.reducer(
   }
 );
 
+// Staff logins survive a reset so nurses stay signed in between demo runs.
 export const resetDemo = spacetimedb.reducer(ctx => {
+  requireServer(ctx);
   for (const r of [...ctx.db.vitals.iter()]) ctx.db.vitals.id.delete(r.id);
   for (const r of [...ctx.db.alert.iter()]) ctx.db.alert.id.delete(r.id);
   for (const r of [...ctx.db.followUp.iter()]) ctx.db.followUp.id.delete(r.id);

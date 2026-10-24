@@ -12,5 +12,4 @@ import {
 
 export default {
   alertId: __t.u64(),
-  nurse: __t.string(),
 };

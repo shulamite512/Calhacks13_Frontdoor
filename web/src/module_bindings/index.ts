@@ -40,6 +40,7 @@ import AddVitalsReducer from "./add_vitals_reducer";
 import AssignBedReducer from "./assign_bed_reducer";
 import CheckInReducer from "./check_in_reducer";
 import FreeBedReducer from "./free_bed_reducer";
+import GrantStaffReducer from "./grant_staff_reducer";
 import HoldBedReducer from "./hold_bed_reducer";
 import MarkArrivedReducer from "./mark_arrived_reducer";
 import OfferRedirectReducer from "./offer_redirect_reducer";
@@ -48,38 +49,25 @@ import ResetDemoReducer from "./reset_demo_reducer";
 import RespondRedirectReducer from "./respond_redirect_reducer";
 import SetForecastReducer from "./set_forecast_reducer";
 import SetHospitalReducer from "./set_hospital_reducer";
+import StaffLogoutReducer from "./staff_logout_reducer";
 import UpdateLocationReducer from "./update_location_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
-import AlertRow from "./alert_table";
 import BedRow from "./bed_table";
-import FollowUpRow from "./follow_up_table";
 import ForecastRow from "./forecast_table";
 import HospitalRow from "./hospital_table";
-import PatientRow from "./patient_table";
-import RedirectOfferRow from "./redirect_offer_table";
-import VitalsRow from "./vitals_table";
+import MyAlertsRow from "./my_alerts_table";
+import MyOffersRow from "./my_offers_table";
+import MyPatientsRow from "./my_patients_table";
+import MyStaffRow from "./my_staff_table";
+import MyVitalsRow from "./my_vitals_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
-  alert: __table({
-    name: 'alert',
-    indexes: [
-      { accessor: 'id', name: 'alert_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-      { accessor: 'patientId', name: 'alert_patient_id_idx_btree', algorithm: 'btree', columns: [
-        'patientId',
-      ] },
-    ],
-    constraints: [
-      { name: 'alert_id_key', constraint: 'unique', columns: ['id'] },
-    ],
-  }, AlertRow),
   bed: __table({
     name: 'bed',
     indexes: [
@@ -91,20 +79,6 @@ const tablesSchema = __schema({
       { name: 'bed_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, BedRow),
-  followUp: __table({
-    name: 'follow_up',
-    indexes: [
-      { accessor: 'id', name: 'follow_up_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-      { accessor: 'patientId', name: 'follow_up_patient_id_idx_btree', algorithm: 'btree', columns: [
-        'patientId',
-      ] },
-    ],
-    constraints: [
-      { name: 'follow_up_id_key', constraint: 'unique', columns: ['id'] },
-    ],
-  }, FollowUpRow),
   forecast: __table({
     name: 'forecast',
     indexes: [
@@ -127,45 +101,41 @@ const tablesSchema = __schema({
       { name: 'hospital_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, HospitalRow),
-  patient: __table({
-    name: 'patient',
+  myAlerts: __table({
+    name: 'my_alerts',
     indexes: [
-      { accessor: 'id', name: 'patient_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
     ],
     constraints: [
-      { name: 'patient_id_key', constraint: 'unique', columns: ['id'] },
     ],
-  }, PatientRow),
-  redirectOffer: __table({
-    name: 'redirect_offer',
+  }, MyAlertsRow),
+  myOffers: __table({
+    name: 'my_offers',
     indexes: [
-      { accessor: 'id', name: 'redirect_offer_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-      { accessor: 'patientId', name: 'redirect_offer_patient_id_idx_btree', algorithm: 'btree', columns: [
-        'patientId',
-      ] },
     ],
     constraints: [
-      { name: 'redirect_offer_id_key', constraint: 'unique', columns: ['id'] },
     ],
-  }, RedirectOfferRow),
-  vitals: __table({
-    name: 'vitals',
+  }, MyOffersRow),
+  myPatients: __table({
+    name: 'my_patients',
     indexes: [
-      { accessor: 'id', name: 'vitals_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-      { accessor: 'patientId', name: 'vitals_patient_id_idx_btree', algorithm: 'btree', columns: [
-        'patientId',
-      ] },
     ],
     constraints: [
-      { name: 'vitals_id_key', constraint: 'unique', columns: ['id'] },
     ],
-  }, VitalsRow),
+  }, MyPatientsRow),
+  myStaff: __table({
+    name: 'my_staff',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyStaffRow),
+  myVitals: __table({
+    name: 'my_vitals',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyVitalsRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
@@ -176,6 +146,7 @@ const reducersSchema = __reducers(
   __reducerSchema("assign_bed", AssignBedReducer),
   __reducerSchema("check_in", CheckInReducer),
   __reducerSchema("free_bed", FreeBedReducer),
+  __reducerSchema("grant_staff", GrantStaffReducer),
   __reducerSchema("hold_bed", HoldBedReducer),
   __reducerSchema("mark_arrived", MarkArrivedReducer),
   __reducerSchema("offer_redirect", OfferRedirectReducer),
@@ -184,6 +155,7 @@ const reducersSchema = __reducers(
   __reducerSchema("respond_redirect", RespondRedirectReducer),
   __reducerSchema("set_forecast", SetForecastReducer),
   __reducerSchema("set_hospital", SetHospitalReducer),
+  __reducerSchema("staff_logout", StaffLogoutReducer),
   __reducerSchema("update_location", UpdateLocationReducer),
 );
 

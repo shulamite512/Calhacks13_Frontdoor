@@ -20,7 +20,8 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
    .venv\Scripts\python -m uvicorn app:app --port 8000
    ```
    After editing Python files, stop it (Ctrl+C) and start it again (`--reload` hangs on Windows).
-   Needs `.env` in the repo root with `CARTESIA_API_KEY` and `ANTHROPIC_API_KEY`.
+   Needs `.env` in the repo root (see `.env.example`): `CARTESIA_API_KEY`, `ANTHROPIC_API_KEY`, `STAFF_PIN`,
+   and `STDB_TOKEN` (the database owner's token, shared privately) unless you're on the owner's laptop.
 
 2. **Web app**:
    ```
@@ -29,7 +30,7 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
    npm run dev
    ```
    - Patient phone page: http://localhost:5173/#/checkin
-   - Nurse board: http://localhost:5173/#/board
+   - Nurse board: http://localhost:5173/#/board (sign in with your name and the staff PIN)
 
 3. **SpacetimeDB module** (only when you change `spacetimedb/src/index.ts`):
    ```
@@ -55,7 +56,7 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
 
 ER: CPMC Van Ness Campus, San Francisco. Demo walk-ins drive in from the Palace of Fine Arts.
 
-1. Board: click **Reset demo**. Seeds 3 waiting patients, 1 walk-in and 1 ambulance (EMS) moving on the map.
+1. Board: sign in with the staff PIN, then click **Reset demo**. Seeds 3 waiting patients, 1 walk-in and 1 ambulance (EMS) moving on the map.
 2. Phone: enter name/age, tap the mic, say "I've had crushing chest pain for 20 minutes and I'm sweating." Check in.
    The tile appears under **Incoming** with ESI 2, red flags and a "Prepare before arrival" card (ECG, monitor).
 3. Phone: tap **Simulate drive**. The dot moves along the real route; ETA counts down. Board: tap **Hold bed**.

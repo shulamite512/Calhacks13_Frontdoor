@@ -150,7 +150,7 @@ const ackAlert = useReducer(reducers.ackAlert);
 
 ## 4. Data model ([spacetimedb/src/index.ts](../spacetimedb/src/index.ts))
 
-All tables are currently `public: true` (see section 9 for the auth plan).
+Patient tables (`patient`, `vitals`, `alert`, `follow_up`, `redirect_offer`) are **private**; clients read them through the `my_*` views. `bed`, `forecast` and `hospital` are public (no patient details). See section 12.
 
 ### Tables
 
@@ -468,10 +468,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 
 ### Next
 1. **Overflow + diversion** (section 7): done.
-2. **Auth and permissions** (before the 10 pm freeze):
-   - **Server-only reducers:** store the server's identity in a config table; `checkIn`, `addVitals`, `raiseAlert`, `setForecast`, `updateLocation` and `resetDemo` reject any other `ctx.sender`.
-   - **Staff PIN:** the nurse enters a PIN once, and the server grants that browser identity a `staff` role. `ackAlert`, `assignBed`, `freeBed` and `holdBed` require staff. This also gives a reliable audit trail of who acknowledged.
-   - **Private tables + views:** make patient data private. Staff read everything; a patient's phone sees only its own row through a per-user view keyed on `ctx.sender`.
+2. **Auth and permissions**: done (section 12).
 3. **Apify data:** Google Maps popular times for San Francisco EDs → `arrival_curve.json` and the busyness of the diversion network.
 4. **Figma:** Person 3 restyles to match the designs (Figma MCP if connected, or screenshots).
 5. **Stretch:** a FrontDoor MCP server ("which patients are deteriorating?").
@@ -496,9 +493,9 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 9. **Hallucinations?** The output is constrained to fields (complaint, summary, ESI, flags, prep). The summary comes from the patient's own words, the transcript is stored next to it, and the nurse sees both.
 
 ### Privacy, HIPAA, auth
-10. **Is patient data secure?** Not yet in the demo. Tables are public. We know it and have a plan: server-only writes, staff role via PIN, private tables with per-user views, all built on SpacetimeDB identities.
+10. **Is patient data secure?** Patient tables are private in the database. Nurses only see them after a staff PIN login, which grants their browser's SpacetimeDB identity a staff role. A patient's phone sees only its own record through per-user views. Only our server, signed in as the database owner, can write patient data. We tested each rule with an outsider identity, a nurse and a phone.
 11. **HIPAA?** The demo uses fake data. In production: a BAA with each vendor, hospital SSO, encryption, audit logs, and data retention policies.
-12. **Who acknowledged an alert?** Stored on the alert (`ackedBy`, `ackedAt`). With auth it becomes tied to a verified staff identity.
+12. **Who acknowledged an alert?** Stored on the alert (`ackedBy`, `ackedAt`). The name comes from the nurse's staff record in the database, not from the browser, so it can't be faked.
 
 ### Tech choices
 13. **Why SpacetimeDB?** The database *is* the backend: tables + reducers + live subscriptions. The board updates within milliseconds when anything changes, with no polling, no separate websocket server and no cache layer.
@@ -532,7 +529,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 
 ## 11. Known limitations (be honest)
 
-- **No auth yet.** All tables and reducers are open to anyone with the database name. Planned (section 9).
+- **Auth is hackathon-grade:** one shared staff PIN (not per-nurse accounts or hospital SSO). The phone-facing server endpoints (`/followup`, `/location`, `/demo/drive`, `/demo/arrive`) take a patient id without proving the caller is that patient's phone.
 - **Simulated data:** vitals, starting bed occupancy, the arrival curve, the EMS feed, and other hospitals' capacity (diversion).
 - **Mic on real phones needs HTTPS** (tunnel). The demo runs best on the laptop.
 - **Real GPS from San Jose** gives an hour-long ETA to San Francisco, so use **Simulate drive** in the demo.
@@ -543,3 +540,43 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 - **First connect can be slow** (5–15 s) for a brand-new browser; open the board a minute before demoing.
 - **Diversion is a suggestion only**: the other ER isn't notified and doesn't receive the check-in. In production, the check-in would be forwarded through a hospital partnership or health-information exchange.
 - **Not a medical device**; demo data only.
+
+---
+
+## 12. Login and permissions (built and tested)
+
+### Who can do what
+
+| Who | How they prove it | Can read | Can do |
+|---|---|---|---|
+| **FrontDoor server** | Signs in as the **database owner** (token from `STDB_TOKEN` in `.env`, or the local `spacetime login`). The owner identity is recorded in the private `config` table when the module is first published. | Everything (SQL) | Check in patients, update location/arrival, add vitals and follow-ups, raise alerts, write forecast and hospital network, offer redirects, reset demo, **grant staff** |
+| **Nurse (staff)** | Enters the **staff PIN** on the board. The server checks it against `STAFF_PIN` and calls `grant_staff` with the browser's SpacetimeDB identity. | All patients, vitals, alerts, offers (via `my_*` views) | Acknowledge alerts (name taken from the staff record), assign / hold / free beds; board actions that go through the server (reset, worsen, suggest another ER) send the PIN |
+| **Patient's phone** | Its SpacetimeDB identity is saved as `phoneId` on the patient row at check-in. | Only its own patient row, alerts and offers | Answer its own redirect offer |
+| **Anyone else** | – | Beds, forecast, nearby hospitals (no patient details) | Nothing |
+
+### How it's built
+- **Private tables + views** ([spacetimedb/src/index.ts](../spacetimedb/src/index.ts)): `my_patients`, `my_vitals`, `my_alerts`, `my_offers` return everything for staff and only the caller's own rows otherwise; `my_staff` tells the board whether this browser is signed in.
+- **Guards:** `requireServer(ctx)` on 11 reducers, `requireStaff(ctx)` on 4, and `respondRedirect` checks `phoneId === ctx.sender`.
+- **Board** ([web/src/Board.tsx](../web/src/Board.tsx)): shows a sign-in form until `my_staff` has a row; "Sign out" calls `staff_logout`.
+- **Phone** ([web/src/CheckIn.tsx](../web/src/CheckIn.tsx)): sends its identity (`phoneId`) with the check-in; its token is kept in localStorage so the identity survives a refresh.
+- **Server** ([server/stdb.py](../server/stdb.py), [server/app.py](../server/app.py)): owner token, `POST /staff/login`, PIN check (`hmac.compare_digest`) on reset / worsen / suggest.
+
+### Tests we ran (all passed)
+| Test | Result |
+|---|---|
+| Outsider calls `check_in`, `assign_bed`, `reset_demo` | Rejected ("only the FrontDoor server can do this" / "staff login required") |
+| Outsider reads `patient` | "no such table … may be marked private" |
+| Outsider reads `my_patients` | 0 rows |
+| Wrong PIN on `/staff/login` and `/demo/reset` | 403 |
+| Nurse after PIN login reads `my_patients` | All 5 patients |
+| Phone after check-in reads `my_patients` | Only its own row; no other patients' alerts |
+| Nurse tries to answer the patient's redirect offer | Rejected ("only the patient can answer this offer"); the phone's answer works |
+| Nurse acknowledges an alert | `ackedBy` = "Nurse Kim" from the staff record |
+
+### Setup notes
+- `.env` needs `STAFF_PIN` (a random 6-digit PIN was generated on the owner's laptop). See `.env.example`.
+- Teammates running their own server need `STDB_TOKEN` (the owner's token, shared privately), or the module will reject their writes.
+- Publishing these access rules required `--delete-data` once so `init` could record the owner; demo data is recreated by **Reset demo**. Staff logins survive resets.
+
+### Pitch line
+"Every action is tied to a SpacetimeDB identity: the server is the database owner, nurses get a staff role, and patients can only see themselves. In production we'd swap the PIN for hospital SSO and add HIPAA-grade audit logging."

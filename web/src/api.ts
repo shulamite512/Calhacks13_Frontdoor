@@ -26,6 +26,23 @@ export type FollowUpResult = {
   heard: boolean;
 };
 
+// The staff PIN is kept for this browser tab only, for board actions that go through the server.
+const PIN_KEY = 'frontdoor_staff_pin';
+export function staffPin(): string {
+  try {
+    return sessionStorage.getItem(PIN_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+function rememberPin(pin: string) {
+  try {
+    sessionStorage.setItem(PIN_KEY, pin);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export const api = {
   async transcribe(audio: Blob): Promise<string> {
     const form = new FormData();
@@ -52,8 +69,13 @@ export const api = {
     URL.revokeObjectURL(url);
   },
 
-  checkIn: (b: { name: string; age: number; transcript: string; etaMinutes: number }) =>
+  checkIn: (b: { name: string; age: number; transcript: string; etaMinutes: number; phoneId: string }) =>
     post<TriageResult>('/checkin', b),
+
+  async staffLogin(b: { pin: string; identity: string; name: string }) {
+    await post('/staff/login', b);
+    rememberPin(b.pin);
+  },
 
   async followUpQuestion(patientId: number): Promise<string> {
     const r = await fetch(`${API_URL}/followup/question/${patientId}`);
@@ -64,9 +86,9 @@ export const api = {
 
   location: (b: { patientId: number; lat: number; lng: number }) =>
     post<{ arrived: boolean; etaMinutes: number }>('/location', b),
-  suggestRedirect: (patientId: number) => post('/redirect/suggest', { patientId }),
+  suggestRedirect: (patientId: number) => post('/redirect/suggest', { patientId, pin: staffPin() }),
   drive: (patientId: number) => post('/demo/drive', { patientId }),
-  worsen: (patientId: number) => post('/demo/worsen', { patientId }),
+  worsen: (patientId: number) => post('/demo/worsen', { patientId, pin: staffPin() }),
   arrive: (patientId: number) => post('/demo/arrive', { patientId }),
-  reset: () => post('/demo/reset'),
+  reset: () => post('/demo/reset', { pin: staffPin() }),
 };

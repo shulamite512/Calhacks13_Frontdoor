@@ -4,7 +4,9 @@ Run:  .venv\\Scripts\\python -m uvicorn app:app --port 8000   (from the server/ 
       Restart after edits; --reload hangs on Windows.
 """
 import asyncio
+import hmac
 import logging
+import os
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
@@ -84,6 +86,31 @@ class CheckInIn(BaseModel):
     etaMinutes: int = 0
     lat: float = DEMO_START[0]
     lng: float = DEMO_START[1]
+    phoneId: str = ""   # the phone's SpacetimeDB identity (hex), so it can see only its own record
+
+
+class StaffLoginIn(BaseModel):
+    pin: str
+    identity: str       # the board browser's SpacetimeDB identity (hex)
+    name: str
+
+
+class PinIn(BaseModel):
+    pin: str
+
+
+class StaffPatientIn(BaseModel):
+    pin: str
+    patientId: int
+
+
+def _check_pin(pin: str) -> None:
+    """Board-only actions that go through this server (not the database) are gated by the staff PIN."""
+    expected = os.getenv("STAFF_PIN")
+    if not expected:
+        raise HTTPException(503, "STAFF_PIN is not set in .env")
+    if not hmac.compare_digest(pin.encode(), expected.encode()):
+        raise HTTPException(403, "wrong staff PIN")
 
 
 class FollowUpIn(BaseModel):
@@ -167,6 +194,7 @@ async def checkin(body: CheckInIn):
     await stdb.call(
         "check_in", body.name, body.age, t.complaint, body.transcript, t.summary, t.acuity,
         ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng, "walk-in", ", ".join(t.prep),
+        body.phoneId.lower().removeprefix("0x"),
     )
     p = await _patient_by_name(body.name)
     return {"patientId": p["id"] if p else None, **t.model_dump()}
@@ -211,8 +239,21 @@ async def location(body: LocationIn):
     return {"arrived": False, "etaMinutes": eta}
 
 
+@app.post("/staff/login")
+async def staff_login(body: StaffLoginIn):
+    """Check the PIN, then grant this browser's identity the staff role in the database."""
+    _check_pin(body.pin)
+    try:
+        ident = stdb.identity_arg(body.identity)
+    except ValueError:
+        raise HTTPException(400, "invalid identity")
+    await stdb.call("grant_staff", ident, body.name.strip()[:40] or "Staff")
+    return {"ok": True}
+
+
 @app.post("/redirect/suggest")
-async def redirect_suggest(body: PatientIdIn):
+async def redirect_suggest(body: StaffPatientIn):
+    _check_pin(body.pin)
     """Find the nearby ER with the best drive + wait and offer it to the patient's phone."""
     rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
     if not rows:
@@ -236,7 +277,8 @@ async def demo_drive(body: PatientIdIn):
 
 
 @app.post("/demo/worsen")
-async def demo_worsen(body: PatientIdIn):
+async def demo_worsen(body: StaffPatientIn):
+    _check_pin(body.pin)
     simulator.set_worsening(body.patientId, True)
     return {"ok": True}
 
@@ -248,7 +290,8 @@ async def demo_arrive(body: PatientIdIn):
 
 
 @app.post("/demo/reset")
-async def demo_reset():
+async def demo_reset(body: PinIn):
+    _check_pin(body.pin)
     _stop_drives()
     await stdb.call("reset_demo")
     simulator.reset()
@@ -261,7 +304,7 @@ async def demo_reset():
             eta = max(1, round(duration / 60))
         await stdb.call(
             "check_in", d["name"], d["age"], d["complaint"], d["transcript"], d["summary"], d["acuity"],
-            d.get("flags", ""), eta, lat, lng, d.get("source", "walk-in"), d.get("prep", ""),
+            d.get("flags", ""), eta, lat, lng, d.get("source", "walk-in"), d.get("prep", ""), "",
         )
         if secs:
             p = await _patient_by_name(d["name"])

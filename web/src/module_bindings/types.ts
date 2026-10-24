@@ -30,6 +30,12 @@ export const Bed = __t.object("Bed", {
 });
 export type Bed = __Infer<typeof Bed>;
 
+export const Config = __t.object("Config", {
+  id: __t.u32(),
+  owner: __t.identity(),
+});
+export type Config = __Infer<typeof Config>;
+
 export const FollowUp = __t.object("FollowUp", {
   id: __t.u64(),
   patientId: __t.u64(),
@@ -63,6 +69,21 @@ export const Hospital = __t.object("Hospital", {
 });
 export type Hospital = __Infer<typeof Hospital>;
 
+export const MyAlerts = __t.object("MyAlerts", {});
+export type MyAlerts = __Infer<typeof MyAlerts>;
+
+export const MyOffers = __t.object("MyOffers", {});
+export type MyOffers = __Infer<typeof MyOffers>;
+
+export const MyPatients = __t.object("MyPatients", {});
+export type MyPatients = __Infer<typeof MyPatients>;
+
+export const MyStaff = __t.object("MyStaff", {});
+export type MyStaff = __Infer<typeof MyStaff>;
+
+export const MyVitals = __t.object("MyVitals", {});
+export type MyVitals = __Infer<typeof MyVitals>;
+
 export const Patient = __t.object("Patient", {
   id: __t.u64(),
   name: __t.string(),
@@ -82,6 +103,7 @@ export const Patient = __t.object("Patient", {
   updatedAt: __t.timestamp(),
   source: __t.string(),
   prep: __t.string(),
+  phoneId: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
 
@@ -95,6 +117,13 @@ export const RedirectOffer = __t.object("RedirectOffer", {
   createdAt: __t.timestamp(),
 });
 export type RedirectOffer = __Infer<typeof RedirectOffer>;
+
+export const Staff = __t.object("Staff", {
+  identity: __t.identity(),
+  name: __t.string(),
+  grantedAt: __t.timestamp(),
+});
+export type Staff = __Infer<typeof Staff>;
 
 export const Vitals = __t.object("Vitals", {
   id: __t.u64(),

@@ -42,20 +42,60 @@ function canRedirect(p: Patient) {
   return p.status === 'incoming' && p.source === 'walk-in' && p.acuity >= 3 && p.risk !== 'critical';
 }
 
+// Staff gate: the board's data views return nothing until this browser is granted the staff role.
 export default function Board() {
   const conn = useSpacetimeDB();
-  const [patients] = useTable(tables.patient);
-  const [vitals] = useTable(tables.vitals);
-  const [alerts] = useTable(tables.alert);
+  const [me] = useTable(tables.myStaff);
+  if (!conn.isActive) return null;
+  if (me.length === 0) return <StaffLogin identity={conn.identity?.toHexString() ?? ''} />;
+  return <BoardInner nurse={me[0].name} />;
+}
+
+function StaffLogin({ identity }: { identity: string }) {
+  const [name, setName] = useState('');
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function login(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      await api.staffLogin({ pin, identity, name: name || 'Charge RN' });
+    } catch (err) {
+      setError(String(err).includes('403') ? 'Wrong PIN' : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="phone login" onSubmit={login}>
+      <h1 className="brand">FrontDoor</h1>
+      <p className="muted">Staff sign-in for the charge nurse board.</p>
+      <label>Your name<input value={name} onChange={e => setName(e.target.value)} placeholder="Charge RN" /></label>
+      <label>Staff PIN<input value={pin} onChange={e => setPin(e.target.value)} type="password" inputMode="numeric" /></label>
+      {error && <p className="error">{error}</p>}
+      <button className="primary" disabled={busy || !pin || !identity}>Sign in</button>
+    </form>
+  );
+}
+
+function BoardInner({ nurse }: { nurse: string }) {
+  const conn = useSpacetimeDB();
+  const [patients] = useTable(tables.myPatients);
+  const [vitals] = useTable(tables.myVitals);
+  const [alerts] = useTable(tables.myAlerts);
   const [beds] = useTable(tables.bed);
   const [forecasts] = useTable(tables.forecast);
   const [hospitals] = useTable(tables.hospital);
-  const [offers] = useTable(tables.redirectOffer);
+  const [offers] = useTable(tables.myOffers);
   const ackAlert = useReducer(reducers.ackAlert);
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
   const holdBed = useReducer(reducers.holdBed);
-  const [nurse, setNurse] = useState('Charge RN');
+  const logout = useReducer(reducers.staffLogout);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -86,7 +126,7 @@ export default function Board() {
   const openAlerts = allOpen.filter((a, i) => allOpen.findIndex(x => x.patientId === a.patientId) === i);
 
   function ackPatient(patientId: bigint) {
-    for (const a of allOpen) if (a.patientId === patientId) ackAlert({ alertId: a.id, nurse });
+    for (const a of allOpen) if (a.patientId === patientId) ackAlert({ alertId: a.id });
   }
   const acked = [...alerts].filter(a => a.ackedAt !== undefined).sort((a, b) => Number(b.id - a.id));
   const recentAcked = acked
@@ -135,7 +175,9 @@ export default function Board() {
             <small>{f.basis}</small>
           </div>
         )}
-        <label className="nurse">You are <input value={nurse} onChange={e => setNurse(e.target.value)} /></label>
+        <div className="nurse">
+          Signed in as <b>{nurse}</b> <button className="ghost" onClick={() => logout()}>Sign out</button>
+        </div>
       </header>
 
       {(openAlerts.length > 0 || recentAcked.length > 0) && (

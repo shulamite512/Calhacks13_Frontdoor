@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useReducer, useTable } from 'spacetimedb/react';
+import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import { reducers, tables } from './module_bindings';
 import { api, type FollowUpResult, type TriageResult } from './api';
 import { useRecorder } from './useRecorder';
@@ -36,6 +36,7 @@ export default function CheckIn() {
   const [step, setStep] = useState<Step>('form');
   const [error, setError] = useState('');
   const rec = useRecorder();
+  const { identity } = useSpacetimeDB();
 
   async function recordSymptoms() {
     if (rec.recording) return rec.stop();
@@ -54,10 +55,13 @@ export default function CheckIn() {
 
   async function submit() {
     if (!name || !age || transcript.trim().length < 3) return setError('Please add your name, age and symptoms.');
+    if (!identity) return setError('Still connecting, try again in a moment.');
     setError('');
     setStep('thinking');
     try {
-      const r = await api.checkIn({ name, age: Number(age), transcript, etaMinutes: Number(eta) || 0 });
+      const r = await api.checkIn({
+        name, age: Number(age), transcript, etaMinutes: Number(eta) || 0, phoneId: identity.toHexString(),
+      });
       const s = { result: r, name };
       saveSession(s);
       setSession(s);
@@ -107,10 +111,11 @@ export default function CheckIn() {
 
 // Live status from the database: what the patient should know right now.
 function LiveStatus({ patientId }: { patientId: number }) {
-  const [patients] = useTable(tables.patient);
-  const [alerts] = useTable(tables.alert);
+  // These views only return rows checked in from this phone.
+  const [patients] = useTable(tables.myPatients);
+  const [alerts] = useTable(tables.myAlerts);
   const [beds] = useTable(tables.bed);
-  const [offers] = useTable(tables.redirectOffer);
+  const [offers] = useTable(tables.myOffers);
   const [hospitals] = useTable(tables.hospital);
   const respond = useReducer(reducers.respondRedirect);
   const pid = BigInt(patientId);
