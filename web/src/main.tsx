@@ -55,8 +55,17 @@ function App() {
     const id = setInterval(ping, KEEP_AWAKE_MS);
     return () => clearInterval(id);
   }, []);
+  const screen = route.startsWith('#/board') ? 'board' : route.startsWith('#/ems') ? 'ems' : 'phone';
   return (
     <>
+      {!route.startsWith('#/family/') && (
+        // Demo switcher between the three screens (the family page stays private to the family).
+        <nav className="screens">
+          <a href="#/" className={screen === 'phone' ? 'on' : ''}>📱 Patient</a>
+          <a href="#/board" className={screen === 'board' ? 'on' : ''}>🏥 Nurse board</a>
+          <a href="#/ems" className={screen === 'ems' ? 'on' : ''}>🚑 Ambulance</a>
+        </nav>
+      )}
       {!route.startsWith('#/family/') && <ConnectingNotice />}
       {route.startsWith('#/board') ? <Board />
         : route.startsWith('#/ems') ? <Ems />
