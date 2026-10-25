@@ -3,7 +3,7 @@
 > Copy each section into Devpost. Track-specific sections are at the end. Numbers below were measured in our own testing.
 
 ## Tagline
-FrontDoor sends people driving to the ER to the one that can actually treat them right now, tells that ER they're coming, and watches over them until they're in a bed.
+FrontDoor turns your car into an ambulance (minus the siren): speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you, and the ER is ready before you arrive. Your family can see where you are.
 
 ## Inspiration
 One of our teammates had a panic attack and was sure the chest pain was a heart attack. They drove to the nearest ER, got checked in, and then waited about 40 minutes to see a doctor, told only to wait until the doctor came. Nobody was watching them, and they had no idea whether that ER even had a cardiologist available. If it *had* been a heart attack, those minutes mattered.
@@ -15,9 +15,14 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
    - Stable patients: "A better match for you right now: Kaiser. Surgery ready, operating room ready. At CPMC: operating room busy. 7 min away." You choose, and get directions.
    - Urgent but drivable (e.g. a broken wrist): "Go now. Best ER for you: Kaiser, orthopedics ready, 10 min."
    - Critical patients: "**Call 911 now.** Best-equipped ER: Zuckerberg (Level I trauma center, trauma team ready)." For a mental-health crisis: 911 if in danger, or call/text 988. We never tell a critical patient to keep driving.
+   - After speaking you see **your options**: the top ERs for your condition, each with doctors on call, beds free, equipment, drive time and wait, plus directions.
 2. **The ER knows you're coming.** Your tile appears on the charge nurse's board with your summary, red flags and "Prepare before arrival: 12-lead ECG, cardiac monitor", on a live map with your ETA. The nurse can hold a bed.
 3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes FrontDoor asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
 4. **An AI agent that acts on what's urgent.** The Charge-Nurse Copilot watches the board. When a critical patient is on the way, or someone in the waiting room gets worse, it acts within seconds: holds the right bed, pages the department ("Stroke alert, ETA 11 min, have CT ready"), posts a checklist, flags priority. Bigger moves (assigning a bed, offering another ER) wait for a nurse's Approve. It can't lower urgency, discharge anyone or redirect a critical patient: those tools don't exist.
+**Ambulances too:** paramedic-monitor vitals stream ahead and keep updating; if our ER can't treat an incoming ambulance patient (e.g. major trauma), the board recommends a better destination ("Zuckerberg: trauma team ready, 3 min") for the charge nurse to relay to the crew.
+
+**Family:** a shared link shows where the patient is and their ETA while they drive, then their status (nurse with them, bed A4). Never symptoms or vitals.
+
 5. **Ready before the rush.** The board forecasts "3 beds short in 30 min" from real ED volume and shows each department's readiness. A family member can follow a status-only link.
 
 ## How we built it

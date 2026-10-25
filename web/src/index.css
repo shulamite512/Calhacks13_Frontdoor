@@ -177,4 +177,13 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .near-er { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
 .near-er span { color: var(--muted); white-space: nowrap; }
 .near-er.full { opacity: .5; }
+.card.options { padding: 10px 12px; }
+.opt { padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.opt:first-of-type { border-top: none; }
+.opt-head { display: flex; justify-content: space-between; gap: 8px; }
+.opt-head span { color: var(--muted); white-space: nowrap; }
+.opt.ok b { color: var(--ok); }
+.opt.no { opacity: .6; }
+.opt-reason { color: var(--muted); margin: 2px 0; }
+.family-map { height: 220px; margin: 10px 0; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

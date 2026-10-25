@@ -871,3 +871,21 @@ Tested in a real browser with simulated GPS:
 | ...chest pain (ESI 2) | Call 911 -> best-equipped UCSF Parnassus (cath lab ready, 26 coronary care beds) |
 | ...ankle sprain (ESI 4) | Offered a better-matched ER (ortho ready vs ~81 min until care at CPMC) |
 
+---
+
+## 23. "Turning your car into an ambulance": the last three pieces
+
+**1. Your options, on the phone** ([web/src/CheckIn.tsx](../web/src/CheckIn.tsx) `Options`, `GET /options/{patient_id}`)
+After speaking, a driver still on the way sees **the top 4 ERs for their condition**, each with ✓/✗, doctors on call, specialty beds free, key equipment status, drive time, wait and a **Directions** link. It refreshes every 30 s. Tested from Golden Gate Park with belly pain (needs Surgery): Kaiser (10 min drive, ~10 min wait, surgery ready, OR ready), UCSF Stanyan, UCSF Hyde, UCSF Parnassus, each with directions; our ER (OR busy) drops below.
+
+**2. Family sees where you are** ([web/src/Family.tsx](../web/src/Family.tsx))
+The status-only family link now also shows a **live map with the patient's position and ETA** ("Ben · 13 min away") and the ER, **only while they're on the way**. Location disappears once they arrive; symptoms and vitals are never shown. The patient opts in by tapping "Share my status with family".
+
+**3. Ambulance destination advisory** ([server/copilot.py](../server/copilot.py) `_ems_advisory`)
+When an ambulance is coming that our ER can't treat (e.g. major trauma: we're not a trauma center), FrontDoor ranks the ERs by drive time for that condition and posts **"🚑 Better destination for EMS Medic 7: Zuckerberg SF General (trauma team ready, 3 min)"** on the ambulance's tile and in the Copilot panel, with a **Crew called** button. This is deterministic (no model) and it's advice: paramedics/EMS make the final destination call, which is how ambulance diversion works. The Copilot agent also sees `our_er_can_treat: false` in its snapshot, so it won't hold a bed for that patient and instead pages the charge nurse to call the crew.
+
+The demo now seeds a second ambulance: **EMS Medic 7, female ~30, motorcycle crash with an open leg fracture (ESI 1, Trauma)**.
+
+### The pitch, final shape
+"FrontDoor gives every car what an ambulance gets: speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you (or call 911 if it's critical), and the ER is ready before you arrive. Ambulances stream vitals ahead and get pointed to the right ER too. Your family can see where you are. And once you're inside, nobody waits unwatched."
+

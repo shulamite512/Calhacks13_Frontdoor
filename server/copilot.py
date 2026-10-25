@@ -51,6 +51,8 @@ undo them). Assigning a bed or offering another ER only creates a proposal a nur
 never hold a hallway bed.
 - Page the department the patient needs; page the "Charge nurse" for a deteriorating waiting patient.
 - Never try to lower anyone's urgency, discharge anyone, or send a critical patient elsewhere.
+- If the snapshot says our ER can't treat an ambulance patient (our_er_can_treat is false), do NOT \
+hold a bed for them; page the "Charge nurse" to call the EMS crew about the better destination.
 - Take at most 4 actions, then reply with one short sentence summarizing what you did."""
 
 
@@ -92,6 +94,13 @@ async def _record(pid: int, kind: str, level: str, status: str, summary: str, de
 
 async def _snapshot(focus_pid: int | None) -> dict:
     patients = await stdb.sql("SELECT * FROM patient")
+    focus = next((p for p in patients if p["id"] == focus_pid), None)
+    match = None
+    if focus and focus["status"] == "incoming":
+        opts = await matching.rank(focus["specialty"], focus["lat"], focus["lng"], HOSPITAL, critical=focus["acuity"] <= 2)
+        ours = next(o for o in opts if o["hospitalId"] == matching.OUR_ID)
+        match = {"our_er_can_treat": ours["canTreat"], "our_er": ours["reason"],
+                 "best_er": f"{opts[0]['name']}: {opts[0]['reason']}, {opts[0]['driveMinutes']} min"}
     beds = await stdb.sql("SELECT * FROM bed")
     depts = await stdb.sql("SELECT * FROM department")
     fc = await stdb.sql("SELECT * FROM forecast")
@@ -106,6 +115,7 @@ async def _snapshot(focus_pid: int | None) -> dict:
                          "beds_total": d["beds_total"], "resource": d["resource"], "ready": d["resource_ready"]}
                         for d in depts],
         "forecast": fc[0]["basis"] if fc else "",
+        "focus_patient_match": match,
     }
 
 
@@ -211,6 +221,23 @@ async def _guarded(trigger: str, event: str, focus_pid: int | None) -> None:
         _running.discard(trigger)
 
 
+async def _ems_advisory(p: dict) -> None:
+    """Ambulance coming that we can't treat (e.g. major trauma): recommend a better destination.
+    Paramedics/EMS decide where ambulances go, so this is advice for the charge nurse to relay."""
+    try:
+        opts = await matching.rank(p["specialty"], p["lat"], p["lng"], HOSPITAL, critical=True)
+        ours = next(o for o in opts if o["hospitalId"] == matching.OUR_ID)
+        best = opts[0]
+        if ours["canTreat"] or not best["canTreat"] or best["hospitalId"] == matching.OUR_ID:
+            return
+        await _record(p["id"], "ems_destination", "approval", "pending",
+                      f"Better destination for {p['name']}: {best['name']} ({best['reason']}, {best['driveMinutes']} min)",
+                      f"Our ER: {ours['reason']}. Call the EMS crew to divert; paramedics make the final call.",
+                      0, f"ems_destination:{p['id']}")
+    except Exception:
+        log.exception("ems advisory failed for %s", p["id"])
+
+
 async def check(patients: list[dict], forecast_row: dict | None) -> None:
     """Called every tick: start the agent for any new urgent event."""
     global _last_beds_short
@@ -234,6 +261,12 @@ async def check(patients: list[dict], forecast_row: dict | None) -> None:
         _last_beds_short = time.time()
         events.append((f"beds_short:{int(time.time())}", None,
                        f"Forecast: {forecast_row['beds_short']} beds short in 30 min. {forecast_row['basis']}"))
+    for p in patients:
+        key = f"ems_destination:{p['id']}"
+        if p["status"] != "incoming" or p["source"] != "ems" or key in _handled:
+            continue
+        _handled.add(key)
+        asyncio.create_task(_ems_advisory(p))
     for trigger, pid, event in events:
         if trigger in _handled or trigger in _running:
             continue

@@ -203,7 +203,9 @@ function BoardInner({ nurse }: { nurse: string }) {
     api.suggestRedirect(Number(p.id)).catch(e => alert(String(e)));
   }
   const short = (f?.bedsShort ?? 0) > 0;
-  const bedActions = { beds, offers, hospitals, departments, short, onAssign: assign, onHold: hold, onSuggest: suggest };
+  const bedActions = {
+    beds, offers, hospitals, departments, short, agentActions, onAssign: assign, onHold: hold, onSuggest: suggest,
+  };
 
   // Departments current patients need go first (with a count); the rest fold behind "Show all".
   const need = new Map<string, number>();
@@ -372,6 +374,7 @@ type BedActions = {
   offers: readonly RedirectOffer[];
   hospitals: readonly Hospital[];
   departments: readonly Department[];
+  agentActions: readonly AgentAction[];
   short: boolean;
   onAssign: (p: Patient) => void;
   onHold: (p: Patient) => void;
@@ -392,7 +395,7 @@ function Column(props: BedActions & {
       {props.patients.map(p => (
         <Tile key={String(p.id)} p={p} vitals={props.vitals.get(p.id) ?? []}
           beds={props.beds} offers={props.offers} hospitals={props.hospitals} departments={props.departments}
-          short={props.short}
+          agentActions={props.agentActions} short={props.short}
           onAssign={props.onAssign} onHold={props.onHold} onSuggest={props.onSuggest}
           held={props.beds.find(b => b.status === 'reserved' && b.patientId === p.id)}
           openAlert={props.alerts.some(a => a.patientId === p.id && a.ackedAt === undefined)} />
@@ -402,7 +405,7 @@ function Column(props: BedActions & {
   );
 }
 
-function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHold, onSuggest, held, openAlert }: BedActions & {
+function Tile({ p, vitals, offers, hospitals, departments, agentActions, short, onAssign, onHold, onSuggest, held, openAlert }: BedActions & {
   p: Patient; vitals: Vitals[]; held?: Bed; openAlert: boolean;
 }) {
   const v = vitals[vitals.length - 1];
@@ -412,6 +415,7 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
   const offer = [...offers].reverse().find(o => o.patientId === p.id);
   const offerTo = hospitals.find(h => h.id === offer?.hospitalId)?.name;
   const ready = readiness(p, departments);
+  const emsAdvice = agentActions.find(a => a.patientId === p.id && a.kind === 'ems_destination' && a.status !== 'rejected');
   return (
     <div className={`tile ${p.risk} ${openAlert ? 'pulse' : ''}`}>
       <div className="tile-head">
@@ -425,6 +429,9 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
       <p className="summary">{p.summary}</p>
       {flags.length > 0 && <div className="flags">{flags.map(f => <span key={f}>{f}</span>)}</div>}
       {ready && <div className={`ready ${ready.ok ? 'ok' : 'gap'}`}>{ready.ok ? '✓' : '⚠'} {ready.text}</div>}
+      {emsAdvice && (
+        <div className="advice gap">🚑 {emsAdvice.summary}{emsAdvice.status === 'approved' ? ` · crew called by ${emsAdvice.decidedBy}` : ''}</div>
+      )}
       {incoming && p.advice && (
         <div className={`advice ${p.advice.startsWith('Call 911') ? 'gap' : 'ok'}`}>Told patient: {p.advice}</div>
       )}
@@ -468,7 +475,7 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
 }
 
 const KIND_ICON: Record<string, string> = {
-  hold_bed: '🛏', page: '📟', checklist: '📋', prioritize: '⚡', suggest_bed: '🛏', suggest_other_er: '🧭', note: '💬',
+  hold_bed: '🛏', ems_destination: '🚑', page: '📟', checklist: '📋', prioritize: '⚡', suggest_bed: '🛏', suggest_other_er: '🧭', note: '💬',
 };
 
 // The agent's live feed: proposals waiting for a nurse first, then what it did on its own.
@@ -490,7 +497,7 @@ function Copilot({ actions, onApprove, onReject, onUndo }: {
           <span>{KIND_ICON[a.kind] ?? '•'}</span>
           <div><b>{a.summary}</b>{a.detail && <div className="muted">{a.detail}</div>}</div>
           <div className="btns">
-            <button className="primary" onClick={() => onApprove(a)}>Approve</button>
+            <button className="primary" onClick={() => onApprove(a)}>{a.kind === 'ems_destination' ? 'Crew called' : 'Approve'}</button>
             <button onClick={() => onReject(a)}>Reject</button>
           </div>
         </div>

@@ -26,6 +26,18 @@ export type Nearby = {
   ers: Array<{ name: string; driveMinutes: number; waitMinutes: number; km: number; open: boolean }>;
 };
 
+export type ErOption = {
+  hospitalId: number;
+  name: string;
+  lat: number;
+  lng: number;
+  driveMinutes: number;
+  waitMinutes: number;
+  totalMinutes: number;
+  canTreat: boolean;
+  reason: string;
+};
+
 export type FamilyStatus = {
   firstName: string;
   hospital: string;
@@ -36,6 +48,8 @@ export type FamilyStatus = {
   redirectedTo: string | null;
   checkedInAt: number;
   updatedAt: number;
+  location: { lat: number; lng: number } | null;
+  destination: { name: string; lat: number; lng: number };
 };
 
 export type FollowUpResult = {
@@ -109,6 +123,12 @@ export const api = {
   async nearby(lat: number, lng: number): Promise<Nearby> {
     const r = await fetch(`${API_URL}/nearby?lat=${lat}&lng=${lng}`);
     if (!r.ok) throw new Error(`nearby failed: ${r.status}`);
+    return r.json();
+  },
+
+  async options(patientId: number): Promise<{ specialty: string; options: ErOption[] }> {
+    const r = await fetch(`${API_URL}/options/${patientId}`);
+    if (!r.ok) throw new Error(`options failed: ${r.status}`);
     return r.json();
   },
 

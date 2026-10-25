@@ -77,6 +77,8 @@ const T = {
     tl: 'Kung lumala ang pakiramdam mo, sabihan agad ang front desk o tumawag sa 911.',
   },
   youSaid: { en: 'You said', es: 'Usted dijo', zh: '您说', vi: 'Bạn đã nói', tl: 'Sinabi mo' },
+  yourOptions: { en: 'Your options right now', es: 'Sus opciones ahora', zh: '您现在的选择', vi: 'Lựa chọn của bạn lúc này', tl: 'Mga pagpipilian mo ngayon' },
+  directions: { en: 'Directions', es: 'Cómo llegar', zh: '导航', vi: 'Chỉ đường', tl: 'Direksyon' },
   locating: { en: 'Finding your location…', es: 'Buscando su ubicación…', zh: '正在获取您的位置…', vi: 'Đang tìm vị trí của bạn…', tl: 'Hinahanap ang iyong lokasyon…' },
   usingGps: { en: 'Using your location', es: 'Usando su ubicación', zh: '正在使用您的位置', vi: 'Đang dùng vị trí của bạn', tl: 'Ginagamit ang iyong lokasyon' },
   usingDemo: { en: 'Demo location: Palace of Fine Arts, SF', es: 'Ubicación de demostración: Palace of Fine Arts, SF', zh: '演示位置：旧金山艺术宫', vi: 'Vị trí demo: Palace of Fine Arts, SF', tl: 'Demo na lokasyon: Palace of Fine Arts, SF' },

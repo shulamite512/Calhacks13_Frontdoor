@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import { reducers, tables } from './module_bindings';
-import { api, type FollowUpResult, type Nearby, type TriageResult } from './api';
+import { api, type ErOption, type FollowUpResult, type Nearby, type TriageResult } from './api';
 import { useRecorder } from './useRecorder';
 import { LANGS, t, type Lang } from './i18n';
 
@@ -193,6 +193,43 @@ function advice911(advice: string) {
 function fmt(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+const OPTIONS_REFRESH_MS = 30_000;
+
+// The ERs that could treat this patient right now: doctors, beds, equipment, drive and wait.
+function Options({ patientId, lang }: { patientId: number; lang: Lang }) {
+  const [data, setData] = useState<{ specialty: string; options: ErOption[] } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = () => api.options(patientId).then(d => alive && setData(d)).catch(() => {});
+    load();
+    const id = setInterval(load, OPTIONS_REFRESH_MS);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [patientId]);
+  if (!data) return null;
+  return (
+    <div className="card options">
+      <div className="muted">{t('yourOptions', lang)} · {data.specialty}</div>
+      {data.options.map(o => (
+        <div key={o.hospitalId} className={`opt ${o.canTreat ? 'ok' : 'no'}`}>
+          <div className="opt-head">
+            <b>{o.canTreat ? '✓' : '✗'} {o.name}</b>
+            <span>{o.driveMinutes} {t('minDrive', lang)}{o.waitMinutes ? ` · ~${o.waitMinutes} ${t('minWait', lang)}` : ''}</span>
+          </div>
+          <div className="opt-reason">{o.reason}</div>
+          {o.canTreat && (
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${o.lat},${o.lng}`} target="_blank" rel="noreferrer">
+              {t('directions', lang)}
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 // Live status from the database: what the patient should know right now.
@@ -397,6 +434,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
       </div>
 
       {pid != null && <LiveStatus patientId={pid} />}
+      {pid != null && status === 'incoming' && <Options patientId={pid} lang={lang} />}
 
       {!arrived && pid != null && (
         <>

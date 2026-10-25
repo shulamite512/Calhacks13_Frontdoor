@@ -57,6 +57,11 @@ DEMO_PATIENTS = [
          flags="facial droop, slurred speech", transcript="EMS report: left facial droop, slurred speech, onset 25 min ago.",
          summary="Ambulance: suspected stroke, last known well 25 min ago, BP 182/96.",
          prep="Stroke team, CT scanner", specialty="Neurology", drive=(37.7605, -122.4680, 300)),
+    dict(name="EMS Medic 7: female ~30", age=30, complaint="Motorcycle crash, open leg fracture", acuity=1,
+         source="ems", flags="open fracture, heavy bleeding, high-energy mechanism",
+         transcript="EMS report: motorcycle vs car, open right femur fracture, tourniquet applied, HR 128.",
+         summary="Ambulance: major trauma, open femur fracture with heavy bleeding, tourniquet on.",
+         prep="Trauma team, blood products", specialty="Trauma", drive=(37.7599, -122.4148, 360)),
 ]
 
 
@@ -313,6 +318,17 @@ async def _match_and_advise(p: dict) -> dict:
     return result
 
 
+@app.get("/options/{patient_id}")
+async def options(patient_id: int):
+    """The ERs that could treat this patient right now, best first: doctors, beds, equipment, drive, wait."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {patient_id}")
+    if not rows:
+        raise HTTPException(404, "patient not found")
+    p = rows[0]
+    opts = await matching.rank(p["specialty"], p["lat"], p["lng"], HOSPITAL, critical=p["acuity"] <= 2)
+    return {"specialty": p["specialty"] or "Emergency care", "options": opts[:4]}
+
+
 @app.get("/followup/question/{patient_id}")
 async def followup_question(patient_id: int):
     rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {patient_id}")
@@ -461,6 +477,9 @@ async def family_status(token: str):
         "redirectedTo": redirected_to,
         "checkedInAt": p["created_at"] // 1000,
         "updatedAt": p["updated_at"] // 1000,
+        # Location is shown only while they're on the way; it disappears once they arrive.
+        "location": {"lat": p["lat"], "lng": p["lng"]} if p["status"] == "incoming" else None,
+        "destination": {"name": HOSPITAL["name"], "lat": HOSPITAL["lat"], "lng": HOSPITAL["lng"]},
     }
 
 
