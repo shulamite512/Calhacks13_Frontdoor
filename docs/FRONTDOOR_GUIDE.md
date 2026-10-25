@@ -742,7 +742,7 @@ The 206 cases are split by a hash of `stay_id` into a **tune** half (110) and a 
 
 **Noise:** re-running the unchanged prompt on all 206 cases gave 72.8% vs 71.1% the first time, so differences of a couple of points are noise. The +12 to +22 point gains above are not.
 
-Files: [triage_mimic_summary.json](../server/data/eval/triage_mimic_summary.json) (baseline, all cases), [triage_mimic_summary_esi_v1.json](../server/data/eval/triage_mimic_summary_esi_v1.json) (tune half, after), and the test-half run (after). Each has a matching `_cases.csv`.
+Files: [triage_mimic_summary.json](../server/data/eval/triage_mimic_summary.json) (baseline, all cases), [triage_mimic_summary_esi_v1_tune.json](../server/data/eval/triage_mimic_summary_esi_v1_tune.json) (tune half, after) and [triage_mimic_summary_esi_v1_test.json](../server/data/eval/triage_mimic_summary_esi_v1_test.json) (held-out test half, after, with `triage_mimic_cases_esi_v1_test.csv`).
 
 Files: [mimic_arrival_shape.json](../server/data/mimic_arrival_shape.json), [mimic_vitals.json](../server/data/mimic_vitals.json), [eval/](../server/data/eval/), [cdph_beds_cpmc_van_ness.json](../server/data/cdph_beds_cpmc_van_ness.json). Raw downloads live in server/data/raw/ (not committed); [build_mimic_data.py](../server/scripts/build_mimic_data.py) lists the URLs.
 

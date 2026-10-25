@@ -1,0 +1,13 @@
+{
+ "note": "Tune-half results for the ESI v4 prompt, copied from the run log (the per-case file was overwritten by the test run that reused the same label).",
+ "split": "tune",
+ "label": "esi_v1",
+ "cases": 110,
+ "exact_match_pct": 50.0,
+ "within_one_level_pct": 98.2,
+ "frontdoor_more_urgent_pct": 31.8,
+ "frontdoor_less_urgent_pct": 18.2,
+ "nurse_high_risk_cases": 64,
+ "high_risk_rated_esi3_or_lower": 11,
+ "high_risk_sensitivity_pct": 82.8
+}
