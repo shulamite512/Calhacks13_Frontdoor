@@ -18,4 +18,5 @@ export default __t.row({
   waitMinutes: __t.u32().name("wait_minutes"),
   status: __t.string(),
   createdAt: __t.timestamp().name("created_at"),
+  reason: __t.string(),
 });

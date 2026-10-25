@@ -47,10 +47,12 @@ import OfferRedirectReducer from "./offer_redirect_reducer";
 import RaiseAlertReducer from "./raise_alert_reducer";
 import ResetDemoReducer from "./reset_demo_reducer";
 import RespondRedirectReducer from "./respond_redirect_reducer";
+import SetAdviceReducer from "./set_advice_reducer";
 import SetDepartmentReducer from "./set_department_reducer";
 import SetFamilyTokenReducer from "./set_family_token_reducer";
 import SetForecastReducer from "./set_forecast_reducer";
 import SetHospitalReducer from "./set_hospital_reducer";
+import SetHospitalDepartmentReducer from "./set_hospital_department_reducer";
 import StaffLogoutReducer from "./staff_logout_reducer";
 import UpdateDepartmentReducer from "./update_department_reducer";
 import UpdateLocationReducer from "./update_location_reducer";
@@ -62,6 +64,7 @@ import BedRow from "./bed_table";
 import DepartmentRow from "./department_table";
 import ForecastRow from "./forecast_table";
 import HospitalRow from "./hospital_table";
+import HospitalDepartmentRow from "./hospital_department_table";
 import MyAlertsRow from "./my_alerts_table";
 import MyOffersRow from "./my_offers_table";
 import MyPatientsRow from "./my_patients_table";
@@ -116,6 +119,20 @@ const tablesSchema = __schema({
       { name: 'hospital_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, HospitalRow),
+  hospitalDepartment: __table({
+    name: 'hospital_department',
+    indexes: [
+      { accessor: 'hospitalId', name: 'hospital_department_hospital_id_idx_btree', algorithm: 'btree', columns: [
+        'hospitalId',
+      ] },
+      { accessor: 'id', name: 'hospital_department_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'hospital_department_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, HospitalDepartmentRow),
   myAlerts: __table({
     name: 'my_alerts',
     indexes: [
@@ -168,10 +185,12 @@ const reducersSchema = __reducers(
   __reducerSchema("raise_alert", RaiseAlertReducer),
   __reducerSchema("reset_demo", ResetDemoReducer),
   __reducerSchema("respond_redirect", RespondRedirectReducer),
+  __reducerSchema("set_advice", SetAdviceReducer),
   __reducerSchema("set_department", SetDepartmentReducer),
   __reducerSchema("set_family_token", SetFamilyTokenReducer),
   __reducerSchema("set_forecast", SetForecastReducer),
   __reducerSchema("set_hospital", SetHospitalReducer),
+  __reducerSchema("set_hospital_department", SetHospitalDepartmentReducer),
   __reducerSchema("staff_logout", StaffLogoutReducer),
   __reducerSchema("update_department", UpdateDepartmentReducer),
   __reducerSchema("update_location", UpdateLocationReducer),

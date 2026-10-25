@@ -15,4 +15,5 @@ export default {
   hospitalId: __t.u32(),
   driveMinutes: __t.u32(),
   waitMinutes: __t.u32(),
+  reason: __t.string(),
 };

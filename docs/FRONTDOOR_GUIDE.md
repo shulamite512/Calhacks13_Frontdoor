@@ -748,3 +748,48 @@ Files: [mimic_arrival_shape.json](../server/data/mimic_arrival_shape.json), [mim
 
 Citation: Johnson A, Bulgarelli L, Pollard T, Celi LA, Mark R, Horng S. MIMIC-IV-ED Demo (version 2.2). PhysioNet (2023). Open Data Commons Open Database License v1.0. Derived files in this repo are shared under the same license.
 
+---
+
+## 18. The right ER for people driving in (condition-aware matching)
+
+**The core idea:** match what the patient is going through to an ER that has **a bed and the right department and doctor right now**, and navigate them there. Built for people coming by car.
+
+### How a match is made ([server/matching.py](../server/matching.py))
+For our ER and each nearby ER:
+1. **Can it treat this?** The department Claude picked (Cardiology, Trauma, Burns, ...) is offered there, has a doctor on call, a free bed, and its key resource ready (cath lab, OR, CT, burn unit...).
+2. **How fast?** Real drive time from the patient's position (OSRM) + that ER's wait. **Critical patients skip the waiting room, so for ESI 1-2 only the drive counts.**
+ERs that can treat come first, then the fastest.
+
+### What the patient sees at check-in (automatic)
+| Patient (still on the way, by car) | Phone shows |
+|---|---|
+| **Critical (ESI 1-2)** | Red **Call 911 now** card with a call button: "An ambulance is the safest way in. Best-equipped ER right now: Kaiser (cardiology ready, cath lab ready)." Mental-health crisis: "Call 911 if in immediate danger, or call/text **988**." We never tell a critical patient to keep driving somewhere. |
+| **Stable (ESI 3-5), another ER is a better match** (ours can't treat, or it's 10+ min faster) | **A better match for you right now: Kaiser.** "Surgery ready: 1 on call, operating room ready. At CPMC Van Ness: operating room busy. About 7 min away." **Go to Kaiser** / **Keep my spot**, then directions. |
+| **Stable, our ER is the best match** | **Matched to the right ER:** "CPMC Van Ness is ready for you: Orthopedics ready, ..." |
+| Ambulance patient | Nothing (paramedics choose the destination) |
+| Already in our waiting room | Never redirected (EMTALA) |
+
+The board shows each incoming tile's advice ("Told patient: ...") or offer with its reason, and each nearby ER shows colored chips for the departments patients need right now (green ready, orange busy, struck-through not offered). Nurses can also tap **Suggest another ER**, which uses the same matching.
+
+### Departments at every ER ([server/network.py](../server/network.py))
+| | Real | Simulated |
+|---|---|---|
+| Bed types | CDPH licensed beds per hospital ([data/cdph_beds_sf.json](../server/data/cdph_beds_sf.json)): e.g. UCSF Parnassus 26 coronary care + 76 ICU, no pediatric/perinatal; UCSF Health Hyde **16 burn beds**; Zuckerberg 58 ICU | Beds free right now |
+| Specialty facts | Zuckerberg SF General = Level I trauma center; Hyde = Bothin Burn Center; Saint Mary's is now **UCSF Health Stanyan** | Doctors on call, resource readiness |
+| Locations, ED volume | Apify scrape (ER entrances), HCAI 2025 | ER wait times |
+
+UCSF Health Hyde Hospital (900 Hyde St) was added to the network.
+
+### Tested (each a real check-in through the server)
+| Patient | Result |
+|---|---|
+| Abdominal pain (ESI 3, needs Surgery; our OR busy) | Offered **Kaiser**: surgery ready, OR ready |
+| Ankle sprain (ESI 4, Orthopedics) | Offered **Kaiser** (ortho ready, ~22 min vs ~65 here while we're 3 beds short) |
+| Crushing chest pain (ESI 2, Cardiology) | **Call 911** + Kaiser (7 min drive vs 9 to us, cath lab ready) |
+| Motorcycle crash (ESI 1, Trauma) | **Call 911** + **Zuckerberg** (trauma team ready) |
+| Boiling-oil burns (ESI 2, Burns) | **Call 911** + **UCSF Health Hyde** (burn unit ready) |
+| Thoughts of self-harm (ESI 2, Psychiatry) | **911 if in danger, or call/text 988** + an ER with a psych safe room free |
+
+### Vitals, honestly
+Nobody is measured while driving. **Vitals start at triage**, from a wearable clip or patch handed out on arrival (or the patient's smartwatch). Incoming tiles say "No vitals yet · wearable starts at triage"; waiting-room tiles show a **Wearable** label. In the demo, the wearable replays real de-identified ER stays (MIMIC-IV-ED). The simulator only produces vitals for waiting/bedded patients, and **Worsen** only appears once a patient has arrived.
+

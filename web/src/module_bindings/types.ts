@@ -83,6 +83,21 @@ export const Hospital = __t.object("Hospital", {
 });
 export type Hospital = __Infer<typeof Hospital>;
 
+export const HospitalDepartment = __t.object("HospitalDepartment", {
+  id: __t.u32(),
+  hospitalId: __t.u32(),
+  name: __t.string(),
+  bedLabel: __t.string(),
+  bedsFree: __t.u32(),
+  bedsTotal: __t.u32(),
+  doctorsOnCall: __t.u32(),
+  resource: __t.string(),
+  resourceReady: __t.bool(),
+  note: __t.string(),
+  updatedAt: __t.timestamp(),
+});
+export type HospitalDepartment = __Infer<typeof HospitalDepartment>;
+
 export const MyAlerts = __t.object("MyAlerts", {});
 export type MyAlerts = __Infer<typeof MyAlerts>;
 
@@ -121,6 +136,7 @@ export const Patient = __t.object("Patient", {
   specialty: __t.string(),
   language: __t.string(),
   familyToken: __t.string(),
+  advice: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
 
@@ -132,6 +148,7 @@ export const RedirectOffer = __t.object("RedirectOffer", {
   waitMinutes: __t.u32(),
   status: __t.string(),
   createdAt: __t.timestamp(),
+  reason: __t.string(),
 });
 export type RedirectOffer = __Infer<typeof RedirectOffer>;
 

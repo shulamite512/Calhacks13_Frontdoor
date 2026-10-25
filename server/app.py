@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 import departments  # noqa: E402
+import matching  # noqa: E402
 import network  # noqa: E402
 import routing  # noqa: E402
 import simulator  # noqa: E402
@@ -230,7 +231,44 @@ async def checkin(body: CheckInIn):
         body.phoneId.lower().removeprefix("0x"), "" if t.specialty == "Emergency" else t.specialty, lang,
     )
     p = await _patient_by_name(body.name)
-    return {"patientId": p["id"] if p else None, **t.model_dump()}
+    match = {}
+    if p:
+        try:
+            match = await _match_and_advise(p)
+        except Exception:
+            logging.exception("matching failed for patient %s", p["id"])
+    return {"patientId": p["id"] if p else None, **t.model_dump(), "match": match}
+
+
+async def _match_and_advise(p: dict) -> dict:
+    """Find the ER that can treat this patient right now and tell them (phone) / the board.
+
+    - Critical (ESI 1-2) and still on the way: "Call 911 now" plus the best-equipped ER. We never tell
+      a critical patient to keep driving somewhere.
+    - Stable walk-in on the way: if another ER can treat them and ours can't (or it's 10+ min faster),
+      offer it on the phone with the reason; the patient decides. Otherwise: "we're ready for you".
+    - Already here: nothing (EMTALA: anyone at our door is seen here).
+    """
+    if p["status"] != "incoming" or p["source"] != "walk-in":
+        return {}  # already here, or already in an ambulance (paramedics choose the destination)
+    options = await matching.rank(p["specialty"], p["lat"], p["lng"], HOSPITAL, critical=p["acuity"] <= 2)
+    ours = next(o for o in options if o["hospitalId"] == matching.OUR_ID)
+    best = options[0]
+    result = {"best": best, "ours": ours, "options": options[:4]}
+    if p["acuity"] <= 2:
+        where = (f" Best-equipped ER right now: {best['name']} ({best['reason']})." if best["canTreat"]
+                 else " Paramedics will take you to the right ER.")
+        first = ("Call 911 now if you're in immediate danger, or call or text 988 (Suicide & Crisis Lifeline)."
+                 if p["specialty"] == "Psychiatry" else "Call 911 now: an ambulance is the safest way in.")
+        await stdb.call("set_advice", p["id"], first + where)
+        return result
+    if best["hospitalId"] != matching.OUR_ID and (not ours["canTreat"] or best["totalMinutes"] + 10 < ours["totalMinutes"]):
+        here = ours["reason"] if not ours["canTreat"] else f"about {ours['totalMinutes']} min until care here"
+        reason = f"{best['reason']}. At {HOSPITAL['name']}: {here}."
+        await stdb.call("offer_redirect", p["id"], best["hospitalId"], best["driveMinutes"], best["waitMinutes"], reason)
+    elif ours["canTreat"]:
+        await stdb.call("set_advice", p["id"], f"{HOSPITAL['name']} is ready for you: {ours['reason']}.")
+    return result
 
 
 @app.get("/followup/question/{patient_id}")
@@ -288,16 +326,18 @@ async def staff_login(body: StaffLoginIn):
 @app.post("/redirect/suggest")
 async def redirect_suggest(body: StaffPatientIn):
     _check_pin(body.pin)
-    """Find the nearby ER with the best drive + wait and offer it to the patient's phone."""
+    """Nurse asks: which other ER can treat this patient soonest? Offer it to the patient's phone."""
     rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
     if not rows:
         raise HTTPException(404, "patient not found")
     p = rows[0]
-    best = await network.best_alternative(p["lat"], p["lng"])
+    options = await matching.rank(p["specialty"], p["lat"], p["lng"], HOSPITAL)
+    best = next((o for o in options if o["hospitalId"] != matching.OUR_ID and o["canTreat"]), None)
     if not best:
-        raise HTTPException(409, "no nearby ER has free beds")
+        raise HTTPException(409, "no nearby ER can treat this patient right now")
     # The module re-checks eligibility (incoming, walk-in, ESI 3-5) and rejects anything else.
-    await stdb.call("offer_redirect", body.patientId, best["hospitalId"], best["driveMinutes"], best["waitMinutes"])
+    await stdb.call("offer_redirect", body.patientId, best["hospitalId"], best["driveMinutes"], best["waitMinutes"],
+                    best["reason"])
     return best
 
 
@@ -426,4 +466,5 @@ async def demo_reset(body: PinIn):
         if secs:
             p = await _patient_by_name(d["name"])
             _start_drive(p["id"], lat, lng, secs)
+            await _match_and_advise(p)
     return {"ok": True}

@@ -121,6 +121,12 @@ export default function CheckIn() {
   );
 }
 
+// "Call 911 now: an ambulance is..." -> "An ambulance is..." (the heading already says call 911).
+function advice911(advice: string) {
+  const rest = advice.replace(/^Call 911 now:?\s*/, '');
+  return rest.charAt(0).toUpperCase() + rest.slice(1);
+}
+
 function fmt(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -160,8 +166,9 @@ function LiveStatus({ patientId }: { patientId: number }) {
   if (offer?.status === 'pending' && other) {
     return (
       <div className="card status offer-card">
-        <div className="muted">Our ER is very busy right now</div>
-        <div className="big">{other.name} can likely see you sooner</div>
+        <div className="muted">A better match for you right now</div>
+        <div className="big">{other.name}</div>
+        {offer.reason && <p>{offer.reason}</p>}
         <p>About {offer.driveMinutes} min away with a ~{offer.waitMinutes} min wait. It's your choice.</p>
         <div className="row">
           <button className="primary" onClick={() => respond({ offerId: offer.id, accept: true })}>
@@ -173,6 +180,24 @@ function LiveStatus({ patientId }: { patientId: number }) {
     );
   }
 
+  if (p.status === 'incoming' && p.advice.startsWith('Call 911')) {
+    return (
+      <div className="card status urgent">
+        <div className="big">Call 911 now</div>
+        <p>{advice911(p.advice)}</p>
+        <a className="call911" href="tel:911">Call 911</a>
+      </div>
+    );
+  }
+  if (p.status === 'incoming' && p.advice && !responder) {
+    return (
+      <div className="card status go">
+        <div className="muted">Matched to the right ER</div>
+        <div className="big">{p.advice}</div>
+        {p.etaMinutes > 0 && <p>The ER is expecting you in about {p.etaMinutes} min.</p>}
+      </div>
+    );
+  }
   if (p.status === 'roomed' && bed) {
     return (
       <div className="card status go">

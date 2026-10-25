@@ -3,20 +3,20 @@
 > Copy each section into Devpost. Track-specific sections are at the end. Numbers below were measured in our own testing.
 
 ## Tagline
-Walk-in ER patients check in by voice, in their own language, on the way. Nurses watch them in the waiting room and know before anyone gets worse or a department runs out of room.
+FrontDoor sends people driving to the ER to the one that can actually treat them right now, tells that ER they're coming, and watches over them until they're in a bed.
 
 ## Inspiration
-One of our teammates had a panic attack and was sure the chest pain was a heart attack. They went to the ER, got checked in, and then waited about 40 minutes to see a doctor, told only to wait until the doctor came. Nobody was watching them in that time. If it *had* been a heart attack, those minutes mattered.
+One of our teammates had a panic attack and was sure the chest pain was a heart attack. They drove to the nearest ER, got checked in, and then waited about 40 minutes to see a doctor, told only to wait until the doctor came. Nobody was watching them, and they had no idea whether that ER even had a cardiologist available. If it *had* been a heart attack, those minutes mattered.
 
-Ambulance patients already get this attention. Tools like Twiage send their details to the ER before they arrive. But most patients drive themselves in, and nobody sees them until the front desk, or while they sit in the waiting room. FrontDoor is for those walk-ins.
+Ambulance patients already get this: paramedics pick the right hospital and tools like Twiage send their details ahead. But most people drive themselves, pick an ER by distance or habit, and are invisible until the front desk.
 
 ## What it does
-- **Voice check-in on the way.** The patient taps the mic and describes their symptoms in English, Spanish, Chinese, Vietnamese or Tagalog. Claude writes an English pre-triage note for the nurse (complaint, summary, ESI acuity, red flags, which department they likely need, what to prepare), and replies to the patient by voice in their own language.
-- **Live incoming map.** Walk-ins and ambulances appear on a map with real drive-time ETAs. The board shows "Prepare before arrival: 12-lead ECG, cardiac monitor" and lets the nurse hold a bed.
-- **Nobody forgotten in the waiting room.** Every 2 minutes, automatically, FrontDoor checks in by voice ("How are you feeling compared to when you arrived?") and watches vitals. If someone gets worse, or stops answering twice in a row, the tile turns red and a nurse taps **I'm on it**. The patient's phone shows "Nurse Kim is coming to you now".
-- **Department readiness.** For each patient: does the department they need have a doctor on call, a bed and its key resource? For example, "✓ Cardiology: 1 on call · 2 CCU beds · cath lab ready", or a red warning when the OR is busy or no psychiatric safe room is free. 13 departments, editable by staff.
-- **Beds before the rush.** The header forecasts "3 beds short in 30 min" from current patients and real ED volume. Hallway overflow beds are used only when needed, and stable walk-ins still on the way can be offered a nearby ER with a shorter wait.
-- **Family link.** The patient can share a status page with family: arrived, nurse with them, in bed A4. No symptoms or vitals.
+1. **The right ER, before you arrive.** You describe your symptoms by voice (English, Spanish, Chinese, Vietnamese or Tagalog). Claude works out what you need: urgency (ESI) and which department (Cardiology, Trauma, Burns, Surgery, ... 13 in all). FrontDoor checks every nearby ER: does it have **that department, a doctor on call, a free bed and the key equipment ready** (cath lab, OR, burn unit)? Then it ranks them by real drive time plus wait.
+   - Stable patients: "A better match for you right now: Kaiser. Surgery ready, operating room ready. At CPMC: operating room busy. 7 min away." You choose, and get directions.
+   - Critical patients: "**Call 911 now.** Best-equipped ER: Zuckerberg (Level I trauma center, trauma team ready)." For a mental-health crisis: 911 if in danger, or call/text 988. We never tell a critical patient to keep driving.
+2. **The ER knows you're coming.** Your tile appears on the charge nurse's board with your summary, red flags and "Prepare before arrival: 12-lead ECG, cardiac monitor", on a live map with your ETA. The nurse can hold a bed.
+3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes FrontDoor asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
+4. **Ready before the rush.** The board forecasts "3 beds short in 30 min" from real ED volume and shows each department's readiness. A family member can follow a status-only link.
 
 ## How we built it
 - **SpacetimeDB (Maincloud)** is the real-time backend: 12 tables, reducers for every state change, per-user views, and access rules enforced in the database.

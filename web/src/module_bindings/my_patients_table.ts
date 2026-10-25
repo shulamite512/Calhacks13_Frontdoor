@@ -33,4 +33,5 @@ export default __t.row({
   specialty: __t.string(),
   language: __t.string(),
   familyToken: __t.string().name("family_token"),
+  advice: __t.string(),
 });

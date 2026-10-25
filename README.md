@@ -82,22 +82,22 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
 
 ## Demo script (2 min)
 
-ER: CPMC Van Ness Campus, San Francisco. Demo walk-ins drive in from the Palace of Fine Arts.
+Story: you're driving to the ER. FrontDoor sends you to the ER that can actually treat you right now,
+tells it you're coming, and watches over you until you're in a bed. Our ER: CPMC Van Ness; demo
+patients drive in from the Palace of Fine Arts.
 
-1. Board: sign in with the staff PIN, then click **Reset demo**. Seeds 3 waiting patients, 1 walk-in and 1 ambulance (EMS) moving on the map.
-2. Phone: enter name/age, tap the mic, say "I've had crushing chest pain for 20 minutes and I'm sweating." Check in.
-   The tile appears under **Incoming** with ESI 2, red flags and a "Prepare before arrival" card (ECG, monitor).
-3. Phone: tap **Simulate drive**. The dot moves along the real route; ETA counts down. Board: tap **Hold bed**.
-   On arrival (~1 min) the tile moves to the waiting room automatically.
-4. Board: tap **Worsen** on the tile (heart rate climbs). Phone: tap **Check on me now**, answer
-   "It's getting worse, it's spreading to my arm." Tile turns red, critical banner. Nurse taps **I'm on it**;
-   the phone shows "Charge RN is coming to you now".
-5. Header shows "N beds short in 30 min". Tap **Assign bed** (uses the held bed). Phone shows "Your bed is ready".
+1. Board: sign in with the staff PIN, click **Reset demo**. Robert (abdominal pain, needs surgery) is
+   already offered **Kaiser** because our OR is busy: the tile shows why.
+2. Phone: say "Pain in my lower right belly for eight hours, getting sharper." The phone shows
+   **A better match for you right now: Kaiser. Surgery ready, operating room ready. At CPMC: operating
+   room busy. 7 min away.** Tap **Keep my spot** (or Go to Kaiser to show directions).
+3. Phone (new check-in): say "Crushing chest pain going to my left arm, I'm sweating." Red **Call 911 now**
+   card + best-equipped ER (cardiology ready, cath lab ready). Board tile: ESI 2, "Prepare: 12-lead ECG".
+4. Back to the stable patient: **Simulate drive** → arrives → wearable vitals start → **Worsen** (real
+   deteriorating ER patient) → red alert → nurse taps **I'm on it** → phone: "Charge RN is coming to you now".
+5. Header "N beds short in 30 min" → **Assign bed** → phone: "Your bed is ready: A4".
 
-Optional extras: pick **Español** on the phone and check in in Spanish (the nurse still sees English);
-tap **Share my status with family** and open the link in another tab.
-
-Pitch line: Twiage covers ambulances; FrontDoor covers everyone else, on the same board.
+Optional: pick **Español** and check in in Spanish; **Share my status with family**.
 
 Forecast hour can be pinned for the demo: set `FORECAST_HOUR=18` before starting the server.
 

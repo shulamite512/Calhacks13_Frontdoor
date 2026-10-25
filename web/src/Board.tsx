@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import type { Timestamp } from 'spacetimedb';
 import { reducers, tables } from './module_bindings';
-import type { Alert, Bed, Department, Hospital, Patient, RedirectOffer, Vitals } from './module_bindings/types';
+import type { Alert, Bed, Department, Hospital, HospitalDepartment, Patient, RedirectOffer, Vitals } from './module_bindings/types';
 import { api } from './api';
 import IncomingMap from './IncomingMap';
 
@@ -51,6 +51,12 @@ function readiness(p: Patient, departments: readonly Department[]) {
   return gaps.length
     ? { ok: false, text: `Needs ${d.name}: ${gaps.join(' · ')}` }
     : { ok: true, text: `Needs ${d.name}: ${d.doctorsOnCall} on call · ${d.bedsFree} ${d.bedLabel} · ${d.resource} ready` };
+}
+
+// Readiness of a department at another ER: ready / busy (gap) / not offered.
+function deptState(d: HospitalDepartment | undefined) {
+  if (!d || d.bedsTotal === 0) return 'none';
+  return d.doctorsOnCall > 0 && d.bedsFree > 0 && d.resourceReady ? 'ok' : 'gap';
 }
 
 // Can FrontDoor suggest another ER? Only stable walk-ins who haven't arrived (EMTALA).
@@ -108,6 +114,7 @@ function BoardInner({ nurse }: { nurse: string }) {
   const [hospitals] = useTable(tables.hospital);
   const [offers] = useTable(tables.myOffers);
   const [departments] = useTable(tables.department);
+  const [hospitalDepts] = useTable(tables.hospitalDepartment);
   const updateDepartment = useReducer(reducers.updateDepartment);
   const [showAllDepts, setShowAllDepts] = useState(false);
   const ackAlert = useReducer(reducers.ackAlert);
@@ -298,7 +305,14 @@ function BoardInner({ nurse }: { nurse: string }) {
             {[...hospitals].sort((a, b) => a.waitMinutes - b.waitMinutes).map(h => (
               <div key={h.id} className={`er ${h.bedsFree === 0 ? 'full' : ''}`}>
                 <b>{h.name}</b>
-                <span>{h.bedsFree} beds · ~{h.waitMinutes} min wait</span>
+                <span>{h.bedsFree} ER beds · ~{h.waitMinutes} min wait</span>
+                <div className="er-depts">
+                  {[...need.keys()].map(name => {
+                    const d = hospitalDepts.find(x => x.hospitalId === h.id && x.name === name);
+                    const state = deptState(d);
+                    return <span key={name} className={`chip ${state}`} title={d?.note ?? ''}>{name}</span>;
+                  })}
+                </div>
               </div>
             ))}
           </div>
@@ -386,14 +400,20 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
       <p className="summary">{p.summary}</p>
       {flags.length > 0 && <div className="flags">{flags.map(f => <span key={f}>{f}</span>)}</div>}
       {ready && <div className={`ready ${ready.ok ? 'ok' : 'gap'}`}>{ready.ok ? '✓' : '⚠'} {ready.text}</div>}
+      {incoming && p.advice && (
+        <div className={`advice ${p.advice.startsWith('Call 911') ? 'gap' : 'ok'}`}>Told patient: {p.advice}</div>
+      )}
       {incoming && prep.length > 0 && (
         <div className="prep">
           <b>Prepare before arrival:</b> {prep.join(' · ')}
           {held && <span className="held">Bed {held.label} held</span>}
         </div>
       )}
-      {v && (
-        <div className="vitals">
+      {incoming ? (
+        <div className="vitals muted">No vitals yet · wearable starts at triage</div>
+      ) : v && (
+        <div className="vitals" title="Wearable from triage · demo replays real de-identified ER stays (MIMIC-IV-ED)">
+          <span className="wearable">Wearable</span>
           <span className={v.hr >= 110 ? 'bad' : ''}>HR <b>{v.hr}</b></span>
           <span className={v.spo2 <= 93 ? 'bad' : ''}>SpO₂ <b>{v.spo2}</b></span>
           <span className={v.sbp <= 90 ? 'bad' : ''}>BP <b>{v.sbp}/{v.dbp}</b></span>
@@ -412,9 +432,11 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
         {canRedirect(p) && offer?.status !== 'pending' && (
           <button className={short ? 'warn' : 'ghost'} onClick={() => onSuggest(p)}>Suggest another ER</button>
         )}
-        <button className="ghost" onClick={() => api.worsen(Number(p.id))}>Worsen</button>
+        {!incoming && <button className="ghost" onClick={() => api.worsen(Number(p.id))}>Worsen</button>}
       </div>
-      {offer?.status === 'pending' && <div className="offer">Offered {offerTo}: waiting for patient…</div>}
+      {offer?.status === 'pending' && (
+        <div className="offer">Better match offered: {offerTo}. {offer.reason} Waiting for patient…</div>
+      )}
       {offer?.status === 'declined' && <div className="offer muted">Patient kept their spot here.</div>}
     </div>
   );

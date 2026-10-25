@@ -39,6 +39,7 @@ const patient = table(
     specialty: t.string().default(''),      // department the patient likely needs (department.name), '' = ED only
     language: t.string().default('en'),     // patient's language: en, es, zh, vi, tl (voice + replies)
     familyToken: t.string().default(''),    // secret for the family status link ('' = not shared)
+    advice: t.string().default(''),         // what FrontDoor told the patient (e.g. call 911 + best-equipped ER)
   }
 );
 
@@ -138,6 +139,26 @@ const redirectOffer = table(
     waitMinutes: t.u32(),
     status: t.string(),
     createdAt: t.timestamp(),
+    reason: t.string().default(''),  // why this ER: "Cardiology: cath lab ready, 1 on call" etc.
+  }
+);
+
+// Department readiness at the OTHER nearby ERs, so a patient can be matched to an ER that can
+// treat their condition. Bed totals come from CDPH licensing; live status is simulated.
+const hospitalDepartment = table(
+  { name: 'hospital_department', public: true },
+  {
+    id: t.u32().primaryKey(),          // hospitalId * 100 + department index
+    hospitalId: t.u32().index('btree'),
+    name: t.string(),
+    bedLabel: t.string(),
+    bedsFree: t.u32(),
+    bedsTotal: t.u32(),                // 0 = not offered at this hospital
+    doctorsOnCall: t.u32(),
+    resource: t.string(),
+    resourceReady: t.bool(),
+    note: t.string(),
+    updatedAt: t.timestamp(),
   }
 );
 
@@ -179,6 +200,7 @@ const staff = table(
 
 const spacetimedb = schema({
   patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer, config, staff, department,
+  hospitalDepartment,
 });
 export default spacetimedb;
 
@@ -357,6 +379,7 @@ export const checkIn = spacetimedb.reducer(
       risk,
       bedId: undefined,
       familyToken: '',
+      advice: '',
       createdAt: ctx.timestamp,
       updatedAt: ctx.timestamp,
     });
@@ -384,6 +407,29 @@ export const holdBed = spacetimedb.reducer(
     getPatient(ctx, patientId);
     releaseHeld(ctx, patientId);
     ctx.db.bed.id.update({ ...b, status: 'reserved', patientId });
+  }
+);
+
+export const setHospitalDepartment = spacetimedb.reducer(
+  {
+    id: t.u32(), hospitalId: t.u32(), name: t.string(), bedLabel: t.string(), bedsFree: t.u32(), bedsTotal: t.u32(),
+    doctorsOnCall: t.u32(), resource: t.string(), resourceReady: t.bool(), note: t.string(),
+  },
+  (ctx, args) => {
+    requireServer(ctx);
+    const row = { ...args, updatedAt: ctx.timestamp };
+    if (ctx.db.hospitalDepartment.id.find(args.id)) ctx.db.hospitalDepartment.id.update(row);
+    else ctx.db.hospitalDepartment.insert(row);
+  }
+);
+
+// What FrontDoor told the patient at check-in (e.g. "Call 911 now. Best-equipped ER: ...").
+export const setAdvice = spacetimedb.reducer(
+  { patientId: t.u64(), advice: t.string() },
+  (ctx, { patientId, advice }) => {
+    requireServer(ctx);
+    const p = getPatient(ctx, patientId);
+    ctx.db.patient.id.update({ ...p, advice, updatedAt: ctx.timestamp });
   }
 );
 
@@ -535,8 +581,8 @@ export const setHospital = spacetimedb.reducer(
 // Only stable walk-ins who haven't arrived can be offered another ER. Once someone is at our
 // door we must see them (EMTALA), and ambulance diversion is a hospital-level decision.
 export const offerRedirect = spacetimedb.reducer(
-  { patientId: t.u64(), hospitalId: t.u32(), driveMinutes: t.u32(), waitMinutes: t.u32() },
-  (ctx, { patientId, hospitalId, driveMinutes, waitMinutes }) => {
+  { patientId: t.u64(), hospitalId: t.u32(), driveMinutes: t.u32(), waitMinutes: t.u32(), reason: t.string() },
+  (ctx, { patientId, hospitalId, driveMinutes, waitMinutes, reason }) => {
     requireServer(ctx);
     const p = getPatient(ctx, patientId);
     if (p.status !== 'incoming') throw new SenderError('only patients still on the way can be redirected');
@@ -546,7 +592,7 @@ export const offerRedirect = spacetimedb.reducer(
     const pending = [...ctx.db.redirectOffer.patientId.filter(patientId)].find(o => o.status === 'pending');
     if (pending) ctx.db.redirectOffer.id.update({ ...pending, status: 'declined' });
     ctx.db.redirectOffer.insert({
-      id: 0n, patientId, hospitalId, driveMinutes, waitMinutes, status: 'pending', createdAt: ctx.timestamp,
+      id: 0n, patientId, hospitalId, driveMinutes, waitMinutes, status: 'pending', createdAt: ctx.timestamp, reason,
     });
   }
 );

@@ -128,7 +128,9 @@ async def _tick() -> None:
     global _last_forecast
     patients = await stdb.sql("SELECT * FROM patient")
     beds = await stdb.sql("SELECT * FROM bed")
-    active = [p for p in patients if p["status"] not in ("discharged", "redirected")]
+    # Vitals start at triage: a wearable clip/patch is handed out on arrival. Nobody is measured
+    # while driving in (they're triaged by what they tell us).
+    active = [p for p in patients if p["status"] in ("waiting", "roomed")]
 
     for p in active:
         pid = p["id"]
