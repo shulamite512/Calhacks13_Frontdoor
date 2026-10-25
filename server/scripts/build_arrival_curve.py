@@ -2,11 +2,11 @@
 
   VOLUME (how many per day): REAL. CPMC Van Ness Campus ED visits from California HCAI
          (2025: 34,742, about 95/day).
-  SHAPE  (which hours are busy): ASSUMED typical ED pattern (quiet 3-6 am, busy late morning to
-         evening). We tried to get a real shape from Google popular times via Apify, but Google
-         hides popular times for hospitals: 0 of 60+ SF and US ER/hospital listings had them.
-         The only walk-in site with data (a downtown Atlanta 24/7 urgent care) peaks at midnight,
-         which is not ER-like, so USE_APIFY_SHAPE is off. Flip it to compare.
+  SHAPE  (which hours are busy): REAL hour-of-day pattern of 222 ED arrivals in the open MIMIC-IV-ED
+         Demo (Boston), built by build_mimic_data.py. Same shape every weekday (too few stays to split).
+         Earlier attempts: Google popular times via Apify are hidden for hospitals (0 of 60+ listings);
+         the only walk-in site with data (an Atlanta 24/7 urgent care) peaks at midnight, so
+         USE_APIFY_SHAPE stays off. Without the MIMIC file we fall back to a typical-ED shape.
 
 Run from server/:  .venv\\Scripts\\python scripts\\build_arrival_curve.py
 Inputs: data/popular_times_raw_us.json (from the Apify run), data/hcai_ed_visits_sf.json
@@ -32,6 +32,10 @@ def main() -> None:
         place = next(p for p in places if p.get("title") == SHAPE_TITLE and p.get("popularTimesHistogram"))
         hist = place["popularTimesHistogram"]
         shape_note = (f"Google popular times of '{place['title']}' ({place.get('city')}, {place.get('state')}) via Apify")
+    elif (DATA / "mimic_arrival_shape.json").exists():
+        mimic = json.loads((DATA / "mimic_arrival_shape.json").read_text(encoding="utf-8"))
+        hist = {d: [{"hour": h, "occupancyPercent": v * 5} for h, v in enumerate(mimic["smoothed"])] for d in DAYS}
+        shape_note = f"real hour-of-day arrivals from {mimic['stays']} ED stays ({mimic['source']})"
     else:
         hist = {d: [{"hour": h, "occupancyPercent": v * 9} for h, v in enumerate(TYPICAL_ED_SHAPE)] for d in DAYS}
         shape_note = ("assumed typical ED pattern; Google popular times are hidden for hospitals "
@@ -52,8 +56,9 @@ def main() -> None:
 
     old = json.loads((DATA / "arrival_curve.json").read_text(encoding="utf-8"))
     curve = {
-        "source": f"HCAI {HCAI_YEAR} volume, typical-ED shape" if not USE_APIFY_SHAPE
-                  else f"HCAI {HCAI_YEAR} volume + Apify popular-times shape",
+        "source": (f"HCAI {HCAI_YEAR} volume + Apify popular-times shape" if USE_APIFY_SHAPE
+                   else f"HCAI {HCAI_YEAR} volume + MIMIC-IV-ED hourly shape" if "MIMIC" in shape_note
+                   else f"HCAI {HCAI_YEAR} volume, typical-ED shape"),
         "volume": f"{OUR_FACILITY}: {visits['ED_Visit']} ED visits in {HCAI_YEAR} (~{daily:.0f}/day), HCAI",
         "shape": shape_note,
         "built_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),

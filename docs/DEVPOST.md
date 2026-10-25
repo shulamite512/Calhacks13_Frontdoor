@@ -39,7 +39,10 @@ Ambulance patients already get this attention. Tools like Twiage send their deta
 ## What's real vs simulated
 | Real | Simulated |
 |---|---|
-| Voice (Cartesia), AI triage (Claude), live database (SpacetimeDB), drive times (OSRM), CPMC's daily ED volume (HCAI), hospital locations, access rules | Vitals, bed and department occupancy, other hospitals' waits, the hourly arrival shape, the ambulance feed |
+| Voice (Cartesia), AI triage (Claude), live database (SpacetimeDB), drive times (OSRM), hospital locations, access rules; CPMC's daily ED volume (HCAI); **hourly arrival pattern and vital-sign trajectories replayed from 222 real de-identified ED stays (MIMIC-IV-ED Demo)**; **licensed bed totals** for ICU (36), perinatal (53) and pediatrics (25) from CDPH | How many beds are free *right now*, doctors on call, resource status, other hospitals' waits, the ambulance feed. These exist only inside hospital systems (HIPAA); in production they'd come from HL7/FHIR feeds |
+
+## How well does the AI triage?
+We ran our triage pipeline on 206 real ED triage records (MIMIC-IV-ED Demo) and compared it with the nurses' ESI: **98.5% within one level**, 58.3% exact. It leans less urgent on borderline ESI 2 vs 3 cases (71.1% of nurse ESI 1-2 cases also rated 1-2), working only from the nurse's 2-3 word complaint and vitals. That's why FrontDoor keeps watching vitals and voice, only ever escalates, and leaves every decision to nurses.
 
 ## What's next
 Pilot with one ED's charge nurses; real vitals from wearables; hospital SSO instead of a PIN; bed and on-call data from the hospital's systems; hand-off of the check-in when a patient goes to another ER.
@@ -72,6 +75,7 @@ Voice is the product: the patient's first contact is speaking their symptoms, an
 3. **It works:** voice check-in → board → alert → "I'm on it" → bed, live, in 5 languages.
 4. **Thoughtful use of Claude:** Claude writes the nurse's pre-triage note, picks the department, lists what to prepare, and judges whether a waiting patient is getting worse, in the patient's language with English output for staff. **Where it could go wrong, and what we did:**
    - *Under-triage:* deterministic red-flag rules run alongside Claude and can only raise urgency, never lower it; vitals trigger alerts on their own.
+   - *Measured:* on 206 real ED triage records, 98.5% were within one ESI level of the nurse, but 33 of the nurses' 114 ESI 1-2 cases were rated 3. We report that openly and design around it.
    - *Silence or noise read as an answer:* answers under 2 letters never reach Claude or page a nurse.
    - *Refusal or outage:* a rule-based fallback still checks the patient in; server-side fallback is enabled.
    - *Unsafe automation:* Claude never assigns beds or redirects anyone. Humans do, and the database refuses to redirect ESI 1–2 or ambulance patients.

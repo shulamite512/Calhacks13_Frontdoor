@@ -687,3 +687,44 @@ Tested in a real browser with a simulated microphone: check-ins fired at 30 s an
 
 Judge line: "FrontDoor keeps asking, in your language, every two minutes. And if you stop answering, that's a signal too."
 
+---
+
+## 17. Making the simulated parts real (MIMIC-IV-ED + CDPH)
+
+**Why some data is simulated at all:** live vitals, bed occupancy and department status exist only inside a hospital's private systems (bedside monitors, the EHR's bed board, on-call schedules), protected by HIPAA. No hackathon team can access them. In production FrontDoor would read them through standard hospital feeds (HL7 v2 ADT / FHIR). So we replaced as much as public data allows:
+
+| Part | Before | Now | Source |
+|---|---|---|---|
+| Daily ED volume | real | real | HCAI: CPMC Van Ness 34,742 visits (2025) |
+| Hourly arrival pattern | assumed | **real** hour-of-day pattern of 222 ED arrivals | MIMIC-IV-ED Demo v2.2 (open, ODbL) |
+| Vitals | random numbers | **replayed real ED vital-sign trajectories** (159 stays) | MIMIC-IV-ED Demo vitalsign table |
+| "Worsen" button | synthetic drift | switches to a **real stay that deteriorated** to critical values (17 stays, all critical within 45 s of demo time) | MIMIC-IV-ED Demo |
+| Department bed totals | made up | **real licensed totals**: ICU 36, perinatal 53, pediatric 25 (+8 PICU); none for coronary care, psych or burns | CDPH bed types, 2026-10-16 |
+| Free beds right now, doctors on call, resource status | simulated | still simulated, staff-editable | (only in hospital systems) |
+
+**How the vitals replay works** ([server/simulator.py](../server/simulator.py)): each patient gets a real stay's trajectory and steps through it every 3 s (one charted reading is about 9 s, interpolated). Background patients get calm stays (no reading crosses an alert threshold) so the demo isn't flooded. Real data is messy, so stays with impossible values (e.g. a charted SpO2 of 10%) are dropped. "Worsen" picks a stay that starts below critical and turns critical within its first 6 readings. Tested live: James went from HR 86 to 130, raising a warning and then a critical alert ("HR 131, RR 22").
+
+### Claude vs real ED nurses (206 real triage cases)
+[server/scripts/eval_triage_mimic.py](../server/scripts/eval_triage_mimic.py) runs our full triage pipeline (Claude + rules, same as /checkin) on every MIMIC-IV-ED Demo triage record with a chief complaint and a nurse-assigned ESI.
+
+| Measure | Result |
+|---|---|
+| Exact match with the nurse's ESI | **58.3%** |
+| Within one ESI level | **98.5%** |
+| FrontDoor more urgent than the nurse | 13.1% |
+| FrontDoor less urgent than the nurse | **28.6%** |
+| Nurse ESI 1-2 cases that FrontDoor also rated 1-2 | **71.1%** (81 of 114) |
+
+Confusion (nurse -> FrontDoor): 1->1: 3, 1->2: 14, 1->3: 1, 2->1: 1, 2->2: 63, 2->3: 31, 2->4: 1, 3->2: 24, 3->3: 54, 3->4: 11, 3->5: 1, 4->3: 2.
+
+**How to read it honestly:**
+- It's almost never far off (98.5% within one level), but it **leans less urgent on ESI 2 vs 3** calls: dyspnea, falls, abnormal labs, GI bleeding ("BRBPR"), transfers.
+- The input is harder than real use: the nurse's 2-3 word shorthand ("SOB", "Psych eval") plus triage vitals, with no age, history or the patient's own words. Nurses saw the patient.
+- The demo cohort is unusually sick (patients later admitted; most triaged ESI 1-2).
+- **This is why FrontDoor never relies on triage alone:** vitals and voice check-ins keep watching, alerts only escalate, and nurses make every decision. Judge line: "We measured it against real nurses and found where it under-triages, so it's designed to be a second set of eyes, not the decision-maker."
+- Improving it fairly would mean tuning on half the cases and measuring on the other half, not tailoring the prompt to these exact cases.
+
+Files: [mimic_arrival_shape.json](../server/data/mimic_arrival_shape.json), [mimic_vitals.json](../server/data/mimic_vitals.json), [eval/](../server/data/eval/), [cdph_beds_cpmc_van_ness.json](../server/data/cdph_beds_cpmc_van_ness.json). Raw downloads live in server/data/raw/ (not committed); [build_mimic_data.py](../server/scripts/build_mimic_data.py) lists the URLs.
+
+Citation: Johnson A, Bulgarelli L, Pollard T, Celi LA, Mark R, Horng S. MIMIC-IV-ED Demo (version 2.2). PhysioNet (2023). Open Data Commons Open Database License v1.0. Derived files in this repo are shared under the same license.
+

@@ -1,0 +1,15 @@
+{
+ "source": "CDPH Licensed and Certified Healthcare Facility Bed Types and Counts (data.chhs.ca.gov)",
+ "facility": "CALIFORNIA PACIFIC MEDICAL CENTER - VAN NESS CAMPUS",
+ "facid": "220000022",
+ "data_date": "2026-10-16",
+ "licensed_beds": {
+  "INTENSIVE CARE": 36,
+  "INTENSIVE CARE NEWBORN NURSERY": 35,
+  "PERINATAL": 53,
+  "PEDIATRIC": 25,
+  "UNSPECIFIED GENERAL ACUTE CARE": 135,
+  "PEDIATRIC INTENSIVE CARE UNIT": 8
+ },
+ "total": 292
+}

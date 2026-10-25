@@ -4,3 +4,6 @@ __pycache__/
 .venv/
 dist/
 target/
+
+# Raw downloaded datasets (fetched by scripts, not committed)
+server/data/raw/

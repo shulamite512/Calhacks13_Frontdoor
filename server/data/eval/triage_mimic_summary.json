@@ -1,0 +1,104 @@
+{
+ "source": "MIMIC-IV-ED Demo v2.2 (PhysioNet, ODbL), triage table",
+ "pipeline": "triage.triage (claude-opus-5-5, effort low) + red_flags rules, same as /checkin",
+ "run_at": "2026-10-25T01:28+00:00",
+ "cases": 206,
+ "exact_match_pct": 58.3,
+ "within_one_level_pct": 98.5,
+ "frontdoor_more_urgent_pct": 13.1,
+ "frontdoor_less_urgent_pct": 28.6,
+ "nurse_high_risk_cases": 114,
+ "high_risk_rated_esi3_or_lower": 33,
+ "high_risk_sensitivity_pct": 71.1,
+ "confusion_nurse_to_frontdoor": {
+  "1->1": 3,
+  "1->2": 14,
+  "1->3": 1,
+  "2->1": 1,
+  "2->2": 63,
+  "2->3": 31,
+  "2->4": 1,
+  "3->2": 24,
+  "3->3": 54,
+  "3->4": 11,
+  "3->5": 1,
+  "4->3": 2
+ },
+ "missed_high_risk_examples": [
+  {
+   "complaint": "Abd pain, LEAKING ASCITES",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Psych eval",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "S/P FALL",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Fatigue, s/p Fall",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "ELEVATED INR",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Abd pain, N/V",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Cough, Dyspnea",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Weakness, Abnormal labs",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "RIGHT EAR PAIN/DRAINAGE",
+   "nurse": 2,
+   "frontdoor": 4
+  },
+  {
+   "complaint": "Dyspnea",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Dyspnea",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Dyspnea, Transfer",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "Wound eval, Transfer",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "EYE EVAL",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "BRBPR",
+   "nurse": 2,
+   "frontdoor": 3
+  }
+ ]
+}

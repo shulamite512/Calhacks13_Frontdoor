@@ -264,6 +264,7 @@ function BoardInner({ nurse }: { nurse: string }) {
                 <b>
                   {d.name}
                   {need.has(d.name) && <span className="need">{need.get(d.name)} pt{need.get(d.name) === 1 ? '' : 's'}</span>}
+                  {d.note.includes('CDPH') && <span className="real" title={d.note}>licensed total: CDPH</span>}
                 </b>
                 {d.bedsTotal === 0 ? (
                   <span className="muted">{d.note}</span>

@@ -99,11 +99,12 @@ def _fallback_triage(transcript: str) -> Triage:
     )
 
 
-async def triage(transcript: str, age: int, language: str = "English") -> Triage:
+async def triage(transcript: str, age: int | None, language: str = "English") -> Triage:
     try:
         result = await _parse(
             TRIAGE_SYSTEM,
-            f"Patient age: {age}\nPatient's language: {language}\nPatient said: \"{transcript}\"\n\n"
+            f"Patient age: {age if age is not None else 'unknown'}\nPatient's language: {language}\n"
+            f"Patient said: \"{transcript}\"\n\n"
             f"Write complaint, summary, red_flags and prep in English for the nurse. "
             f"Write spoken_reply in {language}.",
             Triage,

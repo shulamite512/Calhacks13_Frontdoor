@@ -25,8 +25,10 @@ Docs: [team guide](docs/FRONTDOOR_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
 follow-ups ([server/triage.py](server/triage.py)), with deterministic safety rules alongside
 ([server/red_flags.py](server/red_flags.py)).
 
-**Apify + HCAI data:** ER-entrance locations from an Apify Google Maps scrape; real ED volumes from
-California HCAI drive the forecast ([server/scripts/](server/scripts/)).
+**Public data:** ER-entrance locations from an Apify Google Maps scrape; real ED volumes (California
+HCAI) and the real hourly arrival pattern (MIMIC-IV-ED Demo) drive the forecast; vitals replay real
+de-identified ED stays (MIMIC-IV-ED Demo, ODbL); licensed bed totals from CDPH. Claude's triage was
+evaluated against real nurse ESI ([server/data/eval/](server/data/eval/)). Scripts: [server/scripts/](server/scripts/).
 
 ```
 phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS, Claude triage
