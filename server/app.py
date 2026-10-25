@@ -113,7 +113,7 @@ class CheckInIn(BaseModel):
     name: str
     age: int
     transcript: str
-    etaMinutes: int = 0
+    etaMinutes: int | None = None  # None: compute the real drive time from lat/lng
     lat: float = DEMO_START[0]
     lng: float = DEMO_START[1]
     language: str = "en"
@@ -224,13 +224,39 @@ async def _patient_by_name(name: str) -> dict | None:
     return max(rows, key=lambda r: r["id"]) if rows else None
 
 
+NEARBY_RADIUS_KM = 25
+SERVICE_AREA_KM = 40  # beyond this from our ER, the phone is outside the demo area (San Francisco)
+
+
+@app.get("/nearby")
+async def nearby(lat: float, lng: float):
+    """ERs near the patient's position, with real drive times and current waits (shown before they speak)."""
+    km_to_us = routing.distance_m(lat, lng, HOSPITAL["lat"], HOSPITAL["lng"]) / 1000
+    options = await matching.rank("", lat, lng, HOSPITAL)
+    near = [{"name": o["name"], "driveMinutes": o["driveMinutes"], "waitMinutes": o["waitMinutes"],
+             "km": round(routing.distance_m(lat, lng, o["lat"], o["lng"]) / 1000, 1), "open": o["canTreat"]}
+            for o in options]
+    near = sorted((n for n in near if n["km"] <= NEARBY_RADIUS_KM), key=lambda n: n["driveMinutes"])
+    return {"inServiceArea": km_to_us <= SERVICE_AREA_KM, "kmToOurEr": round(km_to_us, 1),
+            "demoLocation": {"lat": DEMO_START[0], "lng": DEMO_START[1], "label": "Palace of Fine Arts, San Francisco"},
+            "ers": near}
+
+
 @app.post("/checkin")
 async def checkin(body: CheckInIn):
     lang = voice.lang_or_en(body.language)
     t = await triage.triage(body.transcript, body.age, voice.LANGUAGES[lang])
+    eta = body.etaMinutes
+    if eta is None:
+        # Real drive time from where the patient is right now; at the door counts as arrived.
+        if routing.distance_m(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"]) <= ARRIVED_WITHIN_M:
+            eta = 0
+        else:
+            seconds, _ = await routing.route(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"])
+            eta = max(1, round(seconds / 60))
     await stdb.call(
         "check_in", body.name, body.age, t.complaint, body.transcript, t.summary, t.acuity,
-        ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng, "walk-in", ", ".join(t.prep),
+        ", ".join(t.red_flags), eta, body.lat, body.lng, "walk-in", ", ".join(t.prep),
         body.phoneId.lower().removeprefix("0x"), "" if t.specialty == "Emergency" else t.specialty, lang,
     )
     p = await _patient_by_name(body.name)
@@ -243,11 +269,17 @@ async def checkin(body: CheckInIn):
     return {"patientId": p["id"] if p else None, **t.model_dump(), "match": match}
 
 
+# ESI 2 problems that are urgent but usually safe to drive in for; everything else at ESI 2
+# (heart, stroke, trauma, burns, breathing, mental-health crisis, ...) gets "call 911".
+DRIVE_OK_WHEN_URGENT = {"Orthopedics", "Surgery", "Gastroenterology", "Nephrology"}
+
+
 async def _match_and_advise(p: dict) -> dict:
     """Find the ER that can treat this patient right now and tell them (phone) / the board.
 
-    - Critical (ESI 1-2) and still on the way: "Call 911 now" plus the best-equipped ER. We never tell
-      a critical patient to keep driving somewhere.
+    - Critical (ESI 1, or ESI 2 with a time-critical problem) and still on the way: "Call 911 now"
+      plus the best-equipped ER. We never tell a critical patient to keep driving somewhere.
+    - ESI 2 but drivable (fracture, belly pain): "Go now" to the best ER that can treat it.
     - Stable walk-in on the way: if another ER can treat them and ours can't (or it's 10+ min faster),
       offer it on the phone with the reason; the patient decides. Otherwise: "we're ready for you".
     - Already here: nothing (EMTALA: anyone at our door is seen here).
@@ -258,12 +290,19 @@ async def _match_and_advise(p: dict) -> dict:
     ours = next(o for o in options if o["hospitalId"] == matching.OUR_ID)
     best = options[0]
     result = {"best": best, "ours": ours, "options": options[:4]}
-    if p["acuity"] <= 2:
+    if p["acuity"] == 1 or (p["acuity"] == 2 and p["specialty"] not in DRIVE_OK_WHEN_URGENT):
         where = (f" Best-equipped ER right now: {best['name']} ({best['reason']})." if best["canTreat"]
                  else " Paramedics will take you to the right ER.")
         first = ("Call 911 now if you're in immediate danger, or call or text 988 (Suicide & Crisis Lifeline)."
                  if p["specialty"] == "Psychiatry" else "Call 911 now: an ambulance is the safest way in.")
         await stdb.call("set_advice", p["id"], first + where)
+        return result
+    if p["acuity"] == 2:
+        # Urgent but not time-critical (e.g. a broken wrist): go now, to the ER that can treat it.
+        target = best if best["canTreat"] else ours
+        await stdb.call("set_advice", p["id"],
+                        f"Go now, don't wait. Best ER for you right now: {target['name']} "
+                        f"({target['reason']}, about {target['driveMinutes']} min drive).")
         return result
     if best["hospitalId"] != matching.OUR_ID and (not ours["canTreat"] or best["totalMinutes"] + 10 < ours["totalMinutes"]):
         here = ours["reason"] if not ours["canTreat"] else f"about {ours['totalMinutes']} min until care here"
@@ -429,8 +468,10 @@ async def family_status(token: str):
 
 @app.post("/demo/drive")
 async def demo_drive(body: PatientIdIn):
-    """Simulate the patient driving from the Palace of Fine Arts to the ER in about a minute."""
-    _start_drive(body.patientId, *DEMO_START, 60)
+    """Simulate the patient driving from where they checked in to the ER in about a minute."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
+    start = (rows[0]["lat"], rows[0]["lng"]) if rows else DEMO_START
+    _start_drive(body.patientId, *start, 60)
     return {"ok": True}
 
 

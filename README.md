@@ -88,7 +88,8 @@ patients drive in from the Palace of Fine Arts.
 
 1. Board: sign in with the staff PIN, click **Reset demo**. Robert (abdominal pain, needs surgery) is
    already offered **Kaiser** because our OR is busy: the tile shows why.
-2. Phone: say "Pain in my lower right belly for eight hours, getting sharper." The phone shows
+2. Phone: the page asks for location and lists **ERs near you** (outside SF it uses the demo location).
+   Say "Pain in my lower right belly for eight hours, getting sharper." The phone shows
    **A better match for you right now: Kaiser. Surgery ready, operating room ready. At CPMC: operating
    room busy. 7 min away.** Tap **Keep my spot** (or Go to Kaiser to show directions).
 3. Phone (new check-in): say "Crushing chest pain going to my left arm, I'm sweating." Red **Call 911 now**

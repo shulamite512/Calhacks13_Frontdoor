@@ -19,6 +19,13 @@ export type TriageResult = {
   spoken_reply: string;
 };
 
+export type Nearby = {
+  inServiceArea: boolean;
+  kmToOurEr: number;
+  demoLocation: { lat: number; lng: number; label: string };
+  ers: Array<{ name: string; driveMinutes: number; waitMinutes: number; km: number; open: boolean }>;
+};
+
 export type FamilyStatus = {
   firstName: string;
   hospital: string;
@@ -82,7 +89,7 @@ export const api = {
     URL.revokeObjectURL(url);
   },
 
-  checkIn: (b: { name: string; age: number; transcript: string; etaMinutes: number; phoneId: string; language: string }) =>
+  checkIn: (b: { name: string; age: number; transcript: string; lat: number; lng: number; phoneId: string; language: string }) =>
     post<TriageResult>('/checkin', b),
 
   async staffLogin(b: { pin: string; identity: string; name: string }) {
@@ -98,6 +105,12 @@ export const api = {
   followUp: (b: { patientId: number; question: string; answer: string }) => post<FollowUpResult>('/followup', b),
 
   missedCheckins: (patientId: number, count: number) => post('/followup/missed', { patientId, count }),
+
+  async nearby(lat: number, lng: number): Promise<Nearby> {
+    const r = await fetch(`${API_URL}/nearby?lat=${lat}&lng=${lng}`);
+    if (!r.ok) throw new Error(`nearby failed: ${r.status}`);
+    return r.json();
+  },
 
   familyShare: (b: { patientId: number; phoneId: string }) => post<{ token: string }>('/family/share', b),
 

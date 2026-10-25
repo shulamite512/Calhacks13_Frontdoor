@@ -171,4 +171,10 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .action .btns button { padding: 4px 10px; font-size: 13px; }
 .action.pending { background: var(--warn-bg); border-radius: 8px; padding: 8px; }
 .action.undone, .action.rejected { opacity: .5; text-decoration: line-through; }
+.nearby { margin: 6px 0 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.nearby .loc { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.nearby .loc button { padding: 4px 8px; font-size: 12px; white-space: nowrap; }
+.near-er { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.near-er span { color: var(--muted); white-space: nowrap; }
+.near-er.full { opacity: .5; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

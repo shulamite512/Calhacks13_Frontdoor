@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import { reducers, tables } from './module_bindings';
-import { api, type FollowUpResult, type TriageResult } from './api';
+import { api, type FollowUpResult, type Nearby, type TriageResult } from './api';
 import { useRecorder } from './useRecorder';
 import { LANGS, t, type Lang } from './i18n';
 
 type Step = 'form' | 'listening' | 'thinking' | 'done';
+type Loc = { lat: number; lng: number; mode: 'gps' | 'demo'; outside?: boolean; denied?: boolean };
+
+// Demo location (our ER network is in San Francisco).
+const DEMO_LOC: Loc = { lat: 37.80292, lng: -122.4484, mode: 'demo' };
 type Session = { result: TriageResult; name: string; lang?: Lang };
 
 const SESSION_KEY = 'frontdoor_session';
@@ -37,13 +41,49 @@ export default function CheckIn() {
   const [session, setSession] = useState<Session | null>(loadSession);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
-  const [eta, setEta] = useState('10');
+  const [loc, setLoc] = useState<Loc | null>(null);
+  const [near, setNear] = useState<Nearby | null>(null);
   const [transcript, setTranscript] = useState('');
   const [step, setStep] = useState<Step>('form');
   const [error, setError] = useState('');
   const [lang, setLang] = useState<Lang>('en');
   const rec = useRecorder();
   const { identity } = useSpacetimeDB();
+
+  // Ask for the driver's location as soon as the page opens, then show the ERs around them.
+  useEffect(() => {
+    if (session) return;
+    useMyLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function showNearby(l: Loc) {
+    setLoc(l);
+    try {
+      const n = await api.nearby(l.lat, l.lng);
+      if (l.mode === 'gps' && !n.inServiceArea) {
+        // Our ER network is in San Francisco; from elsewhere, use the demo location instead.
+        const demo = { lat: n.demoLocation.lat, lng: n.demoLocation.lng, mode: 'demo' as const, outside: true };
+        setLoc(demo);
+        setNear(await api.nearby(demo.lat, demo.lng));
+        return;
+      }
+      setNear(n);
+    } catch {
+      setNear(null);
+    }
+  }
+
+  function useMyLocation() {
+    setLoc(null);
+    setNear(null);
+    if (!navigator.geolocation) return void showNearby(DEMO_LOC);
+    navigator.geolocation.getCurrentPosition(
+      pos => void showNearby({ lat: pos.coords.latitude, lng: pos.coords.longitude, mode: 'gps' }),
+      () => void showNearby({ ...DEMO_LOC, denied: true }),
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  }
 
   async function recordSymptoms() {
     if (rec.recording) return rec.stop();
@@ -63,11 +103,12 @@ export default function CheckIn() {
   async function submit() {
     if (!name || !age || transcript.trim().length < 3) return setError('Please add your name, age and symptoms.');
     if (!identity) return setError('Still connecting, try again in a moment.');
+    if (!loc) return setError('Still finding your location, one moment.');
     setError('');
     setStep('thinking');
     try {
       const r = await api.checkIn({
-        name, age: Number(age), transcript, etaMinutes: Number(eta) || 0, phoneId: identity.toHexString(), language: lang,
+        name, age: Number(age), transcript, lat: loc.lat, lng: loc.lng, phoneId: identity.toHexString(), language: lang,
       });
       const s = { result: r, name, lang };
       saveSession(s);
@@ -99,11 +140,33 @@ export default function CheckIn() {
       </div>
       <p className="muted">{t('tagline', lang)}</p>
 
-      <label>{t('name', lang)}<input value={name} onChange={e => setName(e.target.value)} /></label>
-      <div className="row">
-        <label>{t('age', lang)}<input value={age} onChange={e => setAge(e.target.value)} inputMode="numeric" /></label>
-        <label>{t('minutesAway', lang)}<input value={eta} onChange={e => setEta(e.target.value)} inputMode="numeric" /></label>
+      <div className="nearby">
+        <div className="loc">
+          {!loc ? t('locating', lang)
+            : loc.mode === 'gps' ? `📍 ${t('usingGps', lang)}`
+            : `📍 ${t('usingDemo', lang)}${loc.outside ? ` · ${t('outside', lang)}` : loc.denied ? ` · ${t('denied', lang)}` : ''}`}
+          {loc && (
+            <button className="ghost" onClick={() => (loc.mode === 'gps' ? showNearby(DEMO_LOC) : useMyLocation())}>
+              {loc.mode === 'gps' ? t('useDemo', lang) : t('useGps', lang)}
+            </button>
+          )}
+        </div>
+        {near && near.ers.length > 0 && (
+          <>
+            <div className="muted">{t('nearYou', lang)}</div>
+            {near.ers.slice(0, 4).map(er => (
+              <div key={er.name} className={`near-er ${er.open ? '' : 'full'}`}>
+                <b>{er.name}</b>
+                <span>{er.driveMinutes} {t('minDrive', lang)} · ~{er.waitMinutes} {t('minWait', lang)}</span>
+              </div>
+            ))}
+            <div className="fine">{t('nearHint', lang)}</div>
+          </>
+        )}
       </div>
+
+      <label>{t('name', lang)}<input value={name} onChange={e => setName(e.target.value)} /></label>
+      <label>{t('age', lang)}<input value={age} onChange={e => setAge(e.target.value)} inputMode="numeric" /></label>
 
       <button className={`mic ${rec.recording ? 'on' : ''}`} onClick={recordSymptoms} disabled={step === 'thinking'}>
         {rec.recording ? t('tapDone', lang) : step === 'thinking' ? t('working', lang) : t('describe', lang)}

@@ -848,3 +848,26 @@ For a true emergency you should, and FrontDoor tells you to. But most ER patient
 **"Where do vitals come from for someone in a car?"**
 On the way in, there are none; your voice is your vital sign, and that's what Claude triages. Ambulance patients are on the paramedics' monitor, so their vitals stream en route (labeled "Paramedic monitor"). Walk-ins get vitals at triage and then a wearable clip/patch in the waiting room (labeled "Wearable"), plus voice check-ins every 2 minutes. In the demo, both replay real de-identified ER stays.
 
+---
+
+## 22. Location first: the phone finds you, then the ERs around you
+
+**Flow on the check-in page ([web/src/CheckIn.tsx](../web/src/CheckIn.tsx)):**
+1. As soon as the page opens it asks for the phone's location.
+2. `GET /nearby?lat=..&lng=..` ([server/app.py](../server/app.py)) returns the ERs within 25 km with **real drive time (OSRM) and current wait**, shown as "ERs near you right now" before the patient says anything.
+3. The patient speaks; on check-in the phone sends its **real coordinates**. The server computes the **ETA to our ER from the real drive time** (no more typing "minutes away"); within 150 m counts as already arrived.
+4. Matching (section 18) then picks the ER that can treat this condition, from that position. **Simulate drive** starts from where the patient checked in.
+
+**Demo area:** our ER network is in San Francisco. If the phone is more than 40 km from our ER (e.g. at SJSU, 69 km away), the page says "you're outside San Francisco" and uses the **demo location (Palace of Fine Arts)**; a button switches between demo and real location. If location is denied, it also falls back to the demo location.
+
+**Refined 911 rule** (found while testing location): ESI 1 always gets "Call 911". ESI 2 gets "Call 911" only for time-critical problems (heart, stroke, trauma, burns, breathing, ICU-level, mental-health crisis). Urgent-but-drivable ESI 2 problems (**Orthopedics, Surgery, Gastroenterology, Nephrology**, e.g. a bent, swollen wrist) get **"Go now, don't wait. Best ER for you right now: Kaiser (orthopedics ready, about 10 min drive)."**
+
+Tested in a real browser with simulated GPS:
+| Position | Result |
+|---|---|
+| SJSU, San Jose | "Demo location: Palace of Fine Arts, SF · you're outside San Francisco" |
+| Golden Gate Park, SF | Real location; ERs near you: UCSF Parnassus 7 min · ~40 min wait, UCSF Stanyan 8 min, Kaiser 10 min · ~15 min wait, CPMC 13 min |
+| ...then a bent wrist (ESI 2) | Go now -> Kaiser, orthopedics ready |
+| ...chest pain (ESI 2) | Call 911 -> best-equipped UCSF Parnassus (cath lab ready, 26 coronary care beds) |
+| ...ankle sprain (ESI 4) | Offered a better-matched ER (ortho ready vs ~81 min until care at CPMC) |
+
