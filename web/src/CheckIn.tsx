@@ -330,7 +330,6 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
   const { identity } = useSpacetimeDB();
   const [familyLink, setFamilyLink] = useState('');
   const [busy, setBusy] = useState(false);
-  const [arrived, setArrived] = useState(false);
   const [log, setLog] = useState<Array<{ a: string; r: FollowUpResult }>>([]);
   const [listening, setListening] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -377,7 +376,6 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
         if (r.arrived) {
           navigator.geolocation.clearWatch(watch);
           setSharing(false);
-          setArrived(true);
         }
       },
       () => setSharing(false),
@@ -436,9 +434,9 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
       {pid != null && <LiveStatus patientId={pid} />}
       {pid != null && status === 'incoming' && <Options patientId={pid} lang={lang} />}
 
-      {!arrived && pid != null && (
+      {status === 'incoming' && pid != null && (
         <>
-          <button className="primary" onClick={() => api.arrive(pid).then(() => setArrived(true))}>
+          <button className="primary" onClick={() => api.arrive(pid)}>
             {t('arrived', lang)}
           </button>
           <div className="row">
@@ -450,9 +448,12 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
         </>
       )}
 
-      <button className={`mic ${listening ? 'on' : ''}`} onClick={() => checkOnMe()} disabled={busy && !listening}>
-        {listening ? t('listening', lang) : busy ? t('working', lang) : t('checkOnMe', lang)}
-      </button>
+      {/* Voice check-ins are for the waiting room, never while someone is driving. */}
+      {status !== undefined && status !== 'incoming' && (
+        <button className={`mic ${listening ? 'on' : ''}`} onClick={() => checkOnMe()} disabled={busy && !listening}>
+          {listening ? t('listening', lang) : busy ? t('working', lang) : t('checkOnMe', lang)}
+        </button>
+      )}
 
       {status === 'waiting' && (
         <label className="auto">

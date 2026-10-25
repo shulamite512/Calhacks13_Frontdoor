@@ -186,4 +186,13 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .opt.no { opacity: .6; }
 .opt-reason { color: var(--muted); margin: 2px 0; }
 .family-map { height: 220px; margin: 10px 0; }
+.ems-tag { font-size: 13px; background: var(--crit); color: #fff; border-radius: 6px; padding: 2px 8px; vertical-align: middle; }
+.ems select { width: 100%; padding: 10px; font: inherit; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+.vital-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 6px 0; }
+.vital-inputs label { font-size: 12px; }
+.vital-inputs input { width: 100%; min-width: 0; }
+.vital-inputs label.from-report input { border-color: var(--warn); background: var(--warn-bg); }
+.vsrc { font-size: 10px; margin-left: 3px; padding: 0 4px; border-radius: 4px; background: var(--line); color: var(--muted); }
+.vsrc.crew { background: var(--ok-bg); color: var(--ok); }
+.ems .opt button { margin-top: 6px; width: 100%; padding: 8px; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

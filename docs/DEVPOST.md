@@ -18,8 +18,8 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
    - After speaking you see **your options**: the top ERs for your condition, each with doctors on call, beds free, equipment, drive time and wait, plus directions.
 2. **The ER knows you're coming.** Your tile appears on the charge nurse's board with your summary, red flags and "Prepare before arrival: 12-lead ECG, cardiac monitor", on a live map with your ETA. The nurse can hold a bed.
 3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes FrontDoor asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
-4. **An AI agent that acts on what's urgent.** The Charge-Nurse Copilot watches the board. When a critical patient is on the way, or someone in the waiting room gets worse, it acts within seconds: holds the right bed, pages the department ("Stroke alert, ETA 11 min, have CT ready"), posts a checklist, flags priority. Bigger moves (assigning a bed, offering another ER) wait for a nurse's Approve. It can't lower urgency, discharge anyone or redirect a critical patient: those tools don't exist.
-**Ambulances too:** paramedic-monitor vitals stream ahead and keep updating; if our ER can't treat an incoming ambulance patient (e.g. major trauma), the board recommends a better destination ("Zuckerberg: trauma team ready, 3 min") for the charge nurse to relay to the crew.
+4. **An AI agent that acts on what's urgent.** The Charge-Nurse Assistant watches the board. When a critical patient is on the way, or someone in the waiting room gets worse, it acts within seconds: holds the right bed, pages the department ("Stroke alert, ETA 11 min, have CT ready"), posts a checklist, flags priority. Bigger moves (assigning a bed, offering another ER) wait for a nurse's Approve. It can't lower urgency, discharge anyone or redirect a critical patient: those tools don't exist.
+**Ambulances too:** the crew's tablet (`#/ems`) lets paramedics speak their report, see which ERs can take the patient (e.g. a STEMI skips the closest ER because its cath lab is busy), and pre-notify one. The patient appears on that ER's board with live monitor vitals, and the hospital's replies come back to the tablet and are read aloud: "Bed held for your patient." If the ER can't treat the patient (e.g. major trauma), once a nurse approves it, the tablet shows the hospital's suggested destination ("Zuckerberg: trauma team ready, 3 min"); the crew makes the final call.
 
 **Family:** a shared link shows where the patient is and their ETA while they drive, then their status (nurse with them, bed A4). Never symptoms or vitals.
 
@@ -29,7 +29,7 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
 - **SpacetimeDB (Maincloud)** is the real-time backend: 12 tables, reducers for every state change, per-user views, and access rules enforced in the database.
 - **Cartesia** handles voice. **Ink** (`ink-whisper`) does speech-to-text and **Sonic** (`sonic-3.6`) speaks replies, in 5 languages, using one voice.
 - **Claude** (`claude-opus-5-5`, low effort, structured outputs) handles triage, department routing, prep items and waiting-room follow-ups. Deterministic red-flag rules run alongside it.
-- **Claude as an agent** (tool use, validated in code, three autonomy levels) runs the Charge-Nurse Copilot.
+- **Claude as an agent** (tool use, validated in code, three autonomy levels) runs the Charge-Nurse Assistant.
 - **Python FastAPI** runs the voice and AI server, a vitals simulator, the bed forecast and OSRM routing.
 - **React + Leaflet/OpenStreetMap** for the patient phone page, the nurse board and the family page.
 - **Real data:** California HCAI ED volumes (CPMC Van Ness: 34,742 visits in 2025) feed the forecast. ER-entrance locations came from an Apify Google Maps scrape.
@@ -51,6 +51,12 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
 
 ## How well does the AI triage?
 We ran our triage pipeline on 206 real ED triage records (MIMIC-IV-ED Demo) and compared it with the nurses' ESI. The first version leaned less urgent on borderline cases. We then rewrote the prompt to walk the published ESI v4 algorithm, tuning on one half of the cases and measuring **once** on the held-out half: it caught **96% of the nurses' ESI 1-2 patients (48 of 50), up from 84%**, stayed 98% within one level, and became more cautious (35% rated more urgent than the nurse, the safer error for a heads-up a nurse confirms). FrontDoor still only escalates, keeps watching vitals and voice, and leaves every decision to nurses.
+
+## What we learned
+- "Nearest ER" is often the wrong answer: what matters is whether that ER has the right department, doctor, bed and equipment right now.
+- Safety rules belong in the database, not the UI: if a reducer refuses to redirect a critical patient, no screen can get it wrong.
+- Measure the AI before trusting it: our first triage prompt looked fine in demos but under-triaged real borderline cases until we tested it against nurses.
+- Real hospital data is hard to get (Google hides hospital popular times; live bed counts sit behind HIPAA), so we used public state data and are honest about what's simulated.
 
 ## What's next
 Pilot with one ED's charge nurses; real vitals from wearables; hospital SSO instead of a PIN; bed and on-call data from the hospital's systems; hand-off of the check-in when a patient goes to another ER.
@@ -86,7 +92,7 @@ Voice is the product: the patient's first contact is speaking their symptoms, an
    - *Measured:* on 206 real ED triage records, the first version under-triaged borderline cases. Walking the ESI v4 algorithm in the prompt (tuned on half the cases, tested once on the other half) raised high-risk sensitivity from 84% to 96% (48 of 50) at the cost of more over-triage, which we report openly.
    - *Silence or noise read as an answer:* answers under 2 letters never reach Claude or page a nurse.
    - *Refusal or outage:* a rule-based fallback still checks the patient in; server-side fallback is enabled.
-   - *Unsafe automation:* the Copilot agent can only do reversible things on its own (hold a bed, page, checklist); assigning a bed or offering another ER needs a nurse's Approve, and there is no tool to lower urgency, discharge or redirect a critical patient. Every tool call is validated in code and logged with the agent's reason.
+   - *Unsafe automation:* the Assistant agent can only do reversible things on its own (hold a bed, page, checklist); assigning a bed or offering another ER needs a nurse's Approve, and there is no tool to lower urgency, discharge or redirect a critical patient. Every tool call is validated in code and logged with the agent's reason.
    - *Diagnosis:* the patient is never told a diagnosis, only that they're checked in and when to call 911.
 
 ## Track: Microsoft "Built for the Real World"

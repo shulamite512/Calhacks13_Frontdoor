@@ -795,9 +795,9 @@ Nobody is measured while driving. **Vitals start at triage**, from a wearable cl
 
 ---
 
-## 19. Charge-Nurse Copilot (the agent)
+## 19. Charge-Nurse Assistant (the agent)
 
-Before this, AI was used in single steps (triage one patient, judge one answer). The Copilot is an **agent**: it notices urgent events on the board and **acts**, using a small set of tools, with its reasoning visible.
+Before this, AI was used in single steps (triage one patient, judge one answer). The Assistant is an **agent**: it notices urgent events on the board and **acts**, using a small set of tools, with its reasoning visible.
 
 **Triggers** ([server/copilot.py](../server/copilot.py), checked every 3 s tick): a critical patient (ESI 1-2) on the way; a waiting patient with a new critical alert; the forecast 4+ beds short (at most every 10 min).
 
@@ -809,7 +809,7 @@ Before this, AI was used in single steps (triage one patient, judge one answer).
 | **Approval** (a nurse taps Approve / Reject) | `propose_bed`, `propose_other_er` (only stable walk-ins on the way, uses the same matching) | Affects the patient directly |
 | **Never** (no tool exists) | Lower urgency, discharge, redirect a critical patient | Too risky to automate |
 
-Every action is written to the private `agent_action` table (staff read it through the `my_agent_actions` view) with the agent's reason, and shown in the purple **Copilot** panel at the top of the board. Approvals run with the nurse's own permissions (assign bed / offer ER), then the action is marked "approved by <nurse>".
+Every action is written to the private `agent_action` table (staff read it through the `my_agent_actions` view) with the agent's reason, and shown in the purple **Assistant** panel at the top of the board. Approvals run with the nurse's own permissions (assign bed / offer ER), then the action is marked "approved by <nurse>".
 
 **Tested live:**
 - Reset → ambulance stroke patient on the way → within seconds, with no nurse tap: **held A4**, **paged Neurology** ("Stroke alert, facial droop + slurred speech, EMS ETA 11 min to A4, please have CT ready"), **flagged top priority**, **posted a stroke checklist** (last known well time, glucose, NIHSS, straight to CT, IV x2). It also noted that A4 was the last free Acute bed, so the next walk-in will need a hallway bed.
@@ -827,7 +827,7 @@ Turn it off with `COPILOT_ENABLED=0` in `.env`.
 | **Cartesia Ink** (speech-to-text) | Check-in and waiting-room answers, 5 languages |
 | **Cartesia Sonic** (text-to-speech) | Replies and check-in questions in the patient's language |
 | **Claude, single calls** | Triage note: complaint, summary, ESI, red flags, department, prep items; language bridge; judging follow-up answers (stable / worse / critical) |
-| **Claude, agent** | Charge-Nurse Copilot: acts on urgent events with validated tools (section 19) |
+| **Claude, agent** | Charge-Nurse Assistant: acts on urgent events with validated tools (section 19) |
 | **Claude, evaluated** | 206 real ER cases vs nurses; 96% of high-risk caught on held-out cases (section 17) |
 
 | Deliberately **not** AI | Why |
@@ -882,10 +882,23 @@ After speaking, a driver still on the way sees **the top 4 ERs for their conditi
 The status-only family link now also shows a **live map with the patient's position and ETA** ("Ben · 13 min away") and the ER, **only while they're on the way**. Location disappears once they arrive; symptoms and vitals are never shown. The patient opts in by tapping "Share my status with family".
 
 **3. Ambulance destination advisory** ([server/copilot.py](../server/copilot.py) `_ems_advisory`)
-When an ambulance is coming that our ER can't treat (e.g. major trauma: we're not a trauma center), FrontDoor ranks the ERs by drive time for that condition and posts **"🚑 Better destination for EMS Medic 7: Zuckerberg SF General (trauma team ready, 3 min)"** on the ambulance's tile and in the Copilot panel, with a **Crew called** button. This is deterministic (no model) and it's advice: paramedics/EMS make the final destination call, which is how ambulance diversion works. The Copilot agent also sees `our_er_can_treat: false` in its snapshot, so it won't hold a bed for that patient and instead pages the charge nurse to call the crew.
+When an ambulance is coming that our ER can't treat (e.g. major trauma: we're not a trauma center), FrontDoor ranks the ERs by drive time for that condition and posts **"🚑 Better destination for EMS Medic 7: Zuckerberg SF General (trauma team ready, 3 min)"** on the ambulance's tile and in the Assistant panel, with a **Send to crew** button (the crew's tablet shows the advice only after a nurse sends it; **Reject** means the crew never sees it). This is deterministic (no model) and it's advice: paramedics/EMS make the final destination call, which is how ambulance diversion works. The Assistant agent also sees `our_er_can_treat: false` in its snapshot, so it won't hold a bed for that patient and instead pages the charge nurse to call the crew.
 
 The demo now seeds a second ambulance: **EMS Medic 7, female ~30, motorcycle crash with an open leg fracture (ESI 1, Trauma)**.
 
 ### The pitch, final shape
 "FrontDoor gives every car what an ambulance gets: speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you (or call 911 if it's critical), and the ER is ready before you arrive. Ambulances stream vitals ahead and get pointed to the right ER too. Your family can see where you are. And once you're inside, nobody waits unwatched."
 
+
+---
+
+## 24. EMS crew screen (`#/ems`)
+
+The ambulance crew's tablet ([web/src/Ems.tsx](../web/src/Ems.tsx), `POST /ems/assess` and `POST /ems/notify` in [server/app.py](../server/app.py)):
+1. Enter unit, age and sex, then **speak the report** (Cartesia Ink). Claude triages it: ESI, red flags, department needed, ER prep.
+2. **Destinations, nearest capable first**: each ER with ✓/✗, the reason (doctors, beds, equipment) and drive time. Tested: STEMI from the Mission. Zuckerberg is closest (3 min) but its cath lab is busy, so CPMC Van Ness (7 min, cath lab ready) is first.
+3. **Pre-notify**: the patient appears on our board as EMS with live monitor vitals. Only our ER runs FrontDoor in this demo; for other ERs the screen says "call it in by radio".
+4. **Hospital replies come back live** (SpacetimeDB `my_*` views; the tablet sees only its own patient): received, bed held, nurse acknowledged, ETA. New replies are **read aloud (Cartesia Sonic)** so the crew stays hands-free. Tested: within seconds the Assistant paged Cardiology ("STEMI alert… activate cath lab"), posted a prep checklist and held a bed.
+5. If the crew sends a patient we can't treat (e.g. major trauma), the Assistant proposes a better destination on the board; once the charge nurse taps **Send to crew**, the tablet shows **"The hospital suggests Zuckerberg SF General (trauma team ready, 3 min)"**. Destination stays the crew's call, per protocol and medical control.
+
+**Crew vitals (where ambulance vitals come from):** Claude pulls any vitals the paramedic *says* out of the report (`EmsTriage.reported_vitals`; only stated numbers, never estimated). They pre-fill a vitals form, highlighted for the crew to check, and en route the crew can tap **Update vitals** (`POST /ems/vitals`, only from the tablet that pre-notified). Crew readings replace the simulated monitor values field by field ([server/simulator.py](../server/simulator.py) `set_crew_vitals`), so they reach the board within ~3 s and go through the same alert rules. Anything the crew didn't give stays simulated and is labeled **sim** on the tablet (**crew** = their own numbers). Tested: "pulse 128, BP 88 over 50, sats 91%" → board showed exactly 128, 88/50, 91% (RR simulated) and raised a critical alert; an update to HR 140 / RR 24 appeared on the board; another tablet got 403. In production the numbers would come from the cardiac monitor's cloud feed (e.g. ZOLL, Stryker LIFEPAK).

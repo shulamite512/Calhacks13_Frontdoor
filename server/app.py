@@ -329,6 +329,92 @@ async def options(patient_id: int):
     return {"specialty": p["specialty"] or "Emergency care", "options": opts[:4]}
 
 
+class EmsAssessIn(BaseModel):
+    transcript: str
+    age: int
+    lat: float
+    lng: float
+
+
+class EmsNotifyIn(BaseModel):
+    unit: str           # e.g. "Medic 21"
+    age: int
+    sex: str = ""
+    transcript: str
+    lat: float
+    lng: float
+    phoneId: str        # the crew tablet's SpacetimeDB identity, so it sees the hospital's replies
+    hospitalId: int
+    complaint: str
+    summary: str
+    acuity: int
+    redFlags: list[str] = []
+    prep: list[str] = []
+    specialty: str = ""
+    vitals: dict[str, int | None] = {}  # hr, sbp, dbp, spo2, rr as stated/confirmed by the crew
+
+
+class EmsVitalsIn(BaseModel):
+    patientId: int
+    phoneId: str
+    vitals: dict[str, int | None]
+
+
+VITAL_KEYS = {"hr", "sbp", "dbp", "spo2", "rr"}
+
+
+@app.post("/ems/assess")
+async def ems_assess(body: EmsAssessIn):
+    """Paramedic's spoken report -> triage + the ERs that can take this patient, nearest capable first."""
+    t = await triage.triage(body.transcript, body.age, "English", ems=True)
+    specialty = "" if t.specialty == "Emergency" else t.specialty
+    opts = await matching.rank(specialty, body.lat, body.lng, HOSPITAL, critical=t.acuity <= 2)
+    for o in opts:
+        o["onFrontDoor"] = o["hospitalId"] == matching.OUR_ID  # only our ER runs a FrontDoor board in this demo
+    vitals = t.reported_vitals.model_dump() if isinstance(t, triage.EmsTriage) else {}
+    return {**t.model_dump(exclude={"reported_vitals"}), "specialty": specialty, "vitals": vitals, "options": opts[:5]}
+
+
+@app.post("/ems/advise")
+async def ems_advise(body: StaffPatientIn):
+    """A nurse approved the destination advice: only now does it appear on the crew's tablet."""
+    _check_pin(body.pin)
+    rows = await stdb.sql(f"SELECT * FROM agent_action WHERE patient_id = {body.patientId}")
+    advice = [a for a in rows if a["kind"] == "ems_destination"]
+    if not advice:
+        raise HTTPException(404, "no destination advice for this patient")
+    await stdb.call("set_advice", body.patientId, max(advice, key=lambda a: a["id"])["detail"])
+    return {"ok": True}
+
+
+@app.post("/ems/vitals")
+async def ems_vitals(body: EmsVitalsIn):
+    """The crew updates readings en route; they show on the ER board within one tick (~3 s)."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
+    if not rows or rows[0]["source"] != "ems" or rows[0]["phone_id"] != body.phoneId.lower().removeprefix("0x"):
+        raise HTTPException(403, "not your patient")
+    return {"crew": simulator.set_crew_vitals(body.patientId, {k: v for k, v in body.vitals.items() if k in VITAL_KEYS})}
+
+
+@app.post("/ems/notify")
+async def ems_notify(body: EmsNotifyIn):
+    """Pre-notify the chosen ER: the patient appears on its board with live monitor vitals."""
+    if body.hospitalId != matching.OUR_ID:
+        raise HTTPException(400, "That ER isn't on FrontDoor yet: call it in by radio.")
+    seconds, _ = await routing.route(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"])
+    who = " ".join(x for x in (body.sex, f"~{body.age}") if x)
+    name = f"EMS {body.unit}: {who}"
+    await stdb.call(
+        "check_in", name, body.age, body.complaint, f"EMS report: {body.transcript}", f"Ambulance: {body.summary}",
+        body.acuity, ", ".join(body.redFlags), max(1, round(seconds / 60)), body.lat, body.lng, "ems",
+        ", ".join(body.prep), body.phoneId.lower().removeprefix("0x"), body.specialty, "en",
+    )
+    p = await _patient_by_name(name)
+    if p:
+        simulator.set_crew_vitals(p["id"], {k: v for k, v in body.vitals.items() if k in VITAL_KEYS})
+    return {"patientId": p["id"] if p else None}
+
+
 @app.get("/followup/question/{patient_id}")
 async def followup_question(patient_id: int):
     rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {patient_id}")
@@ -349,6 +435,9 @@ async def followup(body: FollowUpIn):
     if len([c for c in body.answer if c.isalpha()]) < 2 or _is_silence_hallucination(body.answer):
         return {"level": "none", "reason": "", "heard": False, "spoken_reply": SORRY[lang]}
     r = await triage.follow_up(rows[0]["complaint"], body.question, body.answer, voice.LANGUAGES[lang])
+    if not r.understood:
+        # Background audio or a garbled transcript: ask again. Two misses in a row still alert a nurse.
+        return {"level": "none", "reason": "", "heard": False, "spoken_reply": SORRY[lang]}
     await stdb.call("add_follow_up", body.patientId, body.question, body.answer, r.level != "none")
     if r.level != "none":
         await stdb.call("raise_alert", body.patientId, r.level, f"Patient reports: {r.reason}")
@@ -409,7 +498,12 @@ SILENCE_PHRASES = {
 
 def _is_silence_hallucination(answer: str) -> bool:
     norm = "".join(c for c in answer.lower() if c.isalnum() or c.isspace() or ord(c) > 0x2e80).strip()
-    return " ".join(norm.split()) in SILENCE_PHRASES
+    words = norm.split()
+    if " ".join(words) in SILENCE_PHRASES:
+        return True
+    # Speech-to-text on noise tends to loop: "the story of the city of the city, ... the city of the city".
+    grams = [" ".join(words[i:i + 3]) for i in range(len(words) - 2)]
+    return len(words) >= 8 and (len(set(words)) / len(words) < 0.5 or len(set(grams)) / len(grams) < 0.7)
 
 
 @app.post("/followup/missed")

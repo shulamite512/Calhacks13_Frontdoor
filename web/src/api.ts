@@ -38,6 +38,20 @@ export type ErOption = {
   reason: string;
 };
 
+export type VitalKey = 'hr' | 'sbp' | 'dbp' | 'spo2' | 'rr';
+export type CrewVitals = Partial<Record<VitalKey, number | null>>;
+
+export type EmsAssessment = {
+  vitals: CrewVitals;
+  complaint: string;
+  summary: string;
+  acuity: number;
+  red_flags: string[];
+  prep: string[];
+  specialty: string;
+  options: Array<ErOption & { onFrontDoor: boolean }>;
+};
+
 export type FamilyStatus = {
   firstName: string;
   hospital: string;
@@ -132,7 +146,18 @@ export const api = {
     return r.json();
   },
 
-  familyShare: (b: { patientId: number; phoneId: string }) => post<{ token: string }>('/family/share', b),
+  emsAssess: (b: { transcript: string; age: number; lat: number; lng: number }) => post<EmsAssessment>('/ems/assess', b),
+
+  emsNotify: (b: {
+    unit: string; age: number; sex: string; transcript: string; lat: number; lng: number; phoneId: string;
+    hospitalId: number; complaint: string; summary: string; acuity: number; redFlags: string[]; prep: string[];
+    specialty: string; vitals: CrewVitals;
+  }) => post<{ patientId: number | null }>('/ems/notify', b),
+
+  emsVitals: (b: { patientId: number; phoneId: string; vitals: CrewVitals }) =>
+    post<{ crew: CrewVitals }>('/ems/vitals', b),
+
+  familyShare: (b:{ patientId: number; phoneId: string }) => post<{ token: string }>('/family/share', b),
 
   async familyStatus(token: string): Promise<FamilyStatus> {
     const r = await fetch(`${API_URL}/family/${encodeURIComponent(token)}`);
@@ -142,6 +167,7 @@ export const api = {
 
   location: (b: { patientId: number; lat: number; lng: number }) =>
     post<{ arrived: boolean; etaMinutes: number }>('/location', b),
+  sendToCrew: (patientId: number) => post('/ems/advise', { patientId, pin: staffPin() }),
   suggestRedirect: (patientId: number) => post('/redirect/suggest', { patientId, pin: staffPin() }),
   drive: (patientId: number) => post('/demo/drive', { patientId }),
   worsen: (patientId: number) => post('/demo/worsen', { patientId, pin: staffPin() }),

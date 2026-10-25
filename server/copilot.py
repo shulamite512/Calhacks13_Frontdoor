@@ -1,4 +1,4 @@
-"""Charge-Nurse Copilot: an agent that notices urgent events on the board and acts on them.
+"""Charge-Nurse Assistant: an agent that notices urgent events on the board and acts on them.
 
 Triggers (checked every simulator tick):
   - a critical patient (ESI 1-2) is on the way
@@ -40,7 +40,7 @@ _running: set[str] = set()
 _last_beds_short = 0.0
 HOSPITAL: dict = {}  # set by app.py: our ER's name and location
 
-SYSTEM = """You are the Charge-Nurse Copilot for an emergency department. Something urgent just \
+SYSTEM = """You are the Charge-Nurse Assistant for an emergency department. Something urgent just \
 happened. Look at the snapshot, then take the few actions that most help the team right now, \
 using only the tools. Be decisive and brief.
 
@@ -223,7 +223,9 @@ async def _guarded(trigger: str, event: str, focus_pid: int | None) -> None:
 
 async def _ems_advisory(p: dict) -> None:
     """Ambulance coming that we can't treat (e.g. major trauma): recommend a better destination.
-    Paramedics/EMS decide where ambulances go, so this is advice for the charge nurse to relay."""
+    Paramedics/EMS decide where ambulances go, so this is advice for the charge nurse to relay.
+    The crew's tablet sees it only after a nurse taps "Send to crew" (POST /ems/advise); `detail`
+    holds the exact message they'll get."""
     try:
         opts = await matching.rank(p["specialty"], p["lat"], p["lng"], HOSPITAL, critical=True)
         ours = next(o for o in opts if o["hospitalId"] == matching.OUR_ID)
@@ -232,7 +234,8 @@ async def _ems_advisory(p: dict) -> None:
             return
         await _record(p["id"], "ems_destination", "approval", "pending",
                       f"Better destination for {p['name']}: {best['name']} ({best['reason']}, {best['driveMinutes']} min)",
-                      f"Our ER: {ours['reason']}. Call the EMS crew to divert; paramedics make the final call.",
+                      f"Divert suggested: {best['name']} ({best['reason']}, {best['driveMinutes']} min). "
+                      f"Our ER: {ours['reason']}.",
                       0, f"ems_destination:{p['id']}")
     except Exception:
         log.exception("ems advisory failed for %s", p["id"])

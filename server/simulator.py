@@ -62,6 +62,7 @@ log.info("vitals replay: %d calm and %d deteriorating real ED stays", len(CALM),
 
 # patient_id -> {"traj": readings, "pos": float index, "loop": bool, "worsening": bool, "raised": level, "stay": id}
 _state: dict[int, dict] = {}
+_crew: dict[int, dict] = {}  # patient id -> vitals entered by the ambulance crew
 _last_forecast: dict | None = None
 
 
@@ -92,9 +93,18 @@ def note_alert(pid: int, level: str) -> None:
         s["raised"] = level
 
 
+def set_crew_vitals(pid: int, readings: dict) -> dict:
+    """Readings the ambulance crew stated or typed. They replace the simulated values field by field
+    while the patient is on the way; anything they didn't give stays simulated. Returns all crew fields."""
+    crew = _crew.setdefault(pid, {})
+    crew.update({k: int(v) for k, v in readings.items() if v is not None})
+    return crew
+
+
 def reset() -> None:
     global _last_forecast
     _state.clear()
+    _crew.clear()
     _last_forecast = None
 
 
@@ -141,6 +151,8 @@ async def _tick() -> None:
         if s["traj"] is None and not s["worsening"]:
             _assign_calm(s, pid, p["acuity"])
         v = _replay(s) if s["traj"] else _synthetic(s, pid, p["acuity"])
+        if p["status"] == "incoming" and pid in _crew:
+            v.update(_crew[pid])  # the paramedics' own readings win over the simulated monitor
         await stdb.call("add_vitals", pid, v["hr"], v["spo2"], v["sbp"], v["dbp"], v["rr"], v["tempC"])
         hit = red_flags.check_vitals(v)
         if hit and LEVELS[hit[0]] > LEVELS[s["raised"]]:
@@ -155,7 +167,7 @@ async def _tick() -> None:
             f["bedsNeeded"], f["bedsShort"], f["basis"],
         )
 
-    # Let the Copilot agent react to anything urgent (runs in the background).
+    # Let the Assistant agent react to anything urgent (runs in the background).
     await copilot.check(patients, {"beds_short": f["bedsShort"], "basis": f["basis"]})
 
 

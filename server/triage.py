@@ -39,7 +39,22 @@ class Triage(BaseModel):
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
 
 
+class ReportedVitals(BaseModel):
+    """Only numbers the paramedic actually said; null for anything not stated (never estimate)."""
+    hr: int | None = Field(description="Heart rate / pulse, beats per minute")
+    sbp: int | None = Field(description="Systolic blood pressure (the top number)")
+    dbp: int | None = Field(description="Diastolic blood pressure (the bottom number)")
+    spo2: int | None = Field(description="Oxygen saturation, percent")
+    rr: int | None = Field(description="Respiratory rate, breaths per minute")
+
+
+class EmsTriage(Triage):
+    reported_vitals: ReportedVitals
+
+
 class FollowUp(BaseModel):
+    understood: bool = Field(description="False if the answer isn't the patient responding about how they feel, "
+                                         "e.g. background audio, TV, or a garbled transcript")
     level: Literal["none", "warning", "critical"]
     reason: str = Field(description="Short reason for the nurse, empty if level is none")
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
@@ -74,7 +89,12 @@ Compare their answer with their original complaint and decide whether a nurse mu
 alerted: 'critical' for new or worsening red-flag symptoms (spreading chest pain, trouble \
 breathing, stroke signs, fainting, confusion, severe bleeding); 'warning' for clear worsening \
 without red flags; 'none' if stable or better. The spoken reply goes to the patient. Never \
-diagnose; if level is critical, say a nurse is coming to them now."""
+diagnose; if level is critical, say a nurse is coming to them now.
+The answer comes from speech-to-text, which can pick up background audio or invent text from \
+noise. If it has nothing to do with the question or the patient's health (e.g. "we are going \
+to talk about the story of the city"), set understood to false and level to 'none'. A patient \
+who is talking about themselves but sounds confused or disoriented IS understood: that is \
+'critical' confusion."""
 
 
 def _parsed(msg):
@@ -112,15 +132,16 @@ def _fallback_triage(transcript: str) -> Triage:
     )
 
 
-async def triage(transcript: str, age: int | None, language: str = "English") -> Triage:
+async def triage(transcript: str, age: int | None, language: str = "English", ems: bool = False) -> Triage:
+    """ems=True: a paramedic's report; also returns the vitals they stated (EmsTriage)."""
     try:
         result = await _parse(
             TRIAGE_SYSTEM,
             f"Patient age: {age if age is not None else 'unknown'}\nPatient's language: {language}\n"
-            f"Patient said: \"{transcript}\"\n\n"
+            f"{'Paramedic reported' if ems else 'Patient said'}: \"{transcript}\"\n\n"
             f"Write complaint, summary, red_flags and prep in English for the nurse. "
             f"Write spoken_reply in {language}.",
-            Triage,
+            EmsTriage if ems else Triage,
         )
     except (anthropic.APIError, RuntimeError) as e:
         log.warning("LLM triage failed, using rules: %s", e)
@@ -148,9 +169,10 @@ async def follow_up(complaint: str, question: str, answer: str, language: str = 
         )
     except (anthropic.APIError, RuntimeError) as e:
         log.warning("LLM follow-up failed, using rules: %s", e)
-        result = FollowUp(level="none", reason="", spoken_reply="Thanks. We'll check on you again soon.")
+        result = FollowUp(understood=True, level="none", reason="", spoken_reply="Thanks. We'll check on you again soon.")
     order = {"none": 0, "warning": 1, "critical": 2}
     if order[rule_level] > order[result.level]:
+        result.understood = True  # a red-flag phrase ("chest pain") always counts as an answer
         result.level = rule_level
         result.reason = ", ".join(f for f, _ in rule_flags)
         if rule_level == "critical":

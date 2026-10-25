@@ -5,6 +5,7 @@ import { DbConnection } from './module_bindings';
 import { STDB_DB, STDB_URI } from './config';
 import Board from './Board';
 import CheckIn from './CheckIn';
+import Ems from './Ems';
 import Family from './Family';
 import './index.css';
 
@@ -37,7 +38,7 @@ function ConnectingNotice() {
   return isActive ? null : <div className="connecting">Connecting to live data…</div>;
 }
 
-// Hash routing: #/board (nurse) and #/checkin (patient phone). Default is the phone page.
+// Hash routing: #/board (nurse), #/ems (ambulance crew) and #/checkin (patient phone). Default is the phone page.
 function App() {
   const [route, setRoute] = useState(window.location.hash);
   useEffect(() => {
@@ -49,6 +50,7 @@ function App() {
     <>
       {!route.startsWith('#/family/') && <ConnectingNotice />}
       {route.startsWith('#/board') ? <Board />
+        : route.startsWith('#/ems') ? <Ems />
         : route.startsWith('#/family/') ? <Family token={route.slice('#/family/'.length)} />
         : <CheckIn />}
     </>

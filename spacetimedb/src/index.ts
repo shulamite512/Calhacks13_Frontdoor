@@ -180,7 +180,7 @@ const department = table(
   }
 );
 
-// What the Charge-Nurse Copilot agent did or proposes. Private (mentions patients); staff read it
+// What the Charge-Nurse Assistant agent did or proposes. Private (mentions patients); staff read it
 // through my_agent_actions.
 // level: 'auto' (done by the agent, undoable) | 'approval' (waiting for a nurse)
 // status: 'done' | 'pending' | 'approved' | 'rejected' | 'undone'
@@ -365,7 +365,7 @@ export const myAgentActions = spacetimedb.view(
   ctx => (isStaffView(ctx) ? [...ctx.db.agentAction.iter()] : [])
 );
 
-// ---------- Copilot agent ----------
+// ---------- Assistant agent ----------
 
 export const recordAgentAction = spacetimedb.reducer(
   {
@@ -458,7 +458,7 @@ export const updateLocation = spacetimedb.reducer(
 export const holdBed = spacetimedb.reducer(
   { bedId: t.u32(), patientId: t.u64() },
   (ctx, { bedId, patientId }) => {
-    if (!isServer(ctx)) requireStaff(ctx);  // the Copilot agent (server) may hold beds too
+    if (!isServer(ctx)) requireStaff(ctx);  // the Assistant agent (server) may hold beds too
     const b = ctx.db.bed.id.find(bedId);
     if (!b) throw new SenderError(`bed ${bedId} not found`);
     if (b.status !== 'free') throw new SenderError(`bed ${b.label} is ${b.status}`);

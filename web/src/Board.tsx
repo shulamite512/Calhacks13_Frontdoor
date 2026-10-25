@@ -179,11 +179,12 @@ function BoardInner({ nurse }: { nurse: string }) {
     else alert('No free beds to hold');
   }
 
-  // Copilot proposals run with the nurse's own permissions once approved.
+  // Assistant proposals run with the nurse's own permissions once approved.
   async function approve(a: AgentAction) {
     try {
       if (a.kind === 'suggest_bed') await assignBed({ bedId: a.bedId, patientId: a.patientId });
       if (a.kind === 'suggest_other_er') await api.suggestRedirect(Number(a.patientId));
+      if (a.kind === 'ems_destination') await api.sendToCrew(Number(a.patientId));
       await resolveAction({ actionId: a.id, status: 'approved' });
     } catch (e) {
       alert(String(e));
@@ -268,7 +269,7 @@ function BoardInner({ nurse }: { nurse: string }) {
         </section>
       )}
 
-      <Copilot actions={agentActions} onApprove={approve} onReject={a => resolveAction({ actionId: a.id, status: 'rejected' })}
+      <Assistant actions={agentActions} onApprove={approve} onReject={a => resolveAction({ actionId: a.id, status: 'rejected' })}
         onUndo={undo} />
 
       <main>
@@ -430,9 +431,9 @@ function Tile({ p, vitals, offers, hospitals, departments, agentActions, short, 
       {flags.length > 0 && <div className="flags">{flags.map(f => <span key={f}>{f}</span>)}</div>}
       {ready && <div className={`ready ${ready.ok ? 'ok' : 'gap'}`}>{ready.ok ? '✓' : '⚠'} {ready.text}</div>}
       {emsAdvice && (
-        <div className="advice gap">🚑 {emsAdvice.summary}{emsAdvice.status === 'approved' ? ` · crew called by ${emsAdvice.decidedBy}` : ''}</div>
+        <div className="advice gap">🚑 {emsAdvice.summary}{emsAdvice.status === 'approved' ? ` · sent to crew by ${emsAdvice.decidedBy}` : ''}</div>
       )}
-      {incoming && p.advice && (
+      {incoming && p.advice && p.source !== 'ems' && (
         <div className={`advice ${p.advice.startsWith('Call 911') ? 'gap' : 'ok'}`}>Told patient: {p.advice}</div>
       )}
       {incoming && prep.length > 0 && (
@@ -445,7 +446,7 @@ function Tile({ p, vitals, offers, hospitals, departments, agentActions, short, 
         <div className="vitals muted">No vitals yet · symptoms by voice; wearable starts at triage</div>
       ) : v && (
         <div className="vitals" title="Demo replays real de-identified ER stays (MIMIC-IV-ED)">
-          <span className="wearable">{incoming ? 'Paramedic monitor' : 'Wearable'}</span>
+          <span className="wearable">{incoming ? 'From ambulance' : 'Wearable'}</span>
           <span className={v.hr >= 110 ? 'bad' : ''}>HR <b>{v.hr}</b></span>
           <span className={v.spo2 <= 93 ? 'bad' : ''}>SpO₂ <b>{v.spo2}</b></span>
           <span className={v.sbp <= 90 ? 'bad' : ''}>BP <b>{v.sbp}/{v.dbp}</b></span>
@@ -479,7 +480,7 @@ const KIND_ICON: Record<string, string> = {
 };
 
 // The agent's live feed: proposals waiting for a nurse first, then what it did on its own.
-function Copilot({ actions, onApprove, onReject, onUndo }: {
+function Assistant({ actions, onApprove, onReject, onUndo }: {
   actions: readonly AgentAction[];
   onApprove: (a: AgentAction) => void;
   onReject: (a: AgentAction) => void;
@@ -490,14 +491,14 @@ function Copilot({ actions, onApprove, onReject, onUndo }: {
   const recent = sorted.filter(a => a.status !== 'pending').slice(0, 8);
   return (
     <section className="copilot">
-      <h2>Copilot <span className="muted">AI agent · acts on urgent events · auto actions can be undone, others need approval</span></h2>
+      <h2>Charge-Nurse Assistant <span className="muted">AI agent · acts on urgent events · auto actions can be undone, others need approval</span></h2>
       {actions.length === 0 && <p className="muted">Watching the board. Nothing urgent yet.</p>}
       {pending.map(a => (
         <div key={String(a.id)} className="action pending" title={a.detail}>
           <span>{KIND_ICON[a.kind] ?? '•'}</span>
           <div><b>{a.summary}</b>{a.detail && <div className="muted">{a.detail}</div>}</div>
           <div className="btns">
-            <button className="primary" onClick={() => onApprove(a)}>{a.kind === 'ems_destination' ? 'Crew called' : 'Approve'}</button>
+            <button className="primary" onClick={() => onApprove(a)}>{a.kind === 'ems_destination' ? 'Send to crew' : 'Approve'}</button>
             <button onClick={() => onReject(a)}>Reject</button>
           </div>
         </div>
