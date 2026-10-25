@@ -793,3 +793,58 @@ UCSF Health Hyde Hospital (900 Hyde St) was added to the network.
 ### Vitals, honestly
 Nobody is measured while driving. **Vitals start at triage**, from a wearable clip or patch handed out on arrival (or the patient's smartwatch). Incoming tiles say "No vitals yet · wearable starts at triage"; waiting-room tiles show a **Wearable** label. In the demo, the wearable replays real de-identified ER stays (MIMIC-IV-ED). The simulator only produces vitals for waiting/bedded patients, and **Worsen** only appears once a patient has arrived.
 
+---
+
+## 19. Charge-Nurse Copilot (the agent)
+
+Before this, AI was used in single steps (triage one patient, judge one answer). The Copilot is an **agent**: it notices urgent events on the board and **acts**, using a small set of tools, with its reasoning visible.
+
+**Triggers** ([server/copilot.py](../server/copilot.py), checked every 3 s tick): a critical patient (ESI 1-2) on the way; a waiting patient with a new critical alert; the forecast 4+ beds short (at most every 10 min).
+
+**How it runs:** Claude (`claude-opus-5-5`, effort low, strict tool schemas, manual tool-use loop, max 6 turns) gets a snapshot of the board and these tools. **Every tool call is validated in our code before it runs; the autonomy level is fixed in code, not chosen by the model.**
+
+| Level | Tools | Why |
+|---|---|---|
+| **Auto** (done immediately, undo on the board) | `hold_bed` (never a hallway bed, only for patients on the way), `page_department` (simulated page), `post_checklist`, `flag_priority` | Reversible and helpful |
+| **Approval** (a nurse taps Approve / Reject) | `propose_bed`, `propose_other_er` (only stable walk-ins on the way, uses the same matching) | Affects the patient directly |
+| **Never** (no tool exists) | Lower urgency, discharge, redirect a critical patient | Too risky to automate |
+
+Every action is written to the private `agent_action` table (staff read it through the `my_agent_actions` view) with the agent's reason, and shown in the purple **Copilot** panel at the top of the board. Approvals run with the nurse's own permissions (assign bed / offer ER), then the action is marked "approved by <nurse>".
+
+**Tested live:**
+- Reset → ambulance stroke patient on the way → within seconds, with no nurse tap: **held A4**, **paged Neurology** ("Stroke alert, facial droop + slurred speech, EMS ETA 11 min to A4, please have CT ready"), **flagged top priority**, **posted a stroke checklist** (last known well time, glucose, NIHSS, straight to CT, IV x2). It also noted that A4 was the last free Acute bed, so the next walk-in will need a hallway bed.
+- James (waiting room) deteriorates to BP 89/52 → **flagged**, **paged the charge nurse and Pulmonology**, **proposed bed B3**. A nurse tapped **Approve** and James was assigned B3 ("approved by Charge RN").
+- A tool call that breaks a rule (e.g. holding a hallway bed) is rejected with a reason and the agent adapts.
+
+Turn it off with `COPILOT_ENABLED=0` in `.env`.
+
+---
+
+## 20. Where AI is (and deliberately isn't) used
+
+| AI | Where |
+|---|---|
+| **Cartesia Ink** (speech-to-text) | Check-in and waiting-room answers, 5 languages |
+| **Cartesia Sonic** (text-to-speech) | Replies and check-in questions in the patient's language |
+| **Claude, single calls** | Triage note: complaint, summary, ESI, red flags, department, prep items; language bridge; judging follow-up answers (stable / worse / critical) |
+| **Claude, agent** | Charge-Nurse Copilot: acts on urgent events with validated tools (section 19) |
+| **Claude, evaluated** | 206 real ER cases vs nurses; 96% of high-risk caught on held-out cases (section 17) |
+
+| Deliberately **not** AI | Why |
+|---|---|
+| ER matching (can it treat? then fastest) | Must be explainable: "OR busy here, OR ready at Kaiser" |
+| "Call 911" for ESI 1-2, 988 for mental-health crises | Safety advice must not depend on a model |
+| Vitals alert thresholds, red-flag keywords | Instant backstops that can only raise urgency |
+| Bed forecast | Transparent formula from real state data |
+| Permissions | Security isn't a judgment call |
+
+---
+
+## 21. Two judge questions about the core idea
+
+**"If you tell critical patients to call 911, why not just call 911?"**
+For a true emergency you should, and FrontDoor tells you to. But most ER patients aren't 911 cases (roughly 5 in 6 arrive on their own): they drive in with belly pain or a broken bone, pick an ER by distance, and wait unwatched. That's who FrontDoor is for. It also catches the people who aren't sure (like our teammate with chest pain) and the ones who should call 911 but won't. Even if they drive anyway, the ER already has their tile with "Told patient: call 911" and a prep list.
+
+**"Where do vitals come from for someone in a car?"**
+On the way in, there are none; your voice is your vital sign, and that's what Claude triages. Ambulance patients are on the paramedics' monitor, so their vitals stream en route (labeled "Paramedic monitor"). Walk-ins get vitals at triage and then a wearable clip/patch in the waiting room (labeled "Wearable"), plus voice check-ins every 2 minutes. In the demo, both replay real de-identified ER stays.
+

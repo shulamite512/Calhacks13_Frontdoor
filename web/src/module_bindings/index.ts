@@ -45,7 +45,9 @@ import HoldBedReducer from "./hold_bed_reducer";
 import MarkArrivedReducer from "./mark_arrived_reducer";
 import OfferRedirectReducer from "./offer_redirect_reducer";
 import RaiseAlertReducer from "./raise_alert_reducer";
+import RecordAgentActionReducer from "./record_agent_action_reducer";
 import ResetDemoReducer from "./reset_demo_reducer";
+import ResolveAgentActionReducer from "./resolve_agent_action_reducer";
 import RespondRedirectReducer from "./respond_redirect_reducer";
 import SetAdviceReducer from "./set_advice_reducer";
 import SetDepartmentReducer from "./set_department_reducer";
@@ -65,6 +67,7 @@ import DepartmentRow from "./department_table";
 import ForecastRow from "./forecast_table";
 import HospitalRow from "./hospital_table";
 import HospitalDepartmentRow from "./hospital_department_table";
+import MyAgentActionsRow from "./my_agent_actions_table";
 import MyAlertsRow from "./my_alerts_table";
 import MyOffersRow from "./my_offers_table";
 import MyPatientsRow from "./my_patients_table";
@@ -133,6 +136,13 @@ const tablesSchema = __schema({
       { name: 'hospital_department_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, HospitalDepartmentRow),
+  myAgentActions: __table({
+    name: 'my_agent_actions',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyAgentActionsRow),
   myAlerts: __table({
     name: 'my_alerts',
     indexes: [
@@ -183,7 +193,9 @@ const reducersSchema = __reducers(
   __reducerSchema("mark_arrived", MarkArrivedReducer),
   __reducerSchema("offer_redirect", OfferRedirectReducer),
   __reducerSchema("raise_alert", RaiseAlertReducer),
+  __reducerSchema("record_agent_action", RecordAgentActionReducer),
   __reducerSchema("reset_demo", ResetDemoReducer),
+  __reducerSchema("resolve_agent_action", ResolveAgentActionReducer),
   __reducerSchema("respond_redirect", RespondRedirectReducer),
   __reducerSchema("set_advice", SetAdviceReducer),
   __reducerSchema("set_department", SetDepartmentReducer),

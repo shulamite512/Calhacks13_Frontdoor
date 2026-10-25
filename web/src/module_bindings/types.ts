@@ -10,6 +10,21 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AgentAction = __t.object("AgentAction", {
+  id: __t.u64(),
+  patientId: __t.u64(),
+  kind: __t.string(),
+  level: __t.string(),
+  status: __t.string(),
+  summary: __t.string(),
+  detail: __t.string(),
+  bedId: __t.u32(),
+  trigger: __t.string(),
+  createdAt: __t.timestamp(),
+  decidedBy: __t.option(__t.string()),
+});
+export type AgentAction = __Infer<typeof AgentAction>;
+
 export const Alert = __t.object("Alert", {
   id: __t.u64(),
   patientId: __t.u64(),
@@ -97,6 +112,9 @@ export const HospitalDepartment = __t.object("HospitalDepartment", {
   updatedAt: __t.timestamp(),
 });
 export type HospitalDepartment = __Infer<typeof HospitalDepartment>;
+
+export const MyAgentActions = __t.object("MyAgentActions", {});
+export type MyAgentActions = __Infer<typeof MyAgentActions>;
 
 export const MyAlerts = __t.object("MyAlerts", {});
 export type MyAlerts = __Infer<typeof MyAlerts>;

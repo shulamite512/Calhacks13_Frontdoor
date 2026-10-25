@@ -161,4 +161,14 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .chip.none { color: var(--muted); text-decoration: line-through; }
 .card.status.urgent { background: var(--crit); border-color: var(--crit); color: #fff; }
 .call911 { display: block; margin-top: 10px; text-align: center; padding: 14px; border-radius: 10px; background: #fff; color: var(--crit); font-weight: 800; font-size: 18px; text-decoration: none; }
+.copilot { margin: 10px 20px 0; padding: 10px 14px; border-radius: 12px; border: 1px solid #7c3aed; background: rgba(124, 58, 237, .06); }
+.copilot h2 { font-size: 14px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .06em; color: #7c3aed; }
+.copilot h2 .muted { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.action { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; border-top: 1px solid var(--line); }
+.action:first-of-type { border-top: none; }
+.action > div:nth-child(2) { flex: 1; }
+.action .btns { display: flex; gap: 6px; }
+.action .btns button { padding: 4px 10px; font-size: 13px; }
+.action.pending { background: var(--warn-bg); border-radius: 8px; padding: 8px; }
+.action.undone, .action.rejected { opacity: .5; text-decoration: line-through; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

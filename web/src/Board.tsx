@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import type { Timestamp } from 'spacetimedb';
 import { reducers, tables } from './module_bindings';
-import type { Alert, Bed, Department, Hospital, HospitalDepartment, Patient, RedirectOffer, Vitals } from './module_bindings/types';
+import type { AgentAction, Alert, Bed, Department, Hospital, HospitalDepartment, Patient, RedirectOffer, Vitals } from './module_bindings/types';
 import { api } from './api';
 import IncomingMap from './IncomingMap';
 
@@ -121,6 +121,8 @@ function BoardInner({ nurse }: { nurse: string }) {
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
   const holdBed = useReducer(reducers.holdBed);
+  const resolveAction = useReducer(reducers.resolveAgentAction);
+  const [agentActions] = useTable(tables.myAgentActions);
   const logout = useReducer(reducers.staffLogout);
   const [now, setNow] = useState(Date.now());
 
@@ -175,6 +177,26 @@ function BoardInner({ nurse }: { nurse: string }) {
     const b = pickBed(p, beds);
     if (b) holdBed({ bedId: b.id, patientId: p.id });
     else alert('No free beds to hold');
+  }
+
+  // Copilot proposals run with the nurse's own permissions once approved.
+  async function approve(a: AgentAction) {
+    try {
+      if (a.kind === 'suggest_bed') await assignBed({ bedId: a.bedId, patientId: a.patientId });
+      if (a.kind === 'suggest_other_er') await api.suggestRedirect(Number(a.patientId));
+      await resolveAction({ actionId: a.id, status: 'approved' });
+    } catch (e) {
+      alert(String(e));
+    }
+  }
+
+  async function undo(a: AgentAction) {
+    try {
+      if (a.kind === 'hold_bed' && beds.find(b => b.id === a.bedId)?.status === 'reserved') await freeBed({ bedId: a.bedId });
+      await resolveAction({ actionId: a.id, status: 'undone' });
+    } catch (e) {
+      alert(String(e));
+    }
   }
 
   function suggest(p: Patient) {
@@ -243,6 +265,9 @@ function BoardInner({ nurse }: { nurse: string }) {
           ))}
         </section>
       )}
+
+      <Copilot actions={agentActions} onApprove={approve} onReject={a => resolveAction({ actionId: a.id, status: 'rejected' })}
+        onUndo={undo} />
 
       <main>
         <Column title="Incoming" patients={incoming} vitals={byPatient} alerts={alerts} {...bedActions}>
@@ -409,11 +434,11 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
           {held && <span className="held">Bed {held.label} held</span>}
         </div>
       )}
-      {incoming ? (
-        <div className="vitals muted">No vitals yet · wearable starts at triage</div>
+      {incoming && p.source !== 'ems' ? (
+        <div className="vitals muted">No vitals yet · symptoms by voice; wearable starts at triage</div>
       ) : v && (
-        <div className="vitals" title="Wearable from triage · demo replays real de-identified ER stays (MIMIC-IV-ED)">
-          <span className="wearable">Wearable</span>
+        <div className="vitals" title="Demo replays real de-identified ER stays (MIMIC-IV-ED)">
+          <span className="wearable">{incoming ? 'Paramedic monitor' : 'Wearable'}</span>
           <span className={v.hr >= 110 ? 'bad' : ''}>HR <b>{v.hr}</b></span>
           <span className={v.spo2 <= 93 ? 'bad' : ''}>SpO₂ <b>{v.spo2}</b></span>
           <span className={v.sbp <= 90 ? 'bad' : ''}>BP <b>{v.sbp}/{v.dbp}</b></span>
@@ -439,6 +464,51 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
       )}
       {offer?.status === 'declined' && <div className="offer muted">Patient kept their spot here.</div>}
     </div>
+  );
+}
+
+const KIND_ICON: Record<string, string> = {
+  hold_bed: '🛏', page: '📟', checklist: '📋', prioritize: '⚡', suggest_bed: '🛏', suggest_other_er: '🧭', note: '💬',
+};
+
+// The agent's live feed: proposals waiting for a nurse first, then what it did on its own.
+function Copilot({ actions, onApprove, onReject, onUndo }: {
+  actions: readonly AgentAction[];
+  onApprove: (a: AgentAction) => void;
+  onReject: (a: AgentAction) => void;
+  onUndo: (a: AgentAction) => void;
+}) {
+  const sorted = [...actions].sort((a, b) => Number(b.id - a.id));
+  const pending = sorted.filter(a => a.status === 'pending');
+  const recent = sorted.filter(a => a.status !== 'pending').slice(0, 8);
+  return (
+    <section className="copilot">
+      <h2>Copilot <span className="muted">AI agent · acts on urgent events · auto actions can be undone, others need approval</span></h2>
+      {actions.length === 0 && <p className="muted">Watching the board. Nothing urgent yet.</p>}
+      {pending.map(a => (
+        <div key={String(a.id)} className="action pending" title={a.detail}>
+          <span>{KIND_ICON[a.kind] ?? '•'}</span>
+          <div><b>{a.summary}</b>{a.detail && <div className="muted">{a.detail}</div>}</div>
+          <div className="btns">
+            <button className="primary" onClick={() => onApprove(a)}>Approve</button>
+            <button onClick={() => onReject(a)}>Reject</button>
+          </div>
+        </div>
+      ))}
+      {recent.map(a => (
+        <div key={String(a.id)} className={`action ${a.status}`} title={a.detail}>
+          <span>{KIND_ICON[a.kind] ?? '•'}</span>
+          <div>
+            {a.summary}
+            {a.detail && a.kind !== 'page' && <span className="muted"> · {a.detail}</span>}
+            {a.decidedBy && <span className="muted"> · {a.status} by {a.decidedBy}</span>}
+          </div>
+          {a.kind === 'hold_bed' && a.status === 'done' && (
+            <div className="btns"><button className="ghost" onClick={() => onUndo(a)}>Undo</button></div>
+          )}
+        </div>
+      ))}
+    </section>
   );
 }
 

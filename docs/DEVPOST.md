@@ -16,12 +16,14 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
    - Critical patients: "**Call 911 now.** Best-equipped ER: Zuckerberg (Level I trauma center, trauma team ready)." For a mental-health crisis: 911 if in danger, or call/text 988. We never tell a critical patient to keep driving.
 2. **The ER knows you're coming.** Your tile appears on the charge nurse's board with your summary, red flags and "Prepare before arrival: 12-lead ECG, cardiac monitor", on a live map with your ETA. The nurse can hold a bed.
 3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes FrontDoor asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
-4. **Ready before the rush.** The board forecasts "3 beds short in 30 min" from real ED volume and shows each department's readiness. A family member can follow a status-only link.
+4. **An AI agent that acts on what's urgent.** The Charge-Nurse Copilot watches the board. When a critical patient is on the way, or someone in the waiting room gets worse, it acts within seconds: holds the right bed, pages the department ("Stroke alert, ETA 11 min, have CT ready"), posts a checklist, flags priority. Bigger moves (assigning a bed, offering another ER) wait for a nurse's Approve. It can't lower urgency, discharge anyone or redirect a critical patient: those tools don't exist.
+5. **Ready before the rush.** The board forecasts "3 beds short in 30 min" from real ED volume and shows each department's readiness. A family member can follow a status-only link.
 
 ## How we built it
 - **SpacetimeDB (Maincloud)** is the real-time backend: 12 tables, reducers for every state change, per-user views, and access rules enforced in the database.
 - **Cartesia** handles voice. **Ink** (`ink-whisper`) does speech-to-text and **Sonic** (`sonic-3.6`) speaks replies, in 5 languages, using one voice.
 - **Claude** (`claude-opus-5-5`, low effort, structured outputs) handles triage, department routing, prep items and waiting-room follow-ups. Deterministic red-flag rules run alongside it.
+- **Claude as an agent** (tool use, validated in code, three autonomy levels) runs the Charge-Nurse Copilot.
 - **Python FastAPI** runs the voice and AI server, a vitals simulator, the bed forecast and OSRM routing.
 - **React + Leaflet/OpenStreetMap** for the patient phone page, the nurse board and the family page.
 - **Real data:** California HCAI ED volumes (CPMC Van Ness: 34,742 visits in 2025) feed the forecast. ER-entrance locations came from an Apify Google Maps scrape.
@@ -78,7 +80,7 @@ Voice is the product: the patient's first contact is speaking their symptoms, an
    - *Measured:* on 206 real ED triage records, the first version under-triaged borderline cases. Walking the ESI v4 algorithm in the prompt (tuned on half the cases, tested once on the other half) raised high-risk sensitivity from 84% to 96% (48 of 50) at the cost of more over-triage, which we report openly.
    - *Silence or noise read as an answer:* answers under 2 letters never reach Claude or page a nurse.
    - *Refusal or outage:* a rule-based fallback still checks the patient in; server-side fallback is enabled.
-   - *Unsafe automation:* Claude never assigns beds or redirects anyone. Humans do, and the database refuses to redirect ESI 1–2 or ambulance patients.
+   - *Unsafe automation:* the Copilot agent can only do reversible things on its own (hold a bed, page, checklist); assigning a bed or offering another ER needs a nurse's Approve, and there is no tool to lower urgency, discharge or redirect a critical patient. Every tool call is validated in code and logged with the agent's reason.
    - *Diagnosis:* the patient is never told a diagnosis, only that they're checked in and when to call 911.
 
 ## Track: Microsoft "Built for the Real World"

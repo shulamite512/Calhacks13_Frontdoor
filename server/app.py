@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
+import copilot  # noqa: E402
 import departments  # noqa: E402
 import matching  # noqa: E402
 import network  # noqa: E402
@@ -68,6 +69,8 @@ async def lifespan(_app: FastAPI):
     with suppress(asyncio.CancelledError):
         await task
 
+
+copilot.HOSPITAL = HOSPITAL
 
 app = FastAPI(title="FrontDoor", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -450,6 +453,7 @@ async def demo_reset(body: PinIn):
     _stop_drives()
     await stdb.call("reset_demo")
     simulator.reset()
+    copilot.reset()
     await network.seed()
     await departments.seed()
     for d in DEMO_PATIENTS:

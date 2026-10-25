@@ -180,6 +180,27 @@ const department = table(
   }
 );
 
+// What the Charge-Nurse Copilot agent did or proposes. Private (mentions patients); staff read it
+// through my_agent_actions.
+// level: 'auto' (done by the agent, undoable) | 'approval' (waiting for a nurse)
+// status: 'done' | 'pending' | 'approved' | 'rejected' | 'undone'
+const agentAction = table(
+  { name: 'agent_action' },
+  {
+    id: t.u64().primaryKey().autoInc(),
+    patientId: t.u64(),       // 0 = not about one patient
+    kind: t.string(),         // hold_bed | page | checklist | prioritize | suggest_bed | suggest_other_er | note
+    level: t.string(),
+    status: t.string(),
+    summary: t.string(),      // one line for the board
+    detail: t.string(),       // the agent's reasoning
+    bedId: t.u32(),           // 0 = none
+    trigger: t.string(),      // what woke the agent
+    createdAt: t.timestamp(),
+    decidedBy: t.option(t.string()),
+  }
+);
+
 // Single row (id = 0): who owns the database (the Python server signs in as this identity).
 const config = table(
   { name: 'config' },
@@ -200,7 +221,7 @@ const staff = table(
 
 const spacetimedb = schema({
   patient, vitals, alert, followUp, bed, forecast, hospital, redirectOffer, config, staff, department,
-  hospitalDepartment,
+  hospitalDepartment, agentAction,
 });
 export default spacetimedb;
 
@@ -245,6 +266,11 @@ function releaseHeld(ctx: Ctx, patientId: bigint) {
 function requireServer(ctx: Ctx) {
   const c = ctx.db.config.id.find(0);
   if (!c || !c.owner.equals(ctx.sender)) throw new SenderError('only the FrontDoor server can do this');
+}
+
+function isServer(ctx: Ctx) {
+  const c = ctx.db.config.id.find(0);
+  return !!c && c.owner.equals(ctx.sender);
 }
 
 function requireStaff(ctx: Ctx) {
@@ -333,6 +359,38 @@ export const myStaff = spacetimedb.view(
   }
 );
 
+export const myAgentActions = spacetimedb.view(
+  { name: 'my_agent_actions', public: true },
+  t.array(agentAction.rowType),
+  ctx => (isStaffView(ctx) ? [...ctx.db.agentAction.iter()] : [])
+);
+
+// ---------- Copilot agent ----------
+
+export const recordAgentAction = spacetimedb.reducer(
+  {
+    patientId: t.u64(), kind: t.string(), level: t.string(), status: t.string(),
+    summary: t.string(), detail: t.string(), bedId: t.u32(), trigger: t.string(),
+  },
+  (ctx, args) => {
+    requireServer(ctx);
+    ctx.db.agentAction.insert({ id: 0n, ...args, createdAt: ctx.timestamp, decidedBy: undefined });
+  }
+);
+
+// A nurse approves/rejects a proposal or undoes an automatic action. The board performs the
+// underlying change (assign bed, free bed, offer ER) with the nurse's own permissions.
+export const resolveAgentAction = spacetimedb.reducer(
+  { actionId: t.u64(), status: t.string() },
+  (ctx, { actionId, status }) => {
+    const nurse = requireStaff(ctx);
+    if (!['approved', 'rejected', 'undone', 'done'].includes(status)) throw new SenderError('bad status');
+    const a = ctx.db.agentAction.id.find(actionId);
+    if (!a) throw new SenderError(`action ${actionId} not found`);
+    ctx.db.agentAction.id.update({ ...a, status, decidedBy: nurse.name });
+  }
+);
+
 // ---------- Staff ----------
 
 export const grantStaff = spacetimedb.reducer(
@@ -400,7 +458,7 @@ export const updateLocation = spacetimedb.reducer(
 export const holdBed = spacetimedb.reducer(
   { bedId: t.u32(), patientId: t.u64() },
   (ctx, { bedId, patientId }) => {
-    requireStaff(ctx);
+    if (!isServer(ctx)) requireStaff(ctx);  // the Copilot agent (server) may hold beds too
     const b = ctx.db.bed.id.find(bedId);
     if (!b) throw new SenderError(`bed ${bedId} not found`);
     if (b.status !== 'free') throw new SenderError(`bed ${b.label} is ${b.status}`);
@@ -649,5 +707,6 @@ export const resetDemo = spacetimedb.reducer(ctx => {
   for (const r of [...ctx.db.bed.iter()]) ctx.db.bed.id.delete(r.id);
   for (const r of [...ctx.db.forecast.iter()]) ctx.db.forecast.id.delete(r.id);
   for (const r of [...ctx.db.redirectOffer.iter()]) ctx.db.redirectOffer.id.delete(r.id);
+  for (const r of [...ctx.db.agentAction.iter()]) ctx.db.agentAction.id.delete(r.id);
   seedBeds(ctx);
 });

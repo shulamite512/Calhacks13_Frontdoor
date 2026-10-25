@@ -12,6 +12,7 @@ import logging
 import random
 from pathlib import Path
 
+import copilot
 import forecast
 import network
 import red_flags
@@ -128,9 +129,11 @@ async def _tick() -> None:
     global _last_forecast
     patients = await stdb.sql("SELECT * FROM patient")
     beds = await stdb.sql("SELECT * FROM bed")
-    # Vitals start at triage: a wearable clip/patch is handed out on arrival. Nobody is measured
-    # while driving in (they're triaged by what they tell us).
-    active = [p for p in patients if p["status"] in ("waiting", "roomed")]
+    # Walk-ins: vitals start at triage (a wearable clip/patch handed out on arrival); nobody is
+    # measured while driving in, they're triaged by what they tell us. Ambulance patients are on the
+    # paramedics' monitor, so their vitals stream while they're still on the way.
+    active = [p for p in patients
+              if p["status"] in ("waiting", "roomed") or (p["status"] == "incoming" and p["source"] == "ems")]
 
     for p in active:
         pid = p["id"]
@@ -151,6 +154,9 @@ async def _tick() -> None:
             "set_forecast", f["horizonMinutes"], f["expectedArrivals"], f["bedsFree"],
             f["bedsNeeded"], f["bedsShort"], f["basis"],
         )
+
+    # Let the Copilot agent react to anything urgent (runs in the background).
+    await copilot.check(patients, {"beds_short": f["bedsShort"], "basis": f["basis"]})
 
 
 async def run() -> None:
