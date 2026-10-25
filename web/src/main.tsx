@@ -5,6 +5,7 @@ import { DbConnection } from './module_bindings';
 import { STDB_DB, STDB_URI } from './config';
 import Board from './Board';
 import CheckIn from './CheckIn';
+import Family from './Family';
 import './index.css';
 
 const TOKEN_KEY = 'frontdoor_token';
@@ -46,8 +47,10 @@ function App() {
   }, []);
   return (
     <>
-      <ConnectingNotice />
-      {route.startsWith('#/board') ? <Board /> : <CheckIn />}
+      {!route.startsWith('#/family/') && <ConnectingNotice />}
+      {route.startsWith('#/board') ? <Board />
+        : route.startsWith('#/family/') ? <Family token={route.slice('#/family/'.length)} />
+        : <CheckIn />}
     </>
   );
 }

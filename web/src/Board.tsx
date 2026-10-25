@@ -7,6 +7,7 @@ import { api } from './api';
 import IncomingMap from './IncomingMap';
 
 const RISK_RANK: Record<string, number> = { critical: 0, watch: 1, normal: 2 };
+const LANG_NAMES: Record<string, string> = { es: 'Spanish', zh: 'Chinese', vi: 'Vietnamese', tl: 'Tagalog' };
 const BED_HINT: Record<string, string> = {
   occupied: 'Tap to discharge',
   cleaning: 'Tap when clean',
@@ -376,6 +377,7 @@ function Tile({ p, vitals, offers, hospitals, departments, short, onAssign, onHo
       <div className="tile-head">
         <span className={`esi esi${p.acuity}`}>ESI {p.acuity}</span>
         <span className={`src ${p.source}`}>{p.source === 'ems' ? 'EMS' : 'Walk-in'}</span>
+        {p.language !== 'en' && <span className="lang" title="Replies are spoken in this language">{LANG_NAMES[p.language] ?? p.language}</span>}
         <strong>{p.name}</strong> <span className="muted">{p.age}</span>
         {p.status === 'incoming' && <span className="eta">ETA {p.etaMinutes}m</span>}
       </div>

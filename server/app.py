@@ -5,6 +5,7 @@ Run:  .venv\\Scripts\\python -m uvicorn app:app --port 8000   (from the server/ 
 """
 import asyncio
 import hmac
+import secrets
 import logging
 import os
 from contextlib import asynccontextmanager, suppress
@@ -14,7 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-from fastapi import FastAPI, File, HTTPException, UploadFile  # noqa: E402
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -79,6 +80,29 @@ async def reducer_error(_request, exc: stdb.ReducerError):
 
 class SpeakIn(BaseModel):
     text: str
+    language: str = "en"
+
+
+class ShareIn(BaseModel):
+    patientId: int
+    phoneId: str
+
+
+# Waiting-room check-in question in each supported language ({name} = first name).
+FOLLOWUP_QUESTION = {
+    "en": "Hi {name}, this is FrontDoor checking in. How are you feeling right now compared to when you arrived?",
+    "es": "Hola {name}, le habla FrontDoor. ¿Cómo se siente ahora comparado con cuando llegó?",
+    "zh": "{name}您好，我是FrontDoor。和刚到的时候相比，您现在感觉怎么样？",
+    "vi": "Chào {name}, đây là FrontDoor. Bây giờ bạn cảm thấy thế nào so với lúc mới đến?",
+    "tl": "Kumusta {name}, ito ang FrontDoor. Ano ang pakiramdam mo ngayon kumpara noong dumating ka?",
+}
+SORRY = {
+    "en": "Sorry, I didn't catch that. Tap Check on me and try again.",
+    "es": "Perdón, no le escuché bien. Toque Revisarme e inténtelo de nuevo.",
+    "zh": "抱歉，我没听清楚。请点击“查看我的情况”再试一次。",
+    "vi": "Xin lỗi, tôi nghe không rõ. Hãy nhấn Kiểm tra tôi và thử lại.",
+    "tl": "Paumanhin, hindi ko narinig nang malinaw. Pindutin ang Tingnan ako at subukan muli.",
+}
 
 
 class CheckInIn(BaseModel):
@@ -88,6 +112,7 @@ class CheckInIn(BaseModel):
     etaMinutes: int = 0
     lat: float = DEMO_START[0]
     lng: float = DEMO_START[1]
+    language: str = "en"
     phoneId: str = ""   # the phone's SpacetimeDB identity (hex), so it can see only its own record
 
 
@@ -171,17 +196,17 @@ async def health():
 
 
 @app.post("/transcribe")
-async def transcribe(file: UploadFile = File(...)):
+async def transcribe(file: UploadFile = File(...), language: str = Form("en")):
     audio = await file.read()
     if not audio:
         raise HTTPException(400, "empty audio")
-    text = await voice.transcribe(audio, file.filename or "audio.webm", file.content_type or "audio/webm")
+    text = await voice.transcribe(audio, file.filename or "audio.webm", file.content_type or "audio/webm", language)
     return {"text": text}
 
 
 @app.post("/speak")
 async def speak(body: SpeakIn):
-    return Response(await voice.speak(body.text), media_type="audio/mpeg")
+    return Response(await voice.speak(body.text, body.language), media_type="audio/mpeg")
 
 
 async def _patient_by_name(name: str) -> dict | None:
@@ -192,11 +217,12 @@ async def _patient_by_name(name: str) -> dict | None:
 
 @app.post("/checkin")
 async def checkin(body: CheckInIn):
-    t = await triage.triage(body.transcript, body.age)
+    lang = voice.lang_or_en(body.language)
+    t = await triage.triage(body.transcript, body.age, voice.LANGUAGES[lang])
     await stdb.call(
         "check_in", body.name, body.age, t.complaint, body.transcript, t.summary, t.acuity,
         ", ".join(t.red_flags), body.etaMinutes, body.lat, body.lng, "walk-in", ", ".join(t.prep),
-        body.phoneId.lower().removeprefix("0x"), "" if t.specialty == "Emergency" else t.specialty,
+        body.phoneId.lower().removeprefix("0x"), "" if t.specialty == "Emergency" else t.specialty, lang,
     )
     p = await _patient_by_name(body.name)
     return {"patientId": p["id"] if p else None, **t.model_dump()}
@@ -208,7 +234,8 @@ async def followup_question(patient_id: int):
     if not rows:
         raise HTTPException(404, "patient not found")
     first = rows[0]["name"].split()[0]
-    return {"question": f"Hi {first}, this is FrontDoor checking in. How are you feeling right now compared to when you arrived?"}
+    lang = voice.lang_or_en(rows[0].get("language"))
+    return {"question": FOLLOWUP_QUESTION[lang].format(name=first), "language": lang}
 
 
 @app.post("/followup")
@@ -217,10 +244,10 @@ async def followup(body: FollowUpIn):
     if not rows:
         raise HTTPException(404, "patient not found")
     # Silence or a mis-hear shouldn't page a nurse; ask again instead.
-    if len([c for c in body.answer if c.isalpha()]) < 3:
-        return {"level": "none", "reason": "", "heard": False,
-                "spoken_reply": "Sorry, I didn't catch that. Tap Check on me and try again."}
-    r = await triage.follow_up(rows[0]["complaint"], body.question, body.answer)
+    lang = voice.lang_or_en(rows[0].get("language"))
+    if len([c for c in body.answer if c.isalpha()]) < 2:
+        return {"level": "none", "reason": "", "heard": False, "spoken_reply": SORRY[lang]}
+    r = await triage.follow_up(rows[0]["complaint"], body.question, body.answer, voice.LANGUAGES[lang])
     await stdb.call("add_follow_up", body.patientId, body.question, body.answer, r.level != "none")
     if r.level != "none":
         await stdb.call("raise_alert", body.patientId, r.level, f"Patient reports: {r.reason}")
@@ -269,6 +296,58 @@ async def redirect_suggest(body: StaffPatientIn):
     return best
 
 
+# ---------- Family status link ----------
+
+@app.post("/family/share")
+async def family_share(body: ShareIn):
+    """The patient's phone asks for a link to send to family. Only that phone may create it."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
+    if not rows:
+        raise HTTPException(404, "patient not found")
+    p = rows[0]
+    if not p["phone_id"] or p["phone_id"] != body.phoneId.lower().removeprefix("0x"):
+        raise HTTPException(403, "only the patient's phone can share their status")
+    token = p["family_token"] or secrets.token_urlsafe(16)
+    if not p["family_token"]:
+        await stdb.call("set_family_token", body.patientId, token)
+    return {"token": token}
+
+
+@app.get("/family/{token}")
+async def family_status(token: str):
+    """What a family member sees: status only, no symptoms or vitals."""
+    if not token or "'" in token:
+        raise HTTPException(404, "not found")
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE family_token = '{token}'")
+    if not rows:
+        raise HTTPException(404, "link not found or expired")
+    p = rows[0]
+    bed = None
+    if p["bed_id"] is not None:
+        b = await stdb.sql(f"SELECT * FROM bed WHERE id = {p['bed_id']}")
+        bed = {"label": b[0]["label"], "zone": b[0]["zone"]} if b else None
+    acks = [a for a in await stdb.sql(f"SELECT * FROM alert WHERE patient_id = {p['id']}") if a["acked_by"]]
+    responder = max(acks, key=lambda a: a["id"])["acked_by"] if acks else None
+    redirected_to = None
+    if p["status"] == "redirected":
+        offers = [o for o in await stdb.sql(f"SELECT * FROM redirect_offer WHERE patient_id = {p['id']}")
+                  if o["status"] == "accepted"]
+        if offers:
+            h = await stdb.sql(f"SELECT * FROM hospital WHERE id = {offers[-1]['hospital_id']}")
+            redirected_to = h[0]["name"] if h else None
+    return {
+        "firstName": p["name"].split()[0],
+        "hospital": HOSPITAL["name"],
+        "status": p["status"],
+        "etaMinutes": p["eta_minutes"],
+        "bed": bed,
+        "responder": responder,
+        "redirectedTo": redirected_to,
+        "checkedInAt": p["created_at"] // 1000,
+        "updatedAt": p["updated_at"] // 1000,
+    }
+
+
 # ---------- Demo controls ----------
 
 @app.post("/demo/drive")
@@ -308,7 +387,7 @@ async def demo_reset(body: PinIn):
         await stdb.call(
             "check_in", d["name"], d["age"], d["complaint"], d["transcript"], d["summary"], d["acuity"],
             d.get("flags", ""), eta, lat, lng, d.get("source", "walk-in"), d.get("prep", ""), "",
-            d.get("specialty", ""),
+            d.get("specialty", ""), "en",
         )
         if secs:
             p = await _patient_by_name(d["name"])

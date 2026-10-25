@@ -19,6 +19,18 @@ export type TriageResult = {
   spoken_reply: string;
 };
 
+export type FamilyStatus = {
+  firstName: string;
+  hospital: string;
+  status: string;
+  etaMinutes: number;
+  bed: { label: string; zone: string } | null;
+  responder: string | null;
+  redirectedTo: string | null;
+  checkedInAt: number;
+  updatedAt: number;
+};
+
 export type FollowUpResult = {
   level: 'none' | 'warning' | 'critical';
   reason: string;
@@ -44,19 +56,20 @@ function rememberPin(pin: string) {
 }
 
 export const api = {
-  async transcribe(audio: Blob): Promise<string> {
+  async transcribe(audio: Blob, language = 'en'): Promise<string> {
     const form = new FormData();
     form.append('file', audio, audio.type.includes('mp4') ? 'audio.mp4' : 'audio.webm');
+    form.append('language', language);
     const r = await fetch(`${API_URL}/transcribe`, { method: 'POST', body: form });
     if (!r.ok) throw new Error(`transcribe failed: ${r.status}`);
     return (await r.json()).text;
   },
 
-  async speak(text: string): Promise<void> {
+  async speak(text: string, language = 'en'): Promise<void> {
     const r = await fetch(`${API_URL}/speak`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, language }),
     });
     if (!r.ok) throw new Error(`speak failed: ${r.status}`);
     const url = URL.createObjectURL(await r.blob());
@@ -69,7 +82,7 @@ export const api = {
     URL.revokeObjectURL(url);
   },
 
-  checkIn: (b: { name: string; age: number; transcript: string; etaMinutes: number; phoneId: string }) =>
+  checkIn: (b: { name: string; age: number; transcript: string; etaMinutes: number; phoneId: string; language: string }) =>
     post<TriageResult>('/checkin', b),
 
   async staffLogin(b: { pin: string; identity: string; name: string }) {
@@ -83,6 +96,14 @@ export const api = {
   },
 
   followUp: (b: { patientId: number; question: string; answer: string }) => post<FollowUpResult>('/followup', b),
+
+  familyShare: (b: { patientId: number; phoneId: string }) => post<{ token: string }>('/family/share', b),
+
+  async familyStatus(token: string): Promise<FamilyStatus> {
+    const r = await fetch(`${API_URL}/family/${encodeURIComponent(token)}`);
+    if (!r.ok) throw new Error(r.status === 404 ? 'This link is not valid.' : `status failed: ${r.status}`);
+    return r.json();
+  },
 
   location: (b: { patientId: number; lat: number; lng: number }) =>
     post<{ arrived: boolean; etaMinutes: number }>('/location', b),

@@ -31,4 +31,6 @@ export default __t.row({
   prep: __t.string(),
   phoneId: __t.string().name("phone_id"),
   specialty: __t.string(),
+  language: __t.string(),
+  familyToken: __t.string().name("family_token"),
 });

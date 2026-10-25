@@ -3,9 +3,10 @@ import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import { reducers, tables } from './module_bindings';
 import { api, type FollowUpResult, type TriageResult } from './api';
 import { useRecorder } from './useRecorder';
+import { LANGS, t, type Lang } from './i18n';
 
 type Step = 'form' | 'listening' | 'thinking' | 'done';
-type Session = { result: TriageResult; name: string };
+type Session = { result: TriageResult; name: string; lang?: Lang };
 
 const SESSION_KEY = 'frontdoor_session';
 
@@ -35,6 +36,7 @@ export default function CheckIn() {
   const [transcript, setTranscript] = useState('');
   const [step, setStep] = useState<Step>('form');
   const [error, setError] = useState('');
+  const [lang, setLang] = useState<Lang>('en');
   const rec = useRecorder();
   const { identity } = useSpacetimeDB();
 
@@ -45,7 +47,7 @@ export default function CheckIn() {
       setStep('listening');
       const blob = await rec.start();
       setStep('thinking');
-      setTranscript(await api.transcribe(blob));
+      setTranscript(await api.transcribe(blob, lang));
       setStep('form');
     } catch (e) {
       setError(String(e));
@@ -60,13 +62,13 @@ export default function CheckIn() {
     setStep('thinking');
     try {
       const r = await api.checkIn({
-        name, age: Number(age), transcript, etaMinutes: Number(eta) || 0, phoneId: identity.toHexString(),
+        name, age: Number(age), transcript, etaMinutes: Number(eta) || 0, phoneId: identity.toHexString(), language: lang,
       });
-      const s = { result: r, name };
+      const s = { result: r, name, lang };
       saveSession(s);
       setSession(s);
       setStep('done');
-      await api.speak(r.spoken_reply);
+      await api.speak(r.spoken_reply, lang);
     } catch (e) {
       setError(String(e));
       setStep('form');
@@ -85,26 +87,31 @@ export default function CheckIn() {
   return (
     <div className="phone">
       <h1 className="brand">FrontDoor</h1>
-      <p className="muted">Check in to the ER before you arrive.</p>
+      <div className="langs" role="group" aria-label="Language">
+        {LANGS.map(l => (
+          <button key={l.code} className={l.code === lang ? 'on' : ''} onClick={() => setLang(l.code)}>{l.label}</button>
+        ))}
+      </div>
+      <p className="muted">{t('tagline', lang)}</p>
 
-      <label>Name<input value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" /></label>
+      <label>{t('name', lang)}<input value={name} onChange={e => setName(e.target.value)} /></label>
       <div className="row">
-        <label>Age<input value={age} onChange={e => setAge(e.target.value)} inputMode="numeric" /></label>
-        <label>Minutes away<input value={eta} onChange={e => setEta(e.target.value)} inputMode="numeric" /></label>
+        <label>{t('age', lang)}<input value={age} onChange={e => setAge(e.target.value)} inputMode="numeric" /></label>
+        <label>{t('minutesAway', lang)}<input value={eta} onChange={e => setEta(e.target.value)} inputMode="numeric" /></label>
       </div>
 
       <button className={`mic ${rec.recording ? 'on' : ''}`} onClick={recordSymptoms} disabled={step === 'thinking'}>
-        {rec.recording ? 'Tap when done' : step === 'thinking' ? 'Working...' : 'Tap and describe your symptoms'}
+        {rec.recording ? t('tapDone', lang) : step === 'thinking' ? t('working', lang) : t('describe', lang)}
       </button>
 
-      <label>What we heard
+      <label>{t('heard', lang)}
         <textarea value={transcript} onChange={e => setTranscript(e.target.value)} rows={4}
-          placeholder="Or type your symptoms here" />
+          placeholder={t('typeHere', lang)} />
       </label>
 
       {error && <p className="error">{error}</p>}
-      <button className="primary" onClick={submit} disabled={step === 'thinking'}>Check in</button>
-      <p className="fine">If this is life-threatening, call 911.</p>
+      <button className="primary" onClick={submit} disabled={step === 'thinking'}>{t('checkIn', lang)}</button>
+      <p className="fine">{t('call911', lang)}</p>
     </div>
   );
 }
@@ -184,6 +191,9 @@ function LiveStatus({ patientId }: { patientId: number }) {
 
 function Waiting({ session, onStartOver }: { session: Session; onStartOver: () => void }) {
   const { result, name } = session;
+  const lang: Lang = session.lang ?? 'en';
+  const { identity } = useSpacetimeDB();
+  const [familyLink, setFamilyLink] = useState('');
   const [busy, setBusy] = useState(false);
   const [arrived, setArrived] = useState(false);
   const [log, setLog] = useState<Array<{ a: string; r: FollowUpResult }>>([]);
@@ -213,20 +223,33 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
     );
   }
 
+  async function shareWithFamily() {
+    if (pid == null || !identity) return;
+    const { token } = await api.familyShare({ patientId: pid, phoneId: identity.toHexString() });
+    const url = `${window.location.origin}${window.location.pathname}#/family/${token}`;
+    setFamilyLink(url);
+    try {
+      if (navigator.share) await navigator.share({ title: 'FrontDoor status', url });
+      else await navigator.clipboard.writeText(url);
+    } catch {
+      /* user cancelled share or clipboard blocked; the link is shown below */
+    }
+  }
+
   async function checkOnMe() {
     if (rec.recording) return rec.stop();
     if (pid == null) return;
     setBusy(true);
     try {
       const q = await api.followUpQuestion(pid);
-      await api.speak(q);
+      await api.speak(q, lang);
       setListening(true);
       const blob = await rec.start();
       setListening(false);
-      const a = await api.transcribe(blob);
+      const a = await api.transcribe(blob, lang);
       const r = await api.followUp({ patientId: pid, question: q, answer: a });
       if (r.heard) setLog(l => [{ a, r }, ...l]);
-      await api.speak(r.spoken_reply);
+      await api.speak(r.spoken_reply, lang);
     } finally {
       setListening(false);
       setBusy(false);
@@ -237,7 +260,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
     <div className="phone">
       <h1 className="brand">FrontDoor</h1>
       <div className="card ok">
-        <strong>You're checked in, {name.split(' ')[0]}.</strong>
+        <strong>{t('checkedIn', lang)}, {name.split(' ')[0]}.</strong>
         <p>{result.spoken_reply}</p>
       </div>
 
@@ -246,7 +269,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
       {!arrived && pid != null && (
         <>
           <button className="primary" onClick={() => api.arrive(pid).then(() => setArrived(true))}>
-            I've arrived
+            {t('arrived', lang)}
           </button>
           <div className="row">
             <button onClick={() => shareLocation(pid)} disabled={sharing}>
@@ -258,17 +281,22 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
       )}
 
       <button className={`mic ${listening ? 'on' : ''}`} onClick={checkOnMe} disabled={busy && !listening}>
-        {listening ? 'Listening... tap when done' : busy ? 'Working...' : 'Check on me now'}
+        {listening ? t('listening', lang) : busy ? t('working', lang) : t('checkOnMe', lang)}
       </button>
+
+      <button onClick={shareWithFamily}>{t('shareFamily', lang)}</button>
+      {familyLink && (
+        <p className="fine">{t('linkCopied', lang)}<br /><a href={familyLink}>{familyLink}</a></p>
+      )}
 
       {log.map((e, i) => (
         <div key={i} className={`card ${e.r.level === 'none' ? '' : 'warn'}`}>
-          <div className="muted">You said</div>
+          <div className="muted">{t('youSaid', lang)}</div>
           <p>"{e.a}"</p>
           <div className="muted">{e.r.spoken_reply}</div>
         </div>
       ))}
-      <p className="fine">If you feel much worse, tell the front desk right away or call 911.</p>
+      <p className="fine">{t('feelWorse', lang)}</p>
       <button className="ghost" onClick={onStartOver}>Start a new check-in</button>
     </div>
   );

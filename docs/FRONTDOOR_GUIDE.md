@@ -640,3 +640,26 @@ Tested (Claude's pick): chest pain → Cardiology, abdominal pain → Surgery, E
 - *Where would real department status come from?* The hospital's on-call schedule (e.g. Amion/QGenda), bed management system and OR/cath-lab scheduling. In the demo it's simulated and staff-editable.
 - *What if the specialty isn't available?* The tile says so before arrival. For a stable walk-in, **Suggest another ER** is there; for ESI 1–2 (like the trauma patient) a nurse would call the transfer center. We never auto-redirect critical patients.
 
+---
+
+## 15. Multilingual voice and family link
+
+**Languages:** English, Spanish, Chinese, Vietnamese, Tagalog (San Francisco's most common). Each was tested round-trip: Sonic speaks a sentence, Ink transcribes it back correctly.
+
+| Step | Language |
+|---|---|
+| Patient picks a language on the phone; the UI switches | Patient's |
+| Voice check-in transcribed by Cartesia Ink with `language` | Patient's |
+| Claude writes complaint, summary, red flags, prep | **English** (for the nurse) |
+| Claude's spoken reply, read by Cartesia Sonic | Patient's |
+| Waiting-room question ([server/app.py](../server/app.py) `FOLLOWUP_QUESTION`) and follow-up reply | Patient's |
+| Board tile | English + a purple language badge (e.g. SPANISH) |
+
+Tested: Rosa, 61, speaking Spanish about chest pain radiating to her left arm → nurse sees "Chest pain radiating to arm", ESI 2, Cardiology; Rosa hears "Rosa, ya está registrada…"; her Spanish follow-up "me siento peor, ahora me cuesta respirar" raised a **critical** alert with the reason in English.
+
+Limitations: red-flag keywords are English-only (Claude covers other languages); phone status cards are English.
+
+**Family link:** the patient taps **Share my status with family** → `POST /family/share` (only the patient's own phone, matched by `phoneId`; others get 403) → a random token is stored on the patient → the link `#/family/<token>` shows a status timeline (checked in → arrived → nurse with them → bed → done, or "heading to another ER"), refreshed every 5 s through `GET /family/{token}`. It never shows symptoms or vitals. Bad tokens return 404.
+
+Devpost text for every Tier 1 track is in [docs/DEVPOST.md](DEVPOST.md).
+

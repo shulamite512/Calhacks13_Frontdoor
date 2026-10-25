@@ -119,6 +119,8 @@ export const Patient = __t.object("Patient", {
   prep: __t.string(),
   phoneId: __t.string(),
   specialty: __t.string(),
+  language: __t.string(),
+  familyToken: __t.string(),
 });
 export type Patient = __Infer<typeof Patient>;
 

@@ -1,7 +1,32 @@
 # FrontDoor
 
-Walk-in ER patients check in by voice on the way, get checked on in the waiting room (voice + vitals),
-nurses get alerts when someone gets worse, and the charge nurse sees bed shortfalls before the rush.
+Walk-in ER patients check in by voice, in their own language, on the way. They get checked on in the waiting
+room (voice + vitals), nurses get alerts when someone gets worse, each patient's department shows whether it
+has a doctor and a bed, and the charge nurse sees bed shortfalls before the rush. Family can follow along
+with a status-only link.
+
+Docs: [team guide](docs/FRONTDOOR_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
+
+## Sponsor technology
+
+**SpacetimeDB:** the real-time backend for everything. 12 tables and reducers in
+[spacetimedb/src/index.ts](spacetimedb/src/index.ts); private patient tables with per-user views
+(`my_patients`, `my_alerts`, …); server-only and staff-only reducers; live board via the React SDK.
+
+**Cartesia:** voice in and out, in English, Spanish, Chinese, Vietnamese and Tagalog
+([server/voice.py](server/voice.py)).
+- *Setup:* `CARTESIA_API_KEY` in `.env`. API version `2026-08-14`.
+- *Features used:* **Ink** `ink-whisper` (batch STT with `language`) for check-ins and waiting-room answers;
+  **Sonic** `sonic-3.6` (`/tts/bytes`, MP3, `language`) for spoken replies with one voice across languages.
+- *Known limitations:* batch rather than streaming (~3 s per voice turn); deterministic red-flag keywords
+  are English-only (Claude handles other languages); live status cards on the phone are English.
+
+**Claude (Anthropic):** pre-triage note, ESI, red flags, department, prep items and waiting-room
+follow-ups ([server/triage.py](server/triage.py)), with deterministic safety rules alongside
+([server/red_flags.py](server/red_flags.py)).
+
+**Apify + HCAI data:** ER-entrance locations from an Apify Google Maps scrape; real ED volumes from
+California HCAI drive the forecast ([server/scripts/](server/scripts/)).
 
 ```
 phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS, Claude triage
@@ -31,6 +56,7 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
    ```
    - Patient phone page: http://localhost:5173/#/checkin
    - Nurse board: http://localhost:5173/#/board (sign in with your name and the staff PIN)
+   - Family page: opened from the patient's **Share my status with family** link (`#/family/<token>`)
 
 3. **SpacetimeDB module** (only when you change `spacetimedb/src/index.ts`):
    ```
@@ -65,6 +91,9 @@ ER: CPMC Van Ness Campus, San Francisco. Demo walk-ins drive in from the Palace 
    "It's getting worse, it's spreading to my arm." Tile turns red, critical banner. Nurse taps **I'm on it**;
    the phone shows "Charge RN is coming to you now".
 5. Header shows "N beds short in 30 min". Tap **Assign bed** (uses the held bed). Phone shows "Your bed is ready".
+
+Optional extras: pick **Español** on the phone and check in in Spanish (the nurse still sees English);
+tap **Share my status with family** and open the link in another tab.
 
 Pitch line: Twiage covers ambulances; FrontDoor covers everyone else, on the same board.
 

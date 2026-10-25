@@ -25,4 +25,5 @@ export default {
   prep: __t.string(),
   phoneId: __t.string(),
   specialty: __t.string(),
+  language: __t.string(),
 };

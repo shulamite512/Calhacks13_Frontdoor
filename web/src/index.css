@@ -136,4 +136,13 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .ready { margin: 6px 0; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
 .ready.ok { background: var(--ok-bg); color: var(--ok); }
 .ready.gap { background: var(--crit-bg); color: var(--crit); }
+.langs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+.langs button { padding: 4px 10px; font-size: 13px; border-radius: 999px; }
+.langs button.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.lang { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: #7c3aed; color: #fff; text-transform: uppercase; }
+.family .timeline { list-style: none; padding: 0; margin: 12px 0; }
+.family .timeline li { padding: 8px 0 8px 22px; position: relative; color: var(--muted); }
+.family .timeline li::before { content: ''; position: absolute; left: 4px; top: 13px; width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.family .timeline li.done { color: var(--text); }
+.family .timeline li.done::before { background: var(--brand); }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

@@ -99,9 +99,15 @@ def _fallback_triage(transcript: str) -> Triage:
     )
 
 
-async def triage(transcript: str, age: int) -> Triage:
+async def triage(transcript: str, age: int, language: str = "English") -> Triage:
     try:
-        result = await _parse(TRIAGE_SYSTEM, f"Patient age: {age}\nPatient said: \"{transcript}\"", Triage)
+        result = await _parse(
+            TRIAGE_SYSTEM,
+            f"Patient age: {age}\nPatient's language: {language}\nPatient said: \"{transcript}\"\n\n"
+            f"Write complaint, summary, red_flags and prep in English for the nurse. "
+            f"Write spoken_reply in {language}.",
+            Triage,
+        )
     except (anthropic.APIError, RuntimeError) as e:
         log.warning("LLM triage failed, using rules: %s", e)
         return _fallback_triage(transcript)
@@ -116,13 +122,14 @@ async def triage(transcript: str, age: int) -> Triage:
     return result
 
 
-async def follow_up(complaint: str, question: str, answer: str) -> FollowUp:
+async def follow_up(complaint: str, question: str, answer: str, language: str = "English") -> FollowUp:
     rule_flags = red_flags.check_text(answer)
     rule_level = "critical" if any(l == "critical" for _, l in rule_flags) else ("warning" if rule_flags else "none")
     try:
         result = await _parse(
             FOLLOWUP_SYSTEM,
-            f"Original complaint: {complaint}\nWe asked: \"{question}\"\nPatient answered: \"{answer}\"",
+            f"Original complaint: {complaint}\nWe asked: \"{question}\"\nPatient answered: \"{answer}\"\n"
+            f"Write reason in English for the nurse and spoken_reply in {language}.",
             FollowUp,
         )
     except (anthropic.APIError, RuntimeError) as e:

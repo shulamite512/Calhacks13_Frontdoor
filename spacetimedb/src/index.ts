@@ -37,6 +37,8 @@ const patient = table(
     prep: t.string().default(''),           // comma separated things to have ready on arrival
     phoneId: t.string().default(''),        // hex identity of the phone that checked in ('' for demo seeds)
     specialty: t.string().default(''),      // department the patient likely needs (department.name), '' = ED only
+    language: t.string().default('en'),     // patient's language: en, es, zh, vi, tl (voice + replies)
+    familyToken: t.string().default(''),    // secret for the family status link ('' = not shared)
   }
 );
 
@@ -343,6 +345,7 @@ export const checkIn = spacetimedb.reducer(
     prep: t.string(),
     phoneId: t.string(),
     specialty: t.string(),
+    language: t.string(),
   },
   (ctx, args) => {
     requireServer(ctx);
@@ -353,6 +356,7 @@ export const checkIn = spacetimedb.reducer(
       status: args.etaMinutes > 0 ? 'incoming' : 'waiting',
       risk,
       bedId: undefined,
+      familyToken: '',
       createdAt: ctx.timestamp,
       updatedAt: ctx.timestamp,
     });
@@ -380,6 +384,16 @@ export const holdBed = spacetimedb.reducer(
     getPatient(ctx, patientId);
     releaseHeld(ctx, patientId);
     ctx.db.bed.id.update({ ...b, status: 'reserved', patientId });
+  }
+);
+
+// The patient chose to share a status link with family; the server generated the secret token.
+export const setFamilyToken = spacetimedb.reducer(
+  { patientId: t.u64(), token: t.string() },
+  (ctx, { patientId, token }) => {
+    requireServer(ctx);
+    const p = getPatient(ctx, patientId);
+    ctx.db.patient.id.update({ ...p, familyToken: token, updatedAt: ctx.timestamp });
   }
 );
 

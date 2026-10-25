@@ -48,6 +48,7 @@ import RaiseAlertReducer from "./raise_alert_reducer";
 import ResetDemoReducer from "./reset_demo_reducer";
 import RespondRedirectReducer from "./respond_redirect_reducer";
 import SetDepartmentReducer from "./set_department_reducer";
+import SetFamilyTokenReducer from "./set_family_token_reducer";
 import SetForecastReducer from "./set_forecast_reducer";
 import SetHospitalReducer from "./set_hospital_reducer";
 import StaffLogoutReducer from "./staff_logout_reducer";
@@ -168,6 +169,7 @@ const reducersSchema = __reducers(
   __reducerSchema("reset_demo", ResetDemoReducer),
   __reducerSchema("respond_redirect", RespondRedirectReducer),
   __reducerSchema("set_department", SetDepartmentReducer),
+  __reducerSchema("set_family_token", SetFamilyTokenReducer),
   __reducerSchema("set_forecast", SetForecastReducer),
   __reducerSchema("set_hospital", SetHospitalReducer),
   __reducerSchema("staff_logout", StaffLogoutReducer),
