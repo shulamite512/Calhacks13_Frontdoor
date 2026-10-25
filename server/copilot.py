@@ -47,12 +47,14 @@ using only the tools. Be decisive and brief.
 Rules:
 - Holding a bed, paging, posting a checklist and flagging priority happen immediately (a nurse can \
 undo them). Assigning a bed or offering another ER only creates a proposal a nurse must approve.
-- Prefer Resus for ESI 1, Acute for ESI 2-3. Use hallway beds only if nothing else is free, and \
-never hold a hallway bed.
+- Prefer Resus for ESI 1, Acute for ESI 2-3. ESI 1-2 patients must get a Resus or Acute bed, never \
+Fast track (that's for minor problems); if none is free, page the "Charge nurse" to open one. Use \
+hallway beds only if nothing else is free, and never hold a hallway bed.
 - Page the department the patient needs; page the "Charge nurse" for a deteriorating waiting patient.
 - Never try to lower anyone's urgency, discharge anyone, or send a critical patient elsewhere.
 - If the snapshot says our ER can't treat an ambulance patient (our_er_can_treat is false), do NOT \
 hold a bed for them; page the "Charge nurse" to call the EMS crew about the better destination.
+- already_done lists what you (or earlier runs) already did: don't repeat those actions.
 - Take at most 4 actions, then reply with one short sentence summarizing what you did."""
 
 
@@ -105,7 +107,9 @@ async def _snapshot(focus_pid: int | None) -> dict:
     depts = await stdb.sql("SELECT * FROM department")
     fc = await stdb.sql("SELECT * FROM forecast")
     active = [p for p in patients if p["status"] in ("incoming", "waiting", "roomed")]
+    done = sorted(await stdb.sql("SELECT * FROM agent_action"), key=lambda a: a["id"])[-20:]
     return {
+        "already_done": [f"{a['summary']} [{a['status']}]" for a in done],
         "focus_patient_id": focus_pid,
         "patients": [{k: p[k] for k in ("id", "name", "age", "complaint", "acuity", "risk", "status", "source",
                                          "specialty", "eta_minutes", "red_flags")} for p in active],
@@ -133,6 +137,9 @@ async def _execute(name: str, args: dict, trigger: str) -> str:
         b = label_to_bed.get(str(args["bed_label"]).upper())
         if not b or b["status"] != "free":
             raise ValueError(f"bed {args['bed_label']} is not free")
+        if p["acuity"] <= 2 and b["zone"] not in ("Resus", "Acute"):
+            raise ValueError(f"ESI {p['acuity']} needs a Resus or Acute bed, not {b['zone']}; if none is free, "
+                             "page the Charge nurse to open one")
         if name == "hold_bed":
             if p["status"] != "incoming":
                 raise ValueError("only patients still on the way get a held bed")
@@ -154,6 +161,9 @@ async def _execute(name: str, args: dict, trigger: str) -> str:
         dept = args["department"]
         if dept not in DEPARTMENTS:
             raise ValueError("unknown department")
+        paged = await stdb.sql(f"SELECT * FROM agent_action WHERE patient_id = {pid}")
+        if any(a["kind"] == "page" and a["summary"].startswith(f"Paged {dept}:") for a in paged):
+            raise ValueError(f"{dept} was already paged about this patient")
         await _record(pid, "page", "auto", "done", f"Paged {dept}: {args['message']}", args["message"], 0, trigger)
         return f"paged {dept}"
 

@@ -3,7 +3,8 @@
 Walk-in ER patients check in by voice, in their own language, on the way. They get checked on in the waiting
 room (voice + vitals), nurses get alerts when someone gets worse, each patient's department shows whether it
 has a doctor and a bed, and the charge nurse sees bed shortfalls before the rush. Family can follow along
-with a status-only link.
+with a status-only link. Ambulance crews speak their report, send vitals ahead and pre-notify the ER that
+can take the patient.
 
 Docs: [team guide](docs/FRONTDOOR_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
 
@@ -58,6 +59,7 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
    ```
    - Patient phone page: http://localhost:5173/#/checkin
    - Nurse board: http://localhost:5173/#/board (sign in with your name and the staff PIN)
+   - Ambulance crew tablet: http://localhost:5173/#/ems
    - Family page: opened from the patient's **Share my status with family** link (`#/family/<token>`)
 
 3. **SpacetimeDB module** (only when you change `spacetimedb/src/index.ts`):
@@ -78,6 +80,8 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
 | Vitals simulator | `server/simulator.py` |
 | Bed forecast | `server/forecast.py`, `server/data/arrival_curve.json` (built by `server/scripts/build_arrival_curve.py` from HCAI volume) |
 | Phone page | `web/src/CheckIn.tsx` |
+| Ambulance crew tablet | `web/src/Ems.tsx`, `/ems/*` in `server/app.py` |
+| Charge-Nurse Assistant (agent) | `server/copilot.py` |
 | Nurse board | `web/src/Board.tsx`, `web/src/index.css` |
 
 ## Demo script (2 min)
@@ -97,6 +101,10 @@ patients drive in from the Palace of Fine Arts.
 4. Back to the stable patient: **Simulate drive** → arrives → wearable vitals start → **Worsen** (real
    deteriorating ER patient) → red alert → nurse taps **I'm on it** → phone: "Charge RN is coming to you now".
 5. Header "N beds short in 30 min" → **Assign bed** → phone: "Your bed is ready: A4".
+6. Ambulance tablet (`#/ems`): say "64 male, crushing chest pain 30 minutes, ST elevation on 12-lead,
+   BP 150 over 90." Vitals pre-fill from the report; the closest ER is skipped (cath lab busy) →
+   **Pre-notify CPMC Van Ness** → the board shows the ambulance with those vitals, the Assistant pages
+   Cardiology and holds a bed, and the tablet says "Bed A4 held for your patient."
 
 Optional: pick **Español** and check in in Spanish; **Share my status with family**.
 
