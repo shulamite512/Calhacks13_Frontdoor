@@ -10,7 +10,7 @@ Docs: [team guide](docs/FRONTDOOR_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
 
 ## Sponsor technology
 
-**SpacetimeDB:** the real-time backend for everything. 12 tables and reducers in
+**SpacetimeDB:** the real-time backend for everything. 13 tables and reducers in
 [spacetimedb/src/index.ts](spacetimedb/src/index.ts); private patient tables with per-user views
 (`my_patients`, `my_alerts`, …); server-only and staff-only reducers; live board via the React SDK.
 

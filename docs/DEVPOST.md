@@ -26,7 +26,7 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
 5. **Ready before the rush.** The board forecasts "3 beds short in 30 min" from real ED volume and shows each department's readiness. A family member can follow a status-only link.
 
 ## How we built it
-- **SpacetimeDB (Maincloud)** is the real-time backend: 12 tables, reducers for every state change, per-user views, and access rules enforced in the database.
+- **SpacetimeDB (Maincloud)** is the real-time backend: 13 tables, reducers for every state change, per-user views, and access rules enforced in the database.
 - **Cartesia** handles voice. **Ink** (`ink-whisper`) does speech-to-text and **Sonic** (`sonic-3.6`) speaks replies, in 5 languages, using one voice.
 - **Claude** (`claude-opus-5-5`, low effort, structured outputs) handles triage, department routing, prep items and waiting-room follow-ups. Deterministic red-flag rules run alongside it.
 - **Claude as an agent** (tool use, validated in code, three autonomy levels) runs the Charge-Nurse Assistant.
@@ -72,7 +72,7 @@ SpacetimeDB is FrontDoor's whole live backend, not an add-on. It's the shared op
 - **Nurses** (staff role): acknowledge alerts, hold/assign/free beds, update department readiness. Every change appears on every board instantly.
 - **Patients' phones:** see their own status update live ("Nurse Kim is coming", "Your bed is ready") and accept or decline a redirect offer.
 
-What we used: 12 tables, ~25 reducers with guards (`requireServer`, `requireStaff`, phone ownership), **private tables + per-user views** (`my_patients`, `my_vitals`, `my_alerts`, `my_offers`, `my_staff`), schema migrations with defaults, the TypeScript module + React SDK (`useTable`, `useReducer`), and the HTTP API from Python. Safety rules (never redirect ESI 1–2 or ambulance patients) are enforced in reducers, so no client can bypass them.
+What we used: 13 tables, ~25 reducers with guards (`requireServer`, `requireStaff`, phone ownership), **private tables + per-user views** (`my_patients`, `my_vitals`, `my_alerts`, `my_offers`, `my_staff`), schema migrations with defaults, the TypeScript module + React SDK (`useTable`, `useReducer`), and the HTTP API from Python. Safety rules (never redirect ESI 1–2 or ambulance patients) are enforced in reducers, so no client can bypass them.
 
 ## Track: Cartesia
 Voice is the product: the patient's first contact is speaking their symptoms, and the waiting-room check-ins are spoken.
