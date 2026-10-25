@@ -1,0 +1,8 @@
+.env
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+web/dist
+server/data/raw
+spacetimedb/node_modules

@@ -1,0 +1,17 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo. Secrets are typed into Render, never committed.
+services:
+  - type: web
+    name: frontdoor
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CARTESIA_API_KEY
+        sync: false
+      - key: STAFF_PIN
+        sync: false
+      - key: STDB_TOKEN
+        sync: false

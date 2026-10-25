@@ -67,6 +67,11 @@ DEMO_PATIENTS = [
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    # Only one server per database should run the simulator + Assistant (e.g. the deployed one);
+    # set BACKGROUND_TASKS=0 on any other copy so vitals and agent actions aren't doubled.
+    if os.getenv("BACKGROUND_TASKS", "1") == "0":
+        yield
+        return
     task = asyncio.create_task(simulator.run())
     yield
     _stop_drives()

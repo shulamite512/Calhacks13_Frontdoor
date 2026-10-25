@@ -3,5 +3,5 @@ uvicorn[standard]
 httpx
 python-dotenv
 python-multipart
-anthropic
+anthropic>=2.3.0
 pydantic

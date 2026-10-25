@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SpacetimeDBProvider, useSpacetimeDB } from 'spacetimedb/react';
 import { DbConnection } from './module_bindings';
-import { STDB_DB, STDB_URI } from './config';
+import { API_URL, STDB_DB, STDB_URI } from './config';
 import Board from './Board';
 import CheckIn from './CheckIn';
 import Ems from './Ems';
@@ -10,6 +10,7 @@ import Family from './Family';
 import './index.css';
 
 const TOKEN_KEY = 'frontdoor_token';
+const KEEP_AWAKE_MS = 5 * 60_000;
 
 function readToken() {
   try {
@@ -45,6 +46,14 @@ function App() {
     const onHash = () => setRoute(window.location.hash);
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  // Free hosting sleeps after ~15 min without requests; the board reads the database directly, so
+  // ping the server while any page is open to keep vitals and the Assistant running.
+  useEffect(() => {
+    const ping = () => void fetch(`${API_URL}/health`).catch(() => {});
+    ping();
+    const id = setInterval(ping, KEEP_AWAKE_MS);
+    return () => clearInterval(id);
   }, []);
   return (
     <>

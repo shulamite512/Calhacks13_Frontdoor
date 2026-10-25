@@ -69,6 +69,18 @@ phone page (React) ──voice──> FastAPI (server/) ──> Cartesia STT/TTS
    ```
    Database: `frontdoor-w3zl2` on Maincloud (dashboard: https://spacetimedb.com/frontdoor-w3zl2).
 
+## Deploy (Render, free)
+
+One Docker service serves the website at `/` and the API at `/api` ([Dockerfile](Dockerfile),
+[server/serve.py](server/serve.py), [render.yaml](render.yaml)).
+1. Render dashboard → **New → Blueprint** → connect this GitHub repo → it reads `render.yaml`.
+2. Enter the secrets when asked: `ANTHROPIC_API_KEY`, `CARTESIA_API_KEY`, `STAFF_PIN`, `STDB_TOKEN`.
+3. Wait for the build (~5 min). Open `https://<service>.onrender.com/#/board`.
+
+Only one server per database should run the simulator and Assistant: once the deployed one is up,
+run any local server with `BACKGROUND_TASKS=0` (or stop it). The free plan sleeps after ~15 min idle;
+open pages ping it to keep it awake, and the first load after sleeping takes ~1 min.
+
 ## Who owns what
 
 | Area | Files |
