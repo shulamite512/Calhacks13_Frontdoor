@@ -211,7 +211,13 @@ def _stop_drives() -> None:
 
 @app.get("/health")
 async def health():
-    return {"ok": True, "db": stdb.DB, "hospital": HOSPITAL}
+    # dbAuth is false when STDB_TOKEN is missing or wrong (e.g. on a fresh deployment).
+    try:
+        await stdb.sql("SELECT * FROM config")
+        db_auth, db_error = True, ""
+    except Exception as e:
+        db_auth, db_error = False, str(e)[:200]
+    return {"ok": True, "db": stdb.DB, "dbAuth": db_auth, "dbError": db_error, "hospital": HOSPITAL}
 
 
 @app.post("/transcribe")
