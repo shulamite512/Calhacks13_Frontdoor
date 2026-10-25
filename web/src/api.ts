@@ -97,6 +97,8 @@ export const api = {
 
   followUp: (b: { patientId: number; question: string; answer: string }) => post<FollowUpResult>('/followup', b),
 
+  missedCheckins: (patientId: number, count: number) => post('/followup/missed', { patientId, count }),
+
   familyShare: (b: { patientId: number; phoneId: string }) => post<{ token: string }>('/family/share', b),
 
   async familyStatus(token: string): Promise<FamilyStatus> {

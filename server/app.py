@@ -150,6 +150,11 @@ class PatientIdIn(BaseModel):
     patientId: int
 
 
+class MissedIn(BaseModel):
+    patientId: int
+    count: int = 2
+
+
 class LocationIn(BaseModel):
     patientId: int
     lat: float
@@ -245,7 +250,7 @@ async def followup(body: FollowUpIn):
         raise HTTPException(404, "patient not found")
     # Silence or a mis-hear shouldn't page a nurse; ask again instead.
     lang = voice.lang_or_en(rows[0].get("language"))
-    if len([c for c in body.answer if c.isalpha()]) < 2:
+    if len([c for c in body.answer if c.isalpha()]) < 2 or _is_silence_hallucination(body.answer):
         return {"level": "none", "reason": "", "heard": False, "spoken_reply": SORRY[lang]}
     r = await triage.follow_up(rows[0]["complaint"], body.question, body.answer, voice.LANGUAGES[lang])
     await stdb.call("add_follow_up", body.patientId, body.question, body.answer, r.level != "none")
@@ -294,6 +299,35 @@ async def redirect_suggest(body: StaffPatientIn):
     # The module re-checks eligibility (incoming, walk-in, ESI 3-5) and rejects anything else.
     await stdb.call("offer_redirect", body.patientId, best["hospitalId"], best["driveMinutes"], best["waitMinutes"])
     return best
+
+
+# Whisper-style speech-to-text "hears" these on silence or background noise. As a whole answer to
+# "how are you feeling?", they mean we didn't really hear the patient.
+SILENCE_PHRASES = {
+    "thank you", "thanks", "thank you very much", "thanks for watching", "thank you for watching",
+    "bye", "bye bye", "you", "gracias", "muchas gracias", "谢谢", "谢谢观看", "cảm ơn", "salamat",
+}
+
+
+def _is_silence_hallucination(answer: str) -> bool:
+    norm = "".join(c for c in answer.lower() if c.isalnum() or c.isspace() or ord(c) > 0x2e80).strip()
+    return " ".join(norm.split()) in SILENCE_PHRASES
+
+
+@app.post("/followup/missed")
+async def followup_missed(body: MissedIn):
+    """The phone asked twice automatically and heard nothing back. One silence is often a mic problem;
+    repeated silence from a waiting patient is worth a nurse's look."""
+    rows = await stdb.sql(f"SELECT * FROM patient WHERE id = {body.patientId}")
+    if not rows:
+        raise HTTPException(404, "patient not found")
+    if rows[0]["status"] != "waiting":
+        return {"ok": False, "reason": "not in waiting room"}
+    count = max(2, min(body.count, 10))
+    await stdb.call("add_follow_up", body.patientId, "Automatic check-in", "(no answer)", True)
+    await stdb.call("raise_alert", body.patientId, "warning", f"No answer to {count} automatic check-ins")
+    simulator.note_alert(body.patientId, "warning")
+    return {"ok": True}
 
 
 # ---------- Family status link ----------

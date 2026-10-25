@@ -145,4 +145,6 @@ button.warn { background: var(--warn); border-color: var(--warn); color: #fff; f
 .family .timeline li::before { content: ''; position: absolute; left: 4px; top: 13px; width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
 .family .timeline li.done { color: var(--text); }
 .family .timeline li.done::before { background: var(--brand); }
+.auto { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px; color: var(--text); }
+.auto input { width: auto; margin: 0; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .5); } 50% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); } }

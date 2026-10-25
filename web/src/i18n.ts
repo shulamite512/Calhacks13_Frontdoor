@@ -77,6 +77,14 @@ const T = {
     tl: 'Kung lumala ang pakiramdam mo, sabihan agad ang front desk o tumawag sa 911.',
   },
   youSaid: { en: 'You said', es: 'Usted dijo', zh: '您说', vi: 'Bạn đã nói', tl: 'Sinabi mo' },
+  autoCheckins: {
+    en: 'Automatic check-ins',
+    es: 'Revisiones automáticas',
+    zh: '自动询问',
+    vi: 'Tự động hỏi thăm',
+    tl: 'Awtomatikong pagtingin',
+  },
+  nextIn: { en: 'next in', es: 'próxima en', zh: '下次', vi: 'lần tới sau', tl: 'susunod sa' },
 } satisfies Record<string, Record<Lang, string>>;
 
 export function t(key: keyof typeof T, lang: Lang): string {

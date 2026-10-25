@@ -663,3 +663,27 @@ Limitations: red-flag keywords are English-only (Claude covers other languages);
 
 Devpost text for every Tier 1 track is in [docs/DEVPOST.md](DEVPOST.md).
 
+---
+
+## 16. Automatic waiting-room check-ins
+
+Once a patient is **in the waiting room**, their phone checks in by itself, so nobody has to remember to tap.
+
+| Setting | Value ([web/src/CheckIn.tsx](../web/src/CheckIn.tsx)) |
+|---|---|
+| First check-in | 30 s after arriving (`AUTO_FIRST_MS`, short so it shows in a demo) |
+| Then | every 2 min (`AUTO_EVERY_MS`) |
+| Listening window | 8 s, then recording stops automatically (`AUTO_LISTEN_MS`) |
+| Missed answers before a nurse is told | 2 in a row (`MISSES_BEFORE_ALERT`) |
+
+Flow: speak the question in the patient's language (Sonic) → listen 8 s → transcribe (Ink) → same `/followup` path as a manual check-in (Claude + rules, alerts if worse). The phone shows **Automatic check-ins · next in 1:32** with a checkbox to turn it off. It stops when the patient gets a bed, leaves or is redirected.
+
+**Silence safety:**
+- One silent answer never pages a nurse (it's often a mic problem).
+- Whisper-style speech-to-text invents short phrases on silence or noise ("Thank you.", "Bye.", "Gracias"). We found this in testing: a silent test mic was transcribed as "Thank you." and "Bye.". `SILENCE_PHRASES` in [server/app.py](../server/app.py) treats those as *not heard*. Real answers ("I feel a little better now, thanks") still go through.
+- **Two missed automatic check-ins in a row** → `POST /followup/missed` → warning alert **"No answer to 2 automatic check-ins"** and a flagged follow-up row. A patient who stops responding is exactly who a nurse should see.
+
+Tested in a real browser with a simulated microphone: check-ins fired at 30 s and ~2.5 min with no taps; the second miss raised the warning on the board.
+
+Judge line: "FrontDoor keeps asking, in your language, every two minutes. And if you stop answering, that's a signal too."
+

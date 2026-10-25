@@ -13,7 +13,7 @@ Ambulance patients already get this attention. Tools like Twiage send their deta
 ## What it does
 - **Voice check-in on the way.** The patient taps the mic and describes their symptoms in English, Spanish, Chinese, Vietnamese or Tagalog. Claude writes an English pre-triage note for the nurse (complaint, summary, ESI acuity, red flags, which department they likely need, what to prepare), and replies to the patient by voice in their own language.
 - **Live incoming map.** Walk-ins and ambulances appear on a map with real drive-time ETAs. The board shows "Prepare before arrival: 12-lead ECG, cardiac monitor" and lets the nurse hold a bed.
-- **Nobody forgotten in the waiting room.** FrontDoor checks in by voice ("How are you feeling compared to when you arrived?") and watches vitals. If someone gets worse, the tile turns red and a nurse taps **I'm on it**. The patient's phone shows "Nurse Kim is coming to you now".
+- **Nobody forgotten in the waiting room.** Every 2 minutes, automatically, FrontDoor checks in by voice ("How are you feeling compared to when you arrived?") and watches vitals. If someone gets worse, or stops answering twice in a row, the tile turns red and a nurse taps **I'm on it**. The patient's phone shows "Nurse Kim is coming to you now".
 - **Department readiness.** For each patient: does the department they need have a doctor on call, a bed and its key resource? For example, "✓ Cardiology: 1 on call · 2 CCU beds · cath lab ready", or a red warning when the OR is busy or no psychiatric safe room is free. 13 departments, editable by staff.
 - **Beds before the rush.** The header forecasts "3 beds short in 30 min" from current patients and real ED volume. Hallway overflow beds are used only when needed, and stable walk-ins still on the way can be offered a nearby ER with a shorter wait.
 - **Family link.** The patient can share a status page with family: arrived, nurse with them, in bed A4. No symptoms or vitals.
@@ -62,6 +62,7 @@ Voice is the product: the patient's first contact is speaking their symptoms, an
 - **Ink (`ink-whisper`)**: transcribes check-ins and follow-up answers in en/es/zh/vi/tl (measured ~1.4 s).
 - **Sonic (`sonic-3.6`)**: speaks the reply, the follow-up question and "a nurse is coming" in the patient's language, with one consistent voice (measured ~1.6–2.1 s).
 - **Accessibility:** patients who don't speak English, or can't type while scared or driving, can still check in. The nurse always sees English.
+- **Automatic check-ins:** every 2 min in the waiting room, spoken and transcribed in the patient's language; Whisper-style phrases invented on silence ("Thank you.") are filtered out, and two missed check-ins in a row alert a nurse.
 - **Responsibility:** silence or a mis-hear is never treated as worsening ("Sorry, I didn't catch that"); the app always tells people to call 911 for emergencies.
 - **Limitations:** batch (not streaming) STT/TTS adds ~3 s per turn; deterministic red-flag keywords are English-only (Claude covers other languages); the live status cards on the phone are still English.
 

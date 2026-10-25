@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useReducer, useSpacetimeDB, useTable } from 'spacetimedb/react';
 import { reducers, tables } from './module_bindings';
 import { api, type FollowUpResult, type TriageResult } from './api';
@@ -9,6 +9,11 @@ type Step = 'form' | 'listening' | 'thinking' | 'done';
 type Session = { result: TriageResult; name: string; lang?: Lang };
 
 const SESSION_KEY = 'frontdoor_session';
+// Automatic waiting-room check-ins: the first soon after arrival, then on a steady interval.
+const AUTO_FIRST_MS = 30_000;
+const AUTO_EVERY_MS = 120_000;
+const AUTO_LISTEN_MS = 8_000;
+const MISSES_BEFORE_ALERT = 2;
 
 function loadSession(): Session | null {
   try {
@@ -116,6 +121,11 @@ export default function CheckIn() {
   );
 }
 
+function fmt(ms: number) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 // Live status from the database: what the patient should know right now.
 function LiveStatus({ patientId }: { patientId: number }) {
   // These views only return rows checked in from this phone.
@@ -202,6 +212,33 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
   const rec = useRecorder();
   const pid = result.patientId;
 
+  // Automatic check-ins run only while the patient is in the waiting room.
+  const [patients] = useTable(tables.myPatients);
+  const status = patients.find(p => pid != null && p.id === BigInt(pid))?.status;
+  const [auto, setAuto] = useState(true);
+  const [nextAt, setNextAt] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const misses = useRef(0);
+  const firstDone = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'waiting' || !auto) return setNextAt(null);
+    if (nextAt === null && !busy) setNextAt(Date.now() + (firstDone.current ? AUTO_EVERY_MS : AUTO_FIRST_MS));
+  }, [status, auto, nextAt, busy]);
+
+  useEffect(() => {
+    if (nextAt !== null && now >= nextAt && !busy) {
+      firstDone.current = true;
+      setNextAt(null);
+      void checkOnMe(true);
+    }
+  }, [now, nextAt, busy]);
+
   // Send GPS to the ER every ~10s until we're close enough to count as arrived.
   function shareLocation(patientId: number) {
     if (!navigator.geolocation) return;
@@ -236,7 +273,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
     }
   }
 
-  async function checkOnMe() {
+  async function checkOnMe(automatic = false) {
     if (rec.recording) return rec.stop();
     if (pid == null) return;
     setBusy(true);
@@ -244,11 +281,18 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
       const q = await api.followUpQuestion(pid);
       await api.speak(q, lang);
       setListening(true);
-      const blob = await rec.start();
+      const blob = await rec.start(automatic ? AUTO_LISTEN_MS : undefined);
       setListening(false);
       const a = await api.transcribe(blob, lang);
       const r = await api.followUp({ patientId: pid, question: q, answer: a });
-      if (r.heard) setLog(l => [{ a, r }, ...l]);
+      if (r.heard) {
+        misses.current = 0;
+        setLog(l => [{ a, r }, ...l]);
+      } else if (automatic && ++misses.current >= MISSES_BEFORE_ALERT) {
+        // Someone who stops answering may be getting worse: tell a nurse.
+        misses.current = 0;
+        await api.missedCheckins(pid, MISSES_BEFORE_ALERT);
+      }
       await api.speak(r.spoken_reply, lang);
     } finally {
       setListening(false);
@@ -280,9 +324,19 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
         </>
       )}
 
-      <button className={`mic ${listening ? 'on' : ''}`} onClick={checkOnMe} disabled={busy && !listening}>
+      <button className={`mic ${listening ? 'on' : ''}`} onClick={() => checkOnMe()} disabled={busy && !listening}>
         {listening ? t('listening', lang) : busy ? t('working', lang) : t('checkOnMe', lang)}
       </button>
+
+      {status === 'waiting' && (
+        <label className="auto">
+          <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} />
+          {t('autoCheckins', lang)}
+          {auto && nextAt !== null && !busy && (
+            <span className="muted"> · {t('nextIn', lang)} {fmt(nextAt - now)}</span>
+          )}
+        </label>
+      )}
 
       <button onClick={shareWithFamily}>{t('shareFamily', lang)}</button>
       {familyLink && (
