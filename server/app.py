@@ -38,10 +38,11 @@ DEMO_START = (37.80292, -122.44840)
 DEMO_PATIENTS = [
     dict(name="Maria Lopez", age=34, complaint="Ankle injury", acuity=4,
          transcript="I twisted my ankle playing soccer and it's swollen.",
-         summary="Right ankle inversion injury, swelling, able to bear some weight."),
+         summary="Right ankle inversion injury, swelling, able to bear some weight.", specialty="Orthopedics"),
     dict(name="James Chen", age=67, complaint="Shortness of breath", acuity=3, flags="shortness of breath",
          transcript="I've been more short of breath than usual since yesterday.",
-         summary="Increased dyspnea x1 day, history of COPD per patient.", prep="Nebulizer"),
+         summary="Increased dyspnea x1 day, history of COPD per patient.", prep="Nebulizer",
+         specialty="Pulmonology"),
     dict(name="Aisha Patel", age=8, complaint="Fever", acuity=4,
          transcript="My daughter has had a fever of 102 since this morning.",
          summary="Pediatric fever 102F since AM, drinking fluids, no rash reported.", specialty="Pediatrics"),

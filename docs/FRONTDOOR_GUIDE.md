@@ -614,18 +614,25 @@ Judge line: "The volume is real state data; Google won't publish hospital busyne
 | Board tile | One line per patient: green **"✓ Needs Cardiology: 1 on call · 2 CCU beds · Cath lab ready"** or red **"⚠ Needs Surgery: Operating room not ready"**. |
 | Departments panel (right column) | Staff tap **− / +** for doctors and beds and toggle the resource (ready/busy). `update_department` is **staff-only** (tested: outsider rejected). |
 
-Seeded departments (simulated status):
+Seeded departments (13; status simulated, staff-editable). The panel lists departments that current patients need first, with a count, and folds the rest behind **Show all 13 departments**.
 
 | Department | Beds | Doctors | Resource | Note |
 |---|---|---|---|---|
 | Cardiology | 2/4 CCU | 1 | Cath lab: ready | Interventional cardiologist on call |
 | Neurology | 1/2 Neuro ICU | 1 | CT scanner: ready | Stroke team; tele-neurology backup |
-| Surgery | 2/6 post-op | 1 | Operating room: **busy** | Shows the red warning in the demo |
+| Surgery | 2/6 post-op | 1 | Operating room: **busy** | Red warning in the demo |
 | ICU | 1/12 | 1 | Ventilators: ready | |
 | Pediatrics | 3/8 | 2 | Peds ED bay: ready | |
-| Trauma | not offered | – | – | **Real:** CPMC Van Ness isn't a trauma center; SF's Level I trauma center is Zuckerberg SF General |
+| Orthopedics | 2/6 | 1 | Splint/cast room: ready | |
+| Obstetrics | 1/6 L&D rooms | 1 | Labor & delivery: ready | |
+| Psychiatry | **0/3** psych holds | 1 | Safe room: **busy** | Red warning: no safe room |
+| Gastroenterology | 2/4 | **0** | Endoscopy suite: ready | Red warning: no GI on call until 7 am |
+| Pulmonology | 3/6 step-down | 1 | BiPAP machines: ready | |
+| Nephrology | 1/4 dialysis chairs | 1 | Dialysis: ready | |
+| Trauma | not offered | – | – | **Real:** SF's Level I trauma center is Zuckerberg SF General |
+| Burns | not offered | – | – | **Real:** serious burns go to the Bothin Burn Center (UCSF Health Hyde Hospital, formerly Saint Francis) |
 
-Tested: chest pain → Cardiology ✓, abdominal pain → Surgery ⚠ (OR busy), EMS stroke → Neurology ✓, 8-year-old → Pediatrics ✓, motorcycle crash → Trauma (ESI 1, "not offered here").
+Tested (Claude's pick): chest pain → Cardiology, abdominal pain → Surgery, EMS stroke → Neurology, 8-year-old → Pediatrics, motorcycle crash → Trauma, 34 weeks pregnant with contractions → Obstetrics, thoughts of self-harm → Psychiatry, vomiting blood → Gastroenterology, missed dialysis → Nephrology, boiling-oil burns → Burns, bent wrist → Orthopedics, severe asthma → Pulmonology. All 12 correct.
 
 **Demo idea:** after the chest-pain check-in, tap **Cath lab: ready** to make it busy. The tile turns red ("Cath lab not ready"), showing the charge nurse would know before the patient arrives.
 

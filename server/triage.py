@@ -13,7 +13,10 @@ MODEL = "claude-opus-5-5"
 _client = anthropic.AsyncAnthropic()
 
 
-Specialty = Literal["Cardiology", "Neurology", "Surgery", "ICU", "Pediatrics", "Trauma", "Emergency"]
+Specialty = Literal[
+    "Cardiology", "Neurology", "Surgery", "ICU", "Pediatrics", "Trauma", "Orthopedics", "Obstetrics",
+    "Psychiatry", "Gastroenterology", "Pulmonology", "Nephrology", "Burns", "Emergency",
+]
 
 
 class Triage(BaseModel):
@@ -27,8 +30,11 @@ class Triage(BaseModel):
     )
     specialty: Specialty = Field(
         description="Department most likely needed beyond the ED: Cardiology (suspected ACS/arrhythmia), "
-        "Neurology (stroke signs), Surgery (acute abdomen, appendicitis), ICU (likely critical care), "
-        "Pediatrics (patient under 18), Trauma (major injury), Emergency (ED care only)"
+        "Neurology (stroke signs, seizure), Surgery (acute abdomen, appendicitis), ICU (likely critical care), "
+        "Pediatrics (patient under 18), Trauma (major multi-system injury), Orthopedics (isolated fracture or "
+        "dislocation), Obstetrics (pregnancy-related), Psychiatry (mental-health crisis, suicidal thoughts), "
+        "Gastroenterology (GI bleeding), Pulmonology (asthma/COPD flare), Nephrology (kidney failure, "
+        "missed dialysis), Burns (significant burns), Emergency (ED care only)"
     )
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
 

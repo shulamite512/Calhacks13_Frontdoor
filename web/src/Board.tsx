@@ -108,6 +108,7 @@ function BoardInner({ nurse }: { nurse: string }) {
   const [offers] = useTable(tables.myOffers);
   const [departments] = useTable(tables.department);
   const updateDepartment = useReducer(reducers.updateDepartment);
+  const [showAllDepts, setShowAllDepts] = useState(false);
   const ackAlert = useReducer(reducers.ackAlert);
   const assignBed = useReducer(reducers.assignBed);
   const freeBed = useReducer(reducers.freeBed);
@@ -173,6 +174,18 @@ function BoardInner({ nurse }: { nurse: string }) {
   }
   const short = (f?.bedsShort ?? 0) > 0;
   const bedActions = { beds, offers, hospitals, departments, short, onAssign: assign, onHold: hold, onSuggest: suggest };
+
+  // Departments current patients need go first (with a count); the rest fold behind "Show all".
+  const need = new Map<string, number>();
+  for (const p of patients) {
+    if (p.specialty && ['incoming', 'waiting', 'roomed'].includes(p.status)) {
+      need.set(p.specialty, (need.get(p.specialty) ?? 0) + 1);
+    }
+  }
+  const deptsSorted = [...departments].sort(
+    (a, b) => (need.get(b.name) ?? 0) - (need.get(a.name) ?? 0) || a.id - b.id
+  );
+  const deptsShown = showAllDepts ? deptsSorted : deptsSorted.filter(d => need.has(d.name));
 
   function adjust(d: Department, change: Partial<Pick<Department, 'bedsFree' | 'doctorsOnCall' | 'resourceReady'>>) {
     const next = { bedsFree: d.bedsFree, doctorsOnCall: d.doctorsOnCall, resourceReady: d.resourceReady, ...change };
@@ -241,11 +254,16 @@ function BoardInner({ nurse }: { nurse: string }) {
             ))}
           </div>
 
-          <h2 className="sub">Departments <span className="muted">specialty readiness</span></h2>
+          <h2 className="sub">
+            Departments <span className="muted">{need.size} needed now · {departments.length} total</span>
+          </h2>
           <div className="depts">
-            {[...departments].sort((a, b) => a.id - b.id).map(d => (
+            {deptsShown.map(d => (
               <div key={d.id} className={`dept ${d.bedsTotal === 0 ? 'none' : ''}`} title={d.note}>
-                <b>{d.name}</b>
+                <b>
+                  {d.name}
+                  {need.has(d.name) && <span className="need">{need.get(d.name)} pt{need.get(d.name) === 1 ? '' : 's'}</span>}
+                </b>
                 {d.bedsTotal === 0 ? (
                   <span className="muted">{d.note}</span>
                 ) : (
@@ -268,6 +286,9 @@ function BoardInner({ nurse }: { nurse: string }) {
                 )}
               </div>
             ))}
+            <button className="ghost" onClick={() => setShowAllDepts(v => !v)}>
+              {showAllDepts ? 'Show only needed departments' : `Show all ${departments.length} departments`}
+            </button>
           </div>
 
           <h2 className="sub">Nearby ERs <span className="muted">simulated capacity</span></h2>
