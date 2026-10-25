@@ -104,6 +104,9 @@ def _parsed(msg):
 
 
 async def _parse(system: str, user: str, model_cls):
+    # Without a key the SDK raises TypeError, which would skip the rule-based fallback and 500.
+    if not (_client.api_key or _client.auth_token):
+        raise RuntimeError("ANTHROPIC_API_KEY is not set")
     msg = await _client.beta.messages.parse(
         model=MODEL,
         max_tokens=2000,

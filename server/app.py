@@ -373,7 +373,12 @@ async def ems_assess(body: EmsAssessIn):
     """Paramedic's spoken report -> triage + the ERs that can take this patient, nearest capable first."""
     t = await triage.triage(body.transcript, body.age, "English", ems=True)
     specialty = "" if t.specialty == "Emergency" else t.specialty
-    opts = await matching.rank(specialty, body.lat, body.lng, HOSPITAL, critical=t.acuity <= 2)
+    try:
+        opts = await matching.rank(specialty, body.lat, body.lng, HOSPITAL, critical=t.acuity <= 2)
+    except Exception:
+        # Log the failure only: the transcript is patient information.
+        logging.exception("ems/assess: ER matching failed (specialty=%s)", specialty or "none")
+        raise HTTPException(503, "Couldn't check ER availability right now. Try again, or call it in by radio.")
     for o in opts:
         o["onFrontDoor"] = o["hospitalId"] == matching.OUR_ID  # only our ER runs a FrontDoor board in this demo
     vitals = t.reported_vitals.model_dump() if isinstance(t, triage.EmsTriage) else {}
