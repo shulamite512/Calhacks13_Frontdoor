@@ -1,4 +1,4 @@
-# FrontDoor
+# Siren
 
 Walk-in ER patients check in by voice, in their own language, on the way. They get checked on in the waiting
 room (voice + vitals), nurses get alerts when someone gets worse, each patient's department shows whether it
@@ -6,7 +6,7 @@ has a doctor and a bed, and the charge nurse sees bed shortfalls before the rush
 with a status-only link. Ambulance crews speak their report, send vitals ahead and pre-notify the ER that
 can take the patient.
 
-Docs: [team guide](docs/FRONTDOOR_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
+Docs: [team guide](docs/SIREN_GUIDE.md) · [Devpost draft](docs/DEVPOST.md)
 
 ## Sponsor technology
 
@@ -98,7 +98,7 @@ open pages ping it to keep it awake, and the first load after sleeping takes ~1 
 
 ## Demo script (2 min)
 
-Story: you're driving to the ER. FrontDoor sends you to the ER that can actually treat you right now,
+Story: you're driving to the ER. Siren sends you to the ER that can actually treat you right now,
 tells it you're coming, and watches over you until you're in a bed. Our ER: CPMC Van Ness; demo
 patients drive in from the Palace of Fine Arts.
 

@@ -1,9 +1,9 @@
-# FrontDoor: Devpost submission draft
+# Siren: Devpost submission draft
 
 > Copy each section into Devpost. Track-specific sections are at the end. Numbers below were measured in our own testing.
 
 ## Tagline
-FrontDoor turns your car into an ambulance (minus the siren): speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you, and the ER is ready before you arrive. Your family can see where you are.
+Siren turns your car into an ambulance: speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you, and the ER is ready before you arrive. Your family can see where you are.
 
 ## Inspiration
 One of our teammates had a panic attack and was sure the chest pain was a heart attack. They drove to the nearest ER, got checked in, and then waited about 40 minutes to see a doctor, told only to wait until the doctor came. Nobody was watching them, and they had no idea whether that ER even had a cardiologist available. If it *had* been a heart attack, those minutes mattered.
@@ -11,13 +11,13 @@ One of our teammates had a panic attack and was sure the chest pain was a heart 
 Ambulance patients already get this: paramedics pick the right hospital and tools like Twiage send their details ahead. But most people drive themselves, pick an ER by distance or habit, and are invisible until the front desk.
 
 ## What it does
-1. **The right ER, before you arrive.** The moment you open FrontDoor it finds your location and shows the ERs around you with real drive times and waits. You describe your symptoms by voice (English, Spanish, Chinese, Vietnamese or Tagalog). Claude works out what you need: urgency (ESI) and which department (Cardiology, Trauma, Burns, Surgery, ... 13 in all). FrontDoor checks every nearby ER: does it have **that department, a doctor on call, a free bed and the key equipment ready** (cath lab, OR, burn unit)? Then it ranks them by real drive time plus wait.
+1. **The right ER, before you arrive.** The moment you open Siren it finds your location and shows the ERs around you with real drive times and waits. You describe your symptoms by voice (English, Spanish, Chinese, Vietnamese or Tagalog). Claude works out what you need: urgency (ESI) and which department (Cardiology, Trauma, Burns, Surgery, ... 13 in all). Siren checks every nearby ER: does it have **that department, a doctor on call, a free bed and the key equipment ready** (cath lab, OR, burn unit)? Then it ranks them by real drive time plus wait.
    - Stable patients: "A better match for you right now: Kaiser. Surgery ready, operating room ready. At CPMC: operating room busy. 7 min away." You choose, and get directions.
    - Urgent but drivable (e.g. a broken wrist): "Go now. Best ER for you: Kaiser, orthopedics ready, 10 min."
    - Critical patients: "**Call 911 now.** Best-equipped ER: Zuckerberg (Level I trauma center, trauma team ready)." For a mental-health crisis: 911 if in danger, or call/text 988. We never tell a critical patient to keep driving.
    - After speaking you see **your options**: the top ERs for your condition, each with doctors on call, beds free, equipment, drive time and wait, plus directions.
 2. **The ER knows you're coming.** Your tile appears on the charge nurse's board with your summary, red flags and "Prepare before arrival: 12-lead ECG, cardiac monitor", on a live map with your ETA. The nurse can hold a bed.
-3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes FrontDoor asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
+3. **Nobody forgotten in the waiting room.** A wearable from triage streams vitals, and every 2 minutes Siren asks by voice how you're doing, in your language. If you get worse, or stop answering, a nurse is alerted and taps **I'm on it**; your phone says "Nurse Kim is coming to you now."
 4. **An AI agent that acts on what's urgent.** The Charge-Nurse Assistant watches the board. When a critical patient is on the way, or someone in the waiting room gets worse, it acts within seconds: holds the right bed, pages the department ("Stroke alert, ETA 11 min, have CT ready"), posts a checklist, flags priority. Bigger moves (assigning a bed, offering another ER) wait for a nurse's Approve. It can't lower urgency, discharge anyone or redirect a critical patient: those tools don't exist.
 **Ambulances too:** the crew's tablet (`#/ems`) lets paramedics speak their report, see which ERs can take the patient (e.g. a STEMI skips the closest ER because its cath lab is busy), and pre-notify one. The patient appears on that ER's board with live monitor vitals, and the hospital's replies come back to the tablet and are read aloud: "Bed held for your patient." If the ER can't treat the patient (e.g. major trauma), once a nurse approves it, the tablet shows the hospital's suggested destination ("Zuckerberg: trauma team ready, 3 min"); the crew makes the final call.
 
@@ -50,7 +50,7 @@ Ambulance patients already get this: paramedics pick the right hospital and tool
 | Voice (Cartesia), AI triage (Claude), live database (SpacetimeDB), drive times (OSRM), hospital locations, access rules; CPMC's daily ED volume (HCAI); **hourly arrival pattern and vital-sign trajectories replayed from 222 real de-identified ED stays (MIMIC-IV-ED Demo)**; **licensed bed totals** for ICU (36), perinatal (53) and pediatrics (25) from CDPH | How many beds are free *right now*, doctors on call, resource status, other hospitals' waits, the ambulance feed. These exist only inside hospital systems (HIPAA); in production they'd come from HL7/FHIR feeds |
 
 ## How well does the AI triage?
-We ran our triage pipeline on 206 real ED triage records (MIMIC-IV-ED Demo) and compared it with the nurses' ESI. The first version leaned less urgent on borderline cases. We then rewrote the prompt to walk the published ESI v4 algorithm, tuning on one half of the cases and measuring **once** on the held-out half: it caught **96% of the nurses' ESI 1-2 patients (48 of 50), up from 84%**, stayed 98% within one level, and became more cautious (35% rated more urgent than the nurse, the safer error for a heads-up a nurse confirms). FrontDoor still only escalates, keeps watching vitals and voice, and leaves every decision to nurses.
+We ran our triage pipeline on 206 real ED triage records (MIMIC-IV-ED Demo) and compared it with the nurses' ESI. The first version leaned less urgent on borderline cases. We then rewrote the prompt to walk the published ESI v4 algorithm, tuning on one half of the cases and measuring **once** on the held-out half: it caught **96% of the nurses' ESI 1-2 patients (48 of 50), up from 84%**, stayed 98% within one level, and became more cautious (35% rated more urgent than the nurse, the safer error for a heads-up a nurse confirms). Siren still only escalates, keeps watching vitals and voice, and leaves every decision to nurses.
 
 ## What we learned
 - "Nearest ER" is often the wrong answer: what matters is whether that ER has the right department, doctor, bed and equipment right now.
@@ -67,7 +67,7 @@ spacetimedb, cartesia, claude, anthropic, python, fastapi, react, typescript, vi
 ---
 
 ## Track: SpacetimeDB
-SpacetimeDB is FrontDoor's whole live backend, not an add-on. It's the shared ops dashboard and persistent world state that three kinds of actors coordinate through:
+SpacetimeDB is Siren's whole live backend, not an add-on. It's the shared ops dashboard and persistent world state that three kinds of actors coordinate through:
 - **Python server** (signs in as the database owner): checks patients in, streams vitals every 3 s, raises alerts, writes the forecast, moves ambulances along routes.
 - **Nurses** (staff role): acknowledge alerts, hold/assign/free beds, update department readiness. Every change appears on every board instantly.
 - **Patients' phones:** see their own status update live ("Nurse Kim is coming", "Your bed is ready") and accept or decline a redirect offer.
@@ -103,7 +103,7 @@ Voice is the product: the patient's first contact is speaking their symptoms, an
 - **End-to-end:** working live demo from voice to bed, across phone, board and family pages.
 
 ## Track: Meta, Bringing People Closer Together with AI
-FrontDoor connects people at the moment they feel most alone:
+Siren connects people at the moment they feel most alone:
 - **Patient ↔ nurse before arrival:** the nurse knows who's coming and what they need before they walk in.
 - **Nobody forgotten in the waiting room:** spoken check-ins, and "Nurse Kim is coming to you now" on the patient's phone.
 - **Across language barriers:** patients speak Spanish, Chinese, Vietnamese or Tagalog and are answered in their language; nurses read English.

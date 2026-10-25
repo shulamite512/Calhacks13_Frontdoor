@@ -49,7 +49,7 @@ export type EmsAssessment = {
   red_flags: string[];
   prep: string[];
   specialty: string;
-  options: Array<ErOption & { onFrontDoor: boolean }>;
+  options: Array<ErOption & { onSiren: boolean }>;
 };
 
 export type FamilyStatus = {

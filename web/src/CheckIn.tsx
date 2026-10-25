@@ -132,7 +132,7 @@ export default function CheckIn() {
 
   return (
     <div className="phone">
-      <h1 className="brand">FrontDoor</h1>
+      <h1 className="brand">Siren</h1>
       <div className="langs" role="group" aria-label="Language">
         {LANGS.map(l => (
           <button key={l.code} className={l.code === lang ? 'on' : ''} onClick={() => setLang(l.code)}>{l.label}</button>
@@ -389,7 +389,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
     const url = `${window.location.origin}${window.location.pathname}#/family/${token}`;
     setFamilyLink(url);
     try {
-      if (navigator.share) await navigator.share({ title: 'FrontDoor status', url });
+      if (navigator.share) await navigator.share({ title: 'Siren status', url });
       else await navigator.clipboard.writeText(url);
     } catch {
       /* user cancelled share or clipboard blocked; the link is shown below */
@@ -425,7 +425,7 @@ function Waiting({ session, onStartOver }: { session: Session; onStartOver: () =
 
   return (
     <div className="phone">
-      <h1 className="brand">FrontDoor</h1>
+      <h1 className="brand">Siren</h1>
       <div className="card ok">
         <strong>{t('checkedIn', lang)}, {name.split(' ')[0]}.</strong>
         <p>{result.spoken_reply}</p>

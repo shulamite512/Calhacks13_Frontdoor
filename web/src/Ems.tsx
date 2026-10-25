@@ -164,7 +164,7 @@ export default function Ems() {
 
   return (
     <div className="phone ems">
-      <h1 className="brand">FrontDoor <span className="ems-tag">EMS</span></h1>
+      <h1 className="brand">Siren <span className="ems-tag">EMS</span></h1>
       <p className="muted">
         {!loc ? 'Finding ambulance location…' : loc.mode === 'gps' ? '📍 Using GPS' : '📍 Demo location: Mission District, SF'}
       </p>
@@ -214,11 +214,11 @@ export default function Ems() {
                   <span>{o.driveMinutes} min</span>
                 </div>
                 <div className="opt-reason">{o.reason}</div>
-                {o.onFrontDoor ? (
+                {o.onSiren ? (
                   <button className={o.canTreat ? 'primary' : ''} onClick={() => notify(o.hospitalId, o.name)} disabled={!!busy}>
                     {busy === 'notifying' ? 'Sending…' : `Pre-notify ${o.name.split(' (')[0]}`}
                   </button>
-                ) : o.canTreat && <div className="fine">Not on FrontDoor yet: call it in by radio.</div>}
+                ) : o.canTreat && <div className="fine">Not on Siren yet: call it in by radio.</div>}
               </div>
             ))}
           </div>
@@ -268,7 +268,7 @@ function EnRoute({ run, onDone, onCrew }: { run: Run; onDone: () => void; onCrew
     return () => navigator.geolocation.clearWatch(watch);
   }, [run.gps, run.patientId, enRoute]);
 
-  if (!p) return <div className="phone ems"><h1 className="brand">FrontDoor <span className="ems-tag">EMS</span></h1><p className="muted">Sending…</p></div>;
+  if (!p) return <div className="phone ems"><h1 className="brand">Siren <span className="ems-tag">EMS</span></h1><p className="muted">Sending…</p></div>;
 
   const v = [...vitals].filter(x => x.patientId === pid).sort((x, y) => Number(y.id - x.id))[0];
   const bed = beds.find(b => b.patientId === pid);
@@ -311,7 +311,7 @@ function EnRoute({ run, onDone, onCrew }: { run: Run; onDone: () => void; onCrew
   return (
     <div className="phone ems">
       <SpeakReplies lines={spoken} />
-      <h1 className="brand">FrontDoor <span className="ems-tag">EMS</span></h1>
+      <h1 className="brand">Siren <span className="ems-tag">EMS</span></h1>
       <div className="card status go">
         <div className="muted">{run.unit} · pre-notified</div>
         <div className="big">{run.hospital}</div>

@@ -63,8 +63,8 @@ export default function Family({ token }: { token: string }) {
     };
   }, [token]);
 
-  if (error && !s) return <div className="phone"><h1 className="brand">FrontDoor</h1><p className="error">{error}</p></div>;
-  if (!s) return <div className="phone"><h1 className="brand">FrontDoor</h1><p className="muted">Loading…</p></div>;
+  if (error && !s) return <div className="phone"><h1 className="brand">Siren</h1><p className="error">{error}</p></div>;
+  if (!s) return <div className="phone"><h1 className="brand">Siren</h1><p className="muted">Loading…</p></div>;
 
   const atEr = ['waiting', 'roomed', 'discharged'].includes(s.status);
   const steps = [
@@ -77,7 +77,7 @@ export default function Family({ token }: { token: string }) {
 
   return (
     <div className="phone family">
-      <h1 className="brand">FrontDoor</h1>
+      <h1 className="brand">Siren</h1>
       <p className="muted">Live updates for {s.firstName}'s family</p>
       {s.status === 'redirected' ? (
         <div className="card status go">

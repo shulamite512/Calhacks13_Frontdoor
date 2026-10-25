@@ -4,7 +4,7 @@ import math
 import httpx
 
 OSRM = "https://router.project-osrm.org/route/v1/driving"
-_client = httpx.AsyncClient(timeout=10, headers={"User-Agent": "FrontDoor-hackathon"})
+_client = httpx.AsyncClient(timeout=10, headers={"User-Agent": "Siren-hackathon"})
 
 
 def distance_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:

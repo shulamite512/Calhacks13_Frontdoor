@@ -1,8 +1,8 @@
-"""How does FrontDoor's triage compare with real ED nurses?
+"""How does Siren's triage compare with real ED nurses?
 
 Runs our full triage pipeline (Claude + deterministic red-flag rules, exactly what /checkin uses) on
 every MIMIC-IV-ED Demo triage record that has a chief complaint and a nurse-assigned acuity (ESI 1-5),
-and compares FrontDoor's ESI with the nurse's.
+and compares Siren's ESI with the nurse's.
 
 Input per case: the triage chief complaint (short clinical text, e.g. "SOB", "CHEST PAIN") and the
 triage vitals. Not the patient's own words, so this is a harder, terser input than a voice check-in.
@@ -68,12 +68,12 @@ async def main() -> None:
                 if t["acuity"] and t["chiefcomplaint"] and t["chiefcomplaint"].upper() != "UNKNOWN-CC"]
     if part != "all":
         rows = [t for t in rows if split_of(t["stay_id"]) == part]
-    print(f"Running {len(rows)} real triage cases ({part}) through FrontDoor...")
+    print(f"Running {len(rows)} real triage cases ({part}) through Siren...")
     sem = asyncio.Semaphore(CONCURRENCY)
     cases = await asyncio.gather(*(run_case(sem, t) for t in rows))
 
     n = len(cases)
-    diff = [c["frontdoor_esi"] - c["nurse_esi"] for c in cases]  # > 0 means FrontDoor said LESS urgent
+    diff = [c["frontdoor_esi"] - c["nurse_esi"] for c in cases]  # > 0 means Siren said LESS urgent
     exact = sum(d == 0 for d in diff)
     within1 = sum(abs(d) <= 1 for d in diff)
     under = sum(d > 0 for d in diff)

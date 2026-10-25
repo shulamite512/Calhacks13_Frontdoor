@@ -60,7 +60,7 @@ class FollowUp(BaseModel):
     spoken_reply: str = Field(description="1-2 calm sentences spoken back to the patient")
 
 
-TRIAGE_SYSTEM = """You support emergency department intake for FrontDoor. A patient is \
+TRIAGE_SYSTEM = """You support emergency department intake for Siren. A patient is \
 describing symptoms by voice before or after arriving at the ER. Produce a structured \
 pre-triage note for the nurse.
 

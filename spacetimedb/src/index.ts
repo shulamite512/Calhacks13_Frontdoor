@@ -39,7 +39,7 @@ const patient = table(
     specialty: t.string().default(''),      // department the patient likely needs (department.name), '' = ED only
     language: t.string().default('en'),     // patient's language: en, es, zh, vi, tl (voice + replies)
     familyToken: t.string().default(''),    // secret for the family status link ('' = not shared)
-    advice: t.string().default(''),         // what FrontDoor told the patient (e.g. call 911 + best-equipped ER)
+    advice: t.string().default(''),         // what Siren told the patient (e.g. call 911 + best-equipped ER)
   }
 );
 
@@ -265,7 +265,7 @@ function releaseHeld(ctx: Ctx, patientId: bigint) {
 
 function requireServer(ctx: Ctx) {
   const c = ctx.db.config.id.find(0);
-  if (!c || !c.owner.equals(ctx.sender)) throw new SenderError('only the FrontDoor server can do this');
+  if (!c || !c.owner.equals(ctx.sender)) throw new SenderError('only the Siren server can do this');
 }
 
 function isServer(ctx: Ctx) {
@@ -481,7 +481,7 @@ export const setHospitalDepartment = spacetimedb.reducer(
   }
 );
 
-// What FrontDoor told the patient at check-in (e.g. "Call 911 now. Best-equipped ER: ...").
+// What Siren told the patient at check-in (e.g. "Call 911 now. Best-equipped ER: ...").
 export const setAdvice = spacetimedb.reducer(
   { patientId: t.u64(), advice: t.string() },
   (ctx, { patientId, advice }) => {
@@ -644,7 +644,7 @@ export const offerRedirect = spacetimedb.reducer(
     requireServer(ctx);
     const p = getPatient(ctx, patientId);
     if (p.status !== 'incoming') throw new SenderError('only patients still on the way can be redirected');
-    if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by FrontDoor');
+    if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by Siren');
     if (p.acuity <= 2 || p.risk === 'critical') throw new SenderError('ESI 1-2 / critical patients are never redirected');
     if (!ctx.db.hospital.id.find(hospitalId)) throw new SenderError(`hospital ${hospitalId} not found`);
     const pending = [...ctx.db.redirectOffer.patientId.filter(patientId)].find(o => o.status === 'pending');

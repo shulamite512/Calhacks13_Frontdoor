@@ -1,14 +1,14 @@
-# FrontDoor: Team Guide
+# Siren: Team Guide
 
 Everything we built, how the parts fit together, how to run and demo it, and what to say to judges.
 Written for the three of us: backend/voice, AI/simulation, frontend.
 
 ---
 
-## 1. What FrontDoor is
+## 1. What Siren is
 
 **Pitch (say this word for word):**
-> "Tools like Twiage warn ERs about ambulance patients. But most patients drive in, and nobody watches them until the desk, or while they wait for hours. FrontDoor lets walk-ins check in by voice on the way, checks on them in the waiting room using voice and vitals, alerts nurses when someone gets worse, and shows the charge nurse whether there will be enough beds before the rush."
+> "Tools like Twiage warn ERs about ambulance patients. But most patients drive in, and nobody watches them until the desk, or while they wait for hours. Siren lets walk-ins check in by voice on the way, checks on them in the waiting room using voice and vitals, alerts nurses when someone gets worse, and shows the charge nurse whether there will be enough beds before the rush."
 
 **The problem**
 - Most ER patients are walk-ins, not ambulance arrivals.
@@ -18,14 +18,14 @@ Written for the three of us: backend/voice, AI/simulation, frontend.
 
 **How we differ from Twiage**
 
-| | Twiage | FrontDoor |
+| | Twiage | Siren |
 |---|---|---|
 | Who | Ambulance (EMS) patients | Walk-ins (most patients), plus EMS on the same board |
 | Input | Paramedic app | Patient's own voice on their phone |
 | After arrival | Handoff ends | Keeps watching in the waiting room (voice check-ins + vitals) |
 | Capacity | No | Bed forecast ("N beds short in 30 min"), hold bed, overflow/diversion |
 
-Pitch line: **"Twiage covers ambulances. FrontDoor covers everyone else, on the same board."**
+Pitch line: **"Twiage covers ambulances. Siren covers everyone else, on the same board."**
 
 ### 2-minute demo script
 ER: **CPMC Van Ness Campus, San Francisco**. Demo walk-ins drive in from the **Palace of Fine Arts**.
@@ -392,7 +392,7 @@ How it flows:
 ```ts
 // spacetimedb/src/index.ts: the safety rules live in the database, not just the UI
 if (p.status !== 'incoming') throw new SenderError('only patients still on the way can be redirected');
-if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by FrontDoor');
+if (p.source !== 'walk-in') throw new SenderError('ambulance patients are never redirected by Siren');
 if (p.acuity <= 2 || p.risk === 'critical') throw new SenderError('ESI 1-2 / critical patients are never redirected');
 ```
 
@@ -471,7 +471,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 2. **Auth and permissions**: done (section 12).
 3. **Forecast data:** done with real HCAI volume (section 13). A real hourly shape would need the hospital's own arrival logs or EHR feed.
 4. **Figma:** Person 3 restyles to match the designs (Figma MCP if connected, or screenshots).
-5. **Stretch:** a FrontDoor MCP server ("which patients are deteriorating?").
+5. **Stretch:** a Siren MCP server ("which patients are deteriorating?").
 6. **Scale story only:** Kafka + Flink for multi-hospital, high-volume vitals streams. Not built.
 7. Push to GitHub (`frontdoor` repo), Devpost with the Spacetime and Cartesia tags, backup video.
 
@@ -549,7 +549,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 
 | Who | How they prove it | Can read | Can do |
 |---|---|---|---|
-| **FrontDoor server** | Signs in as the **database owner** (token from `STDB_TOKEN` in `.env`, or the local `spacetime login`). The owner identity is recorded in the private `config` table when the module is first published. | Everything (SQL) | Check in patients, update location/arrival, add vitals and follow-ups, raise alerts, write forecast and hospital network, offer redirects, reset demo, **grant staff** |
+| **Siren server** | Signs in as the **database owner** (token from `STDB_TOKEN` in `.env`, or the local `spacetime login`). The owner identity is recorded in the private `config` table when the module is first published. | Everything (SQL) | Check in patients, update location/arrival, add vitals and follow-ups, raise alerts, write forecast and hospital network, offer redirects, reset demo, **grant staff** |
 | **Nurse (staff)** | Enters the **staff PIN** on the board. The server checks it against `STAFF_PIN` and calls `grant_staff` with the browser's SpacetimeDB identity. | All patients, vitals, alerts, offers (via `my_*` views) | Acknowledge alerts (name taken from the staff record), assign / hold / free beds; board actions that go through the server (reset, worsen, suggest another ER) send the PIN |
 | **Patient's phone** | Its SpacetimeDB identity is saved as `phoneId` on the patient row at check-in. | Only its own patient row, alerts and offers | Answer its own redirect offer |
 | **Anyone else** | – | Beds, forecast, nearby hospitals (no patient details) | Nothing |
@@ -564,7 +564,7 @@ Board → **Reset demo**, or `curl -X POST localhost:8000/demo/reset`. Clearing 
 ### Tests we ran (all passed)
 | Test | Result |
 |---|---|
-| Outsider calls `check_in`, `assign_bed`, `reset_demo` | Rejected ("only the FrontDoor server can do this" / "staff login required") |
+| Outsider calls `check_in`, `assign_bed`, `reset_demo` | Rejected ("only the Siren server can do this" / "staff login required") |
 | Outsider reads `patient` | "no such table … may be marked private" |
 | Outsider reads `my_patients` | 0 rows |
 | Wrong PIN on `/staff/login` and `/demo/reset` | 403 |
@@ -685,13 +685,13 @@ Flow: speak the question in the patient's language (Sonic) → listen 8 s → tr
 
 Tested in a real browser with a simulated microphone: check-ins fired at 30 s and ~2.5 min with no taps; the second miss raised the warning on the board.
 
-Judge line: "FrontDoor keeps asking, in your language, every two minutes. And if you stop answering, that's a signal too."
+Judge line: "Siren keeps asking, in your language, every two minutes. And if you stop answering, that's a signal too."
 
 ---
 
 ## 17. Making the simulated parts real (MIMIC-IV-ED + CDPH)
 
-**Why some data is simulated at all:** live vitals, bed occupancy and department status exist only inside a hospital's private systems (bedside monitors, the EHR's bed board, on-call schedules), protected by HIPAA. No hackathon team can access them. In production FrontDoor would read them through standard hospital feeds (HL7 v2 ADT / FHIR). So we replaced as much as public data allows:
+**Why some data is simulated at all:** live vitals, bed occupancy and department status exist only inside a hospital's private systems (bedside monitors, the EHR's bed board, on-call schedules), protected by HIPAA. No hackathon team can access them. In production Siren would read them through standard hospital feeds (HL7 v2 ADT / FHIR). So we replaced as much as public data allows:
 
 | Part | Before | Now | Source |
 |---|---|---|---|
@@ -711,17 +711,17 @@ Judge line: "FrontDoor keeps asking, in your language, every two minutes. And if
 |---|---|
 | Exact match with the nurse's ESI | **58.3%** |
 | Within one ESI level | **98.5%** |
-| FrontDoor more urgent than the nurse | 13.1% |
-| FrontDoor less urgent than the nurse | **28.6%** |
-| Nurse ESI 1-2 cases that FrontDoor also rated 1-2 | **71.1%** (81 of 114) |
+| Siren more urgent than the nurse | 13.1% |
+| Siren less urgent than the nurse | **28.6%** |
+| Nurse ESI 1-2 cases that Siren also rated 1-2 | **71.1%** (81 of 114) |
 
-Confusion (nurse -> FrontDoor): 1->1: 3, 1->2: 14, 1->3: 1, 2->1: 1, 2->2: 63, 2->3: 31, 2->4: 1, 3->2: 24, 3->3: 54, 3->4: 11, 3->5: 1, 4->3: 2.
+Confusion (nurse -> Siren): 1->1: 3, 1->2: 14, 1->3: 1, 2->1: 1, 2->2: 63, 2->3: 31, 2->4: 1, 3->2: 24, 3->3: 54, 3->4: 11, 3->5: 1, 4->3: 2.
 
 **How to read it honestly:**
 - It's almost never far off (98.5% within one level), but it **leans less urgent on ESI 2 vs 3** calls: dyspnea, falls, abnormal labs, GI bleeding ("BRBPR"), transfers.
 - The input is harder than real use: the nurse's 2-3 word shorthand ("SOB", "Psych eval") plus triage vitals, with no age, history or the patient's own words. Nurses saw the patient.
 - The demo cohort is unusually sick (patients later admitted; most triaged ESI 1-2).
-- **This is why FrontDoor never relies on triage alone:** vitals and voice check-ins keep watching, alerts only escalate, and nurses make every decision. Judge line: "We measured it against real nurses and found where it under-triages, so it's designed to be a second set of eyes, not the decision-maker."
+- **This is why Siren never relies on triage alone:** vitals and voice check-ins keep watching, alerts only escalate, and nurses make every decision. Judge line: "We measured it against real nurses and found where it under-triages, so it's designed to be a second set of eyes, not the decision-maker."
 - We then improved it fairly (next subsection).
 
 ### Improving it fairly: tune on one half, test once on the other
@@ -738,7 +738,7 @@ The 206 cases are split by a hash of `stay_id` into a **tune** half (110) and a 
 | Within one ESI level | 99.1% -> 98.2% | 97.9% -> 97.9% |
 | Exact match | 53.6% -> 50.0% | 63.5% -> 49.0% |
 
-**Trade-off, stated plainly:** FrontDoor now misses only 2 of 50 high-risk patients in the held-out half, but it rates about a third of patients more urgent than the nurse did (mostly nurse ESI 3 -> FrontDoor 2). For a pre-arrival heads-up that a nurse then confirms, over-triage is the safer error. Minor complaints still come out low (spot check after the change: ankle sprain, sore throat, finger cut -> ESI 4; crushing chest pain, fall on blood thinners -> ESI 2).
+**Trade-off, stated plainly:** Siren now misses only 2 of 50 high-risk patients in the held-out half, but it rates about a third of patients more urgent than the nurse did (mostly nurse ESI 3 -> Siren 2). For a pre-arrival heads-up that a nurse then confirms, over-triage is the safer error. Minor complaints still come out low (spot check after the change: ankle sprain, sore throat, finger cut -> ESI 4; crushing chest pain, fall on blood thinners -> ESI 2).
 
 **Noise:** re-running the unchanged prompt on all 206 cases gave 72.8% vs 71.1% the first time, so differences of a couple of points are noise. The +12 to +22 point gains above are not.
 
@@ -843,7 +843,7 @@ Turn it off with `COPILOT_ENABLED=0` in `.env`.
 ## 21. Two judge questions about the core idea
 
 **"If you tell critical patients to call 911, why not just call 911?"**
-For a true emergency you should, and FrontDoor tells you to. But most ER patients aren't 911 cases (roughly 5 in 6 arrive on their own): they drive in with belly pain or a broken bone, pick an ER by distance, and wait unwatched. That's who FrontDoor is for. It also catches the people who aren't sure (like our teammate with chest pain) and the ones who should call 911 but won't. Even if they drive anyway, the ER already has their tile with "Told patient: call 911" and a prep list.
+For a true emergency you should, and Siren tells you to. But most ER patients aren't 911 cases (roughly 5 in 6 arrive on their own): they drive in with belly pain or a broken bone, pick an ER by distance, and wait unwatched. That's who Siren is for. It also catches the people who aren't sure (like our teammate with chest pain) and the ones who should call 911 but won't. Even if they drive anyway, the ER already has their tile with "Told patient: call 911" and a prep list.
 
 **"Where do vitals come from for someone in a car?"**
 On the way in, there are none; your voice is your vital sign, and that's what Claude triages. Ambulance patients are on the paramedics' monitor, so their vitals stream en route (labeled "Paramedic monitor"). Walk-ins get vitals at triage and then a wearable clip/patch in the waiting room (labeled "Wearable"), plus voice check-ins every 2 minutes. In the demo, both replay real de-identified ER stays.
@@ -882,12 +882,12 @@ After speaking, a driver still on the way sees **the top 4 ERs for their conditi
 The status-only family link now also shows a **live map with the patient's position and ETA** ("Ben · 13 min away") and the ER, **only while they're on the way**. Location disappears once they arrive; symptoms and vitals are never shown. The patient opts in by tapping "Share my status with family".
 
 **3. Ambulance destination advisory** ([server/copilot.py](../server/copilot.py) `_ems_advisory`)
-When an ambulance is coming that our ER can't treat (e.g. major trauma: we're not a trauma center), FrontDoor ranks the ERs by drive time for that condition and posts **"🚑 Better destination for EMS Medic 7: Zuckerberg SF General (trauma team ready, 3 min)"** on the ambulance's tile and in the Assistant panel, with a **Send to crew** button (the crew's tablet shows the advice only after a nurse sends it; **Reject** means the crew never sees it). This is deterministic (no model) and it's advice: paramedics/EMS make the final destination call, which is how ambulance diversion works. The Assistant agent also sees `our_er_can_treat: false` in its snapshot, so it won't hold a bed for that patient and instead pages the charge nurse to call the crew.
+When an ambulance is coming that our ER can't treat (e.g. major trauma: we're not a trauma center), Siren ranks the ERs by drive time for that condition and posts **"🚑 Better destination for EMS Medic 7: Zuckerberg SF General (trauma team ready, 3 min)"** on the ambulance's tile and in the Assistant panel, with a **Send to crew** button (the crew's tablet shows the advice only after a nurse sends it; **Reject** means the crew never sees it). This is deterministic (no model) and it's advice: paramedics/EMS make the final destination call, which is how ambulance diversion works. The Assistant agent also sees `our_er_can_treat: false` in its snapshot, so it won't hold a bed for that patient and instead pages the charge nurse to call the crew.
 
 The demo now seeds a second ambulance: **EMS Medic 7, female ~30, motorcycle crash with an open leg fracture (ESI 1, Trauma)**.
 
 ### The pitch, final shape
-"FrontDoor gives every car what an ambulance gets: speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you (or call 911 if it's critical), and the ER is ready before you arrive. Ambulances stream vitals ahead and get pointed to the right ER too. Your family can see where you are. And once you're inside, nobody waits unwatched."
+"Siren gives every car what an ambulance gets: speak your symptoms, see the ERs around you with doctors and beds available right now, go to the one that can treat you (or call 911 if it's critical), and the ER is ready before you arrive. Ambulances stream vitals ahead and get pointed to the right ER too. Your family can see where you are. And once you're inside, nobody waits unwatched."
 
 
 ---
@@ -897,7 +897,7 @@ The demo now seeds a second ambulance: **EMS Medic 7, female ~30, motorcycle cra
 The ambulance crew's tablet ([web/src/Ems.tsx](../web/src/Ems.tsx), `POST /ems/assess` and `POST /ems/notify` in [server/app.py](../server/app.py)):
 1. Enter unit, age and sex, then **speak the report** (Cartesia Ink). Claude triages it: ESI, red flags, department needed, ER prep.
 2. **Destinations, nearest capable first**: each ER with ✓/✗, the reason (doctors, beds, equipment) and drive time. Tested: STEMI from the Mission. Zuckerberg is closest (3 min) but its cath lab is busy, so CPMC Van Ness (7 min, cath lab ready) is first.
-3. **Pre-notify**: the patient appears on our board as EMS with live monitor vitals. Only our ER runs FrontDoor in this demo; for other ERs the screen says "call it in by radio".
+3. **Pre-notify**: the patient appears on our board as EMS with live monitor vitals. Only our ER runs Siren in this demo; for other ERs the screen says "call it in by radio".
 4. **Hospital replies come back live** (SpacetimeDB `my_*` views; the tablet sees only its own patient): received, bed held, nurse acknowledged, ETA. New replies are **read aloud (Cartesia Sonic)** so the crew stays hands-free. Tested: within seconds the Assistant paged Cardiology ("STEMI alert… activate cath lab"), posted a prep checklist and held a bed.
 5. If the crew sends a patient we can't treat (e.g. major trauma), the Assistant proposes a better destination on the board; once the charge nurse taps **Send to crew**, the tablet shows **"The hospital suggests Zuckerberg SF General (trauma team ready, 3 min)"**. Destination stays the crew's call, per protocol and medical control.
 

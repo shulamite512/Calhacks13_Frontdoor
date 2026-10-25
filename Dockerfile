@@ -1,4 +1,4 @@
-# FrontDoor in one container: build the React site, then serve it and the FastAPI server on $PORT.
+# Siren in one container: build the React site, then serve it and the FastAPI server on $PORT.
 FROM node:22-slim AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./

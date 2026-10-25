@@ -1,4 +1,4 @@
-"""FrontDoor voice + AI server.
+"""Siren voice + AI server.
 
 Run:  .venv\\Scripts\\python -m uvicorn app:app --port 8000   (from the server/ folder)
       Restart after edits; --reload hangs on Windows.
@@ -82,7 +82,7 @@ async def lifespan(_app: FastAPI):
 
 copilot.HOSPITAL = HOSPITAL
 
-app = FastAPI(title="FrontDoor", lifespan=lifespan)
+app = FastAPI(title="Siren", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -104,11 +104,11 @@ class ShareIn(BaseModel):
 
 # Waiting-room check-in question in each supported language ({name} = first name).
 FOLLOWUP_QUESTION = {
-    "en": "Hi {name}, this is FrontDoor checking in. How are you feeling right now compared to when you arrived?",
-    "es": "Hola {name}, le habla FrontDoor. ¿Cómo se siente ahora comparado con cuando llegó?",
-    "zh": "{name}您好，我是FrontDoor。和刚到的时候相比，您现在感觉怎么样？",
-    "vi": "Chào {name}, đây là FrontDoor. Bây giờ bạn cảm thấy thế nào so với lúc mới đến?",
-    "tl": "Kumusta {name}, ito ang FrontDoor. Ano ang pakiramdam mo ngayon kumpara noong dumating ka?",
+    "en": "Hi {name}, this is Siren checking in. How are you feeling right now compared to when you arrived?",
+    "es": "Hola {name}, le habla Siren. ¿Cómo se siente ahora comparado con cuando llegó?",
+    "zh": "{name}您好，我是Siren。和刚到的时候相比，您现在感觉怎么样？",
+    "vi": "Chào {name}, đây là Siren. Bây giờ bạn cảm thấy thế nào so với lúc mới đến?",
+    "tl": "Kumusta {name}, ito ang Siren. Ano ang pakiramdam mo ngayon kumpara noong dumating ka?",
 }
 SORRY = {
     "en": "Sorry, I didn't catch that. Tap Check on me and try again.",
@@ -386,7 +386,7 @@ async def ems_assess(body: EmsAssessIn):
         logging.exception("ems/assess: ER matching failed (specialty=%s)", specialty or "none")
         raise HTTPException(503, "Couldn't check ER availability right now. Try again, or call it in by radio.")
     for o in opts:
-        o["onFrontDoor"] = o["hospitalId"] == matching.OUR_ID  # only our ER runs a FrontDoor board in this demo
+        o["onSiren"] = o["hospitalId"] == matching.OUR_ID  # only our ER runs a Siren board in this demo
     vitals = t.reported_vitals.model_dump() if isinstance(t, triage.EmsTriage) else {}
     return {**t.model_dump(exclude={"reported_vitals"}), "specialty": specialty, "vitals": vitals, "options": opts[:5]}
 
@@ -416,7 +416,7 @@ async def ems_vitals(body: EmsVitalsIn):
 async def ems_notify(body: EmsNotifyIn):
     """Pre-notify the chosen ER: the patient appears on its board with live monitor vitals."""
     if body.hospitalId != matching.OUR_ID:
-        raise HTTPException(400, "That ER isn't on FrontDoor yet: call it in by radio.")
+        raise HTTPException(400, "That ER isn't on Siren yet: call it in by radio.")
     seconds, _ = await routing.route(body.lat, body.lng, HOSPITAL["lat"], HOSPITAL["lng"])
     who = " ".join(x for x in (body.sex, f"~{body.age}") if x)
     name = f"EMS {body.unit}: {who}"

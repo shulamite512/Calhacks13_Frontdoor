@@ -41,7 +41,7 @@ def test_missing_api_key_falls_back_to_rules(client, monkeypatch):
     assert r.status_code == 200
     body = r.json()
     assert body["acuity"] <= 2  # stroke signs caught by the rules
-    assert body["options"][0]["onFrontDoor"] is True
+    assert body["options"][0]["onSiren"] is True
     assert body["vitals"] == {}
 
 

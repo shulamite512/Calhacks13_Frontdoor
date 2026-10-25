@@ -59,7 +59,7 @@ function deptState(d: HospitalDepartment | undefined) {
   return d.doctorsOnCall > 0 && d.bedsFree > 0 && d.resourceReady ? 'ok' : 'gap';
 }
 
-// Can FrontDoor suggest another ER? Only stable walk-ins who haven't arrived (EMTALA).
+// Can Siren suggest another ER? Only stable walk-ins who haven't arrived (EMTALA).
 function canRedirect(p: Patient) {
   return p.status === 'incoming' && p.source === 'walk-in' && p.acuity >= 3 && p.risk !== 'critical';
 }
@@ -94,7 +94,7 @@ function StaffLogin({ identity }: { identity: string }) {
 
   return (
     <form className="phone login" onSubmit={login}>
-      <h1 className="brand">FrontDoor</h1>
+      <h1 className="brand">Siren</h1>
       <p className="muted">Staff sign-in for the charge nurse board.</p>
       <label>Your name<input value={name} onChange={e => setName(e.target.value)} placeholder="Charge RN" /></label>
       <label>Staff PIN<input value={pin} onChange={e => setPin(e.target.value)} type="password" inputMode="numeric" /></label>
@@ -237,7 +237,7 @@ function BoardInner({ nurse }: { nurse: string }) {
     <div className="board">
       <header>
         <div>
-          <span className="brand">FrontDoor</span> <span className="muted">Charge nurse board</span>
+          <span className="brand">Siren</span> <span className="muted">Charge nurse board</span>
           <span className={`dot ${conn.isActive ? 'live' : ''}`} title={conn.isActive ? 'Live' : 'Connecting'} />
         </div>
         {f && (
