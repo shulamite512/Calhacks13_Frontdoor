@@ -722,7 +722,27 @@ Confusion (nurse -> FrontDoor): 1->1: 3, 1->2: 14, 1->3: 1, 2->1: 1, 2->2: 63, 2
 - The input is harder than real use: the nurse's 2-3 word shorthand ("SOB", "Psych eval") plus triage vitals, with no age, history or the patient's own words. Nurses saw the patient.
 - The demo cohort is unusually sick (patients later admitted; most triaged ESI 1-2).
 - **This is why FrontDoor never relies on triage alone:** vitals and voice check-ins keep watching, alerts only escalate, and nurses make every decision. Judge line: "We measured it against real nurses and found where it under-triages, so it's designed to be a second set of eyes, not the decision-maker."
-- Improving it fairly would mean tuning on half the cases and measuring on the other half, not tailoring the prompt to these exact cases.
+- We then improved it fairly (next subsection).
+
+### Improving it fairly: tune on one half, test once on the other
+
+The 206 cases are split by a hash of `stay_id` into a **tune** half (110) and a **test** half (96). We changed the prompt while looking only at the tune half, then ran the test half **once**.
+
+**The change** ([server/triage.py](../server/triage.py) `TRIAGE_SYSTEM`): instead of a one-line ESI description, Claude walks the published **ESI v4 algorithm** step by step: (A) life-saving intervention → 1; (B) high-risk situation (standard handbook categories), new confusion, or severe pain → 2; (C) count expected resources → 3/4/5; (D) danger-zone vitals (HR > 100, RR > 20, SpO2 < 92%) upgrade a 3 to a 2; and "when torn between two levels, choose the more urgent". We did *not* copy specific missed cases into the prompt (we had seen some misses from both halves in the first run, so we used only general handbook guidance).
+
+| | Tune half (110) before -> after | **Test half (96) before -> after** |
+|---|---|---|
+| Nurse ESI 1-2 cases also rated 1-2 | 60.9% -> 82.8% | **84.0% -> 96.0% (48 of 50)** |
+| Rated less urgent than the nurse | ~25% -> 18.2% | ~20% -> **15.6%** |
+| Rated more urgent than the nurse | 12.7% -> 31.8% | 13.5% -> 35.4% |
+| Within one ESI level | 99.1% -> 98.2% | 97.9% -> 97.9% |
+| Exact match | 53.6% -> 50.0% | 63.5% -> 49.0% |
+
+**Trade-off, stated plainly:** FrontDoor now misses only 2 of 50 high-risk patients in the held-out half, but it rates about a third of patients more urgent than the nurse did (mostly nurse ESI 3 -> FrontDoor 2). For a pre-arrival heads-up that a nurse then confirms, over-triage is the safer error. Minor complaints still come out low (spot check after the change: ankle sprain, sore throat, finger cut -> ESI 4; crushing chest pain, fall on blood thinners -> ESI 2).
+
+**Noise:** re-running the unchanged prompt on all 206 cases gave 72.8% vs 71.1% the first time, so differences of a couple of points are noise. The +12 to +22 point gains above are not.
+
+Files: [triage_mimic_summary.json](../server/data/eval/triage_mimic_summary.json) (baseline, all cases), [triage_mimic_summary_esi_v1.json](../server/data/eval/triage_mimic_summary_esi_v1.json) (tune half, after), and the test-half run (after). Each has a matching `_cases.csv`.
 
 Files: [mimic_arrival_shape.json](../server/data/mimic_arrival_shape.json), [mimic_vitals.json](../server/data/mimic_vitals.json), [eval/](../server/data/eval/), [cdph_beds_cpmc_van_ness.json](../server/data/cdph_beds_cpmc_van_ness.json). Raw downloads live in server/data/raw/ (not committed); [build_mimic_data.py](../server/scripts/build_mimic_data.py) lists the URLs.
 

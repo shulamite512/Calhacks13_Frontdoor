@@ -8,11 +8,14 @@ Input per case: the triage chief complaint (short clinical text, e.g. "SOB", "CH
 triage vitals. Not the patient's own words, so this is a harder, terser input than a voice check-in.
 
 Run from server/:  .venv\\Scripts\\python scripts\\eval_triage_mimic.py
-Writes data/eval/triage_mimic_summary.json and data/eval/triage_mimic_cases.csv
+Usage: eval_triage_mimic.py [all|tune|test] [label]. The tune/test split is fixed by a hash of stay_id,
+so prompt changes are tuned on one half and the final number is measured once on the other half.
+Writes data/eval/triage_mimic_summary[_label].json and data/eval/triage_mimic_cases[_label].csv
 """
 import asyncio
 import csv
 import gzip
+import hashlib
 import json
 import sys
 from collections import Counter
@@ -31,6 +34,10 @@ import triage  # noqa: E402
 RAW = HERE / "data" / "raw" / "mimic_ed_demo"
 OUT = HERE / "data" / "eval"
 CONCURRENCY = 6
+
+
+def split_of(stay_id: str) -> str:
+    return "test" if int(hashlib.sha256(stay_id.encode()).hexdigest(), 16) % 2 else "tune"
 
 
 def describe(t: dict) -> str:
@@ -53,10 +60,15 @@ async def run_case(sem: asyncio.Semaphore, t: dict) -> dict:
 
 
 async def main() -> None:
+    part = sys.argv[1] if len(sys.argv) > 1 else "all"
+    label = sys.argv[2] if len(sys.argv) > 2 else ""
+    suffix = f"_{label}" if label else ""
     with gzip.open(RAW / "triage.csv.gz", "rt", encoding="utf-8") as fh:
         rows = [t for t in csv.DictReader(fh)
                 if t["acuity"] and t["chiefcomplaint"] and t["chiefcomplaint"].upper() != "UNKNOWN-CC"]
-    print(f"Running {len(rows)} real triage cases through FrontDoor...")
+    if part != "all":
+        rows = [t for t in rows if split_of(t["stay_id"]) == part]
+    print(f"Running {len(rows)} real triage cases ({part}) through FrontDoor...")
     sem = asyncio.Semaphore(CONCURRENCY)
     cases = await asyncio.gather(*(run_case(sem, t) for t in rows))
 
@@ -74,6 +86,8 @@ async def main() -> None:
         "source": "MIMIC-IV-ED Demo v2.2 (PhysioNet, ODbL), triage table",
         "pipeline": f"triage.triage ({triage.MODEL}, effort low) + red_flags rules, same as /checkin",
         "run_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
+        "split": part,
+        "label": label or "baseline",
         "cases": n,
         "exact_match_pct": round(100 * exact / n, 1),
         "within_one_level_pct": round(100 * within1 / n, 1),
@@ -89,8 +103,8 @@ async def main() -> None:
         ],
     }
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "triage_mimic_summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
-    with open(OUT / "triage_mimic_cases.csv", "w", newline="", encoding="utf-8") as fh:
+    (OUT / f"triage_mimic_summary{suffix}.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
+    with open(OUT / f"triage_mimic_cases{suffix}.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(cases[0]))
         w.writeheader()
         w.writerows(cases)

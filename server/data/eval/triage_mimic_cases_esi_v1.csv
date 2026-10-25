@@ -1,0 +1,97 @@
+stay_id,chiefcomplaint,nurse_esi,frontdoor_esi,specialty,red_flags
+39621946,"Fever, Neutropenia",2,2,Emergency,Fever in neutropenic patient; Possible neutropenic sepsis; Elevated systolic BP 161
+31626291,Coffee ground emesis,2,2,Gastroenterology,Possible upper GI bleed; Tachycardia HR 128; Low-grade fever
+33347721,ELEVATED INR,2,2,Emergency,Anticoagulated with supratherapeutic INR; Bradycardia HR 43; Elevated diastolic BP 100
+37323830,"s/p Fall, SDH",2,2,Neurology,Subdural hematoma; Fall; Elevated BP 155/86
+39571461,Lower back pain,2,2,Emergency,Severe pain 10/10; Tachycardia HR 118; Tachypnea RR 22
+35357090,"Weakness, Atrial fibrillation, Transfer",2,2,Cardiology,AFib with rapid ventricular rate (HR 126); Tachypnea (RR 22); Weakness
+34387871,"Leg weakness, Abnormal CT",2,2,Neurology,Focal leg weakness (possible stroke or cord compression); Abnormal CT with unknown findings; Bradycardia HR 52
+36250263,BRBPR,2,2,Gastroenterology,GI bleeding; RR 22 (tachypnea); HR 100 (borderline tachycardia)
+32719751,L Leg DVT,2,2,Emergency,Tachycardia (HR 106) with DVT - evaluate for PE
+32405286,? AORTIC DISECTION,2,2,Surgery,Suspected aortic dissection; Tachycardia HR 103
+39057874,Chest pain,2,2,Cardiology,Possible cardiac chest pain; Elevated diastolic BP; chest pain
+39968716,"Dizziness, Weakness",2,2,Emergency,Severe pain 8/10; Low diastolic BP 43; Dizziness/weakness - possible presyncope
+39399961,"Abdominal distention, Abd pain, LETHAGIC",2,2,Surgery,Lethargy; Severe pain (13/10); Borderline hypotension (BP 96/50); Abdominal distention
+38233644,"Psychiatric hold, Altered mental status",2,2,Psychiatry,Altered mental status; Psychiatric hold; Severe pain reported (13/10)
+37376268,BRBPR,2,2,Gastroenterology,GI bleeding; Hypertension 158/89
+38967799,"Chest pain, Transfer",2,2,Cardiology,Possible cardiac chest pain; Interfacility transfer; chest pain
+38890884,Tachycardia,2,2,Cardiology,Tachycardia HR 110; Hypertension SBP 178; Severe pain (reported 13/10); Borderline SpO2 93%
+39054681,"Dyspnea, Productive cough",2,2,Pulmonology,Dyspnea; Borderline SpO2 93%; Hypertension 168/60
+32259566,ILI,2,1,ICU,SpO2 88% (hypoxia); RR 32 (tachypnea); Possible respiratory distress; Hypertension 176/86
+32204198,Abd pain,2,2,Surgery,Severe hypertension 217/116; Abdominal pain with severe hypertension (consider aortic emergency)
+35766268,Facial numbness,2,2,Neurology,Possible stroke sign (facial numbness); Severe hypertension 190/117; numbness
+30324772,"Chest pain, Jaw pain, L Arm pain",2,2,Cardiology,Possible cardiac chest pain; Jaw and left arm pain; pain radiating to jaw; chest pain
+31254712,"Weakness, Hypotension",2,3,Emergency,Hypotension (SBP 98)
+38133986,"Abnormal labs, Hyperglycemia",2,2,Emergency,Tachycardia HR 110; Severe hypertension 179/108; Possible DKA/HHS
+34176810,"Syncope, Transfer",2,2,Cardiology,Syncope
+35205519,"Chest pain, Transfer",2,2,Cardiology,Possible cardiac chest pain; Tachycardia HR 120; Severe pain 8/10; chest pain
+33473053,PE,2,2,Pulmonology,Suspected pulmonary embolism; Tachycardia HR 118; Borderline hypotension 100/56
+31729614,"Transfer, MVC",2,2,Trauma,Trauma transfer after MVC; Hypertension SBP 160
+37844627,R RIB PAIN,2,1,ICU,SpO2 86% (hypoxia); Severe pain 8/10; Possible chest wall/pulmonary pathology
+35168275,Lethargy,2,2,Emergency,Lethargy
+33065303,"Transfer, Abnormal EKG",2,2,Cardiology,Abnormal EKG (possible cardiac); Pain unable to be rated
+37196191,"Dyspnea, Transfer",2,2,Pulmonology,Dyspnea; Tachycardia HR 125; Tachypnea RR 22
+31588683,SHORTNESS OF BREATH,2,2,Emergency,Shortness of breath; Tachycardia HR 126
+32537287,"Abd pain, Diarrhea, Vomiting",2,2,Surgery,Severe pain 10/10; RR 22
+30373795,"L Arm numbness, L Arm swelling",2,3,Emergency,Unilateral arm numbness (rule out stroke/vascular); Arm swelling (possible DVT); numbness
+30667562,T-SPINE FX DISPLACEMENT,2,2,Orthopedics,Possible displaced thoracic spine fracture; Tachycardia HR 104
+36381328,"Transfer, s/p Fall",2,2,Trauma,Severe pain 8/10; Fall with unknown age/anticoagulation status; RR 22
+37887480,FEVER,1,1,ICU,Hypotension (SBP 86); Tachypnea (RR 26); Pain 10/10; Possible sepsis/shock
+39430108,SDH/SAH,1,2,Neurology,Intracranial hemorrhage; Possible neuro deterioration
+30272878,Transfer,1,2,Emergency,"Severe pain (documented as critical); Interfacility transfer, diagnosis unknown"
+34391979,"Cardiac arrest, Transfer",1,1,ICU,Cardiac arrest; Intubated/airway-dependent; Unable to report pain
+38433139,Dizziness,1,2,Emergency,Tachycardia HR 101; Borderline low BP 94/62
+39467106,"Dyspnea, Hypoxia",1,1,ICU,SpO2 78% (severe hypoxia); Tachypnea RR 23; Dyspnea; Borderline low BP 98/60
+39738665,Altered mental status,1,2,Neurology,Altered mental status; SpO2 91%; Tachypnea RR 24; Unable to rate pain
+30915333,Hypotension,1,1,ICU,SBP 70 - possible shock; Severe hypotension
+33678912,"Tachycardia, Hypoxia",1,2,Cardiology,HR 157; Reported hypoxia
+32587478,"Abnormal labs, ETOH, Hypotension",1,2,Emergency,Hypotension SBP 86; Alcohol intoxication; Abnormal labs
+37977734,"N/V, Tachycardia",1,2,Emergency,HR 140 (danger-zone tachycardia); Low-grade fever with tachycardia - possible sepsis
+36180820,"Transfer, Dyspnea",1,2,ICU,Dyspnea; Severe hypertension (190/100); Interfacility transfer
+30683757,"N/V, Hyperglycemia",1,2,Emergency,Tachycardia HR 130; Hyperglycemia with vomiting (possible DKA)
+38074673,Clogged foley,4,2,Emergency,Severe pain 8/10; Possible urinary retention; Wide pulse pressure / elevated SBP
+34205403,"s/p Fall, Transfer",3,2,Trauma,Tachycardia HR 116; Unable to rate pain (possible altered mental status); Fall in patient of unknown age/anticoagulation status; Interfacility transfer
+35942924,"Presyncope, Weakness",3,2,Emergency,Presyncope; Pain 7/10
+33863177,"L Arm pain, L Arm swelling",3,3,Emergency,
+35681380,RLQ abdominal pain,3,2,Surgery,Severe pain 10/10; RLQ pain - possible acute abdomen
+38237602,"ETOH, SI",3,2,Psychiatry,Suicidal ideation; Alcohol intoxication; Pain 8/10; Diastolic BP 110
+32281632,Abd pain,3,2,Surgery,Severe pain 10/10
+39930808,Insomnia,3,5,Emergency,
+36132883,"L Foot swelling, L Foot pain",3,4,Emergency,
+34922474,Rectal pain,3,2,Surgery,Severe pain 8/10; Tachycardia HR 124
+37202404,Assault,3,2,Trauma,Assault / possible significant trauma mechanism; Severe pain 10/10; Tachycardia HR 105
+31226423,N/V,3,3,Emergency,
+31640785,Epigastric pain,3,2,Cardiology,Severe pain 9/10; Hypertension SBP 180; Epigastric pain may be cardiac
+39202185,"R Leg pain, R Leg swelling",3,3,Emergency,Unilateral leg swelling (possible DVT); Wide pulse pressure 158/44
+34918384,Hypotension,3,3,Emergency,Reported hypotension
+34236274,"R Leg pain, Weakness",3,2,Emergency,Severe pain 8/10; Tachypnea RR 28; Leg weakness (possible neuro or vascular cause); Elevated BP 150/101
+37953392,Altered mental status,3,2,Neurology,Altered mental status
+37145382,"R Leg pain, R Leg swelling",3,2,Emergency,Severe pain 8/10; Unilateral leg swelling - possible DVT
+33258284,"Abd pain, Abdominal distention",3,3,Emergency,
+31153288,"Diarrhea, Hypotension",3,2,Emergency,Reported hypotension; Severe pain 7/10; Possible volume depletion/sepsis
+37401157,"Dyspnea, Foot swelling",3,2,Cardiology,Dyspnea; Borderline SpO2 92%; Hypertension 160/62; Peripheral edema
+34982171,LEFT HIP FX,3,3,Orthopedics,"Hip fracture (possible fall, age/anticoagulation unknown)"
+37483564,"Abd pain, n/v/d",3,2,Surgery,Severe pain 10/10; Tachycardia HR 105; Tachypnea RR 24; Hypertension SBP 177
+35968195,"n/v/d, Abd pain",3,2,Surgery,Severe pain 10/10; Tachycardia HR 105; Borderline low BP 106/57; Possible dehydration/early sepsis
+35958096,R FOOT ULCER/CELLULITIS,3,2,Emergency,Tachycardia HR 120; Severe pain 8/10; Possible sepsis/infection
+31628990,Chest pain,3,2,Cardiology,Possible cardiac chest pain; chest pain
+32579239,Urinary retention,3,3,Emergency,
+37206743,L Eye pain,3,2,Emergency,Severe pain 7/10; Possible vision-threatening eye condition
+39962121,R Foot pain,3,2,Emergency,Severe pain 9/10; Tachycardia HR 117
+36316394,Foot laceration,3,4,Emergency,Tachycardia HR 105
+36200931,Abd pain,3,2,Surgery,Severe pain 8/10
+34948767,"Hematuria, Dysuria",3,3,Emergency,
+37578680,Abnormal labs,3,3,Emergency,
+31320010,Dyspnea,3,2,Emergency,Dyspnea; Severe hypertension (SBP 198)
+30225689,Right sided abdominal pain,3,2,Surgery,Severe pain 10/10; Possible acute abdomen
+32945506,"Dyspnea, ABNORMAL LAB VALUES",3,2,Emergency,Dyspnea; Abnormal lab values
+34604678,Wound eval,3,4,Emergency,
+39028384,Suprapubic pain,3,2,Emergency,Severe pain 8/10; Hypertension SBP 194; RR 22
+39266792,"Head injury, Neck pain, s/p Fall",3,2,Trauma,Head injury after fall; Neck pain - possible C-spine injury; Severe pain 10/10; Hypertension 181/94
+35087345,Dyspnea on exertion,3,2,Emergency,Shortness of breath; Tachycardia (HR 106)
+33222885,"L Leg pain, Weakness",3,2,Neurology,Possible unilateral limb weakness (rule out stroke); Onset time unknown
+37196722,BRBPR,3,2,Gastroenterology,GI bleeding
+31283645,SHORTNESS OF BREATH,3,2,Pulmonology,Shortness of breath; Tachycardia (HR 109); Tachypnea (RR 22)
+36323598,"Dehydration, Nausea, Rash",3,2,Emergency,Tachycardia HR 111; Rash with tachycardia - consider sepsis
+34807453,"Abd pain, Back pain",3,2,Surgery,Severe pain 7/10; Tachycardia HR 108; Abdominal pain radiating to back (consider vascular cause)
+35156583,Back pain,3,3,Emergency,Wide pulse pressure (159/60) with back pain; Age unknown

@@ -1,0 +1,39 @@
+{
+ "source": "MIMIC-IV-ED Demo v2.2 (PhysioNet, ODbL), triage table",
+ "pipeline": "triage.triage (claude-opus-5-5, effort low) + red_flags rules, same as /checkin",
+ "run_at": "2026-10-25T01:47+00:00",
+ "split": "test",
+ "label": "esi_v1",
+ "cases": 96,
+ "exact_match_pct": 49.0,
+ "within_one_level_pct": 97.9,
+ "frontdoor_more_urgent_pct": 35.4,
+ "frontdoor_less_urgent_pct": 15.6,
+ "nurse_high_risk_cases": 50,
+ "high_risk_rated_esi3_or_lower": 2,
+ "high_risk_sensitivity_pct": 96.0,
+ "confusion_nurse_to_frontdoor": {
+  "1->1": 4,
+  "1->2": 9,
+  "2->1": 2,
+  "2->2": 33,
+  "2->3": 2,
+  "3->2": 31,
+  "3->3": 10,
+  "3->4": 3,
+  "3->5": 1,
+  "4->2": 1
+ },
+ "missed_high_risk_examples": [
+  {
+   "complaint": "Weakness, Hypotension",
+   "nurse": 2,
+   "frontdoor": 3
+  },
+  {
+   "complaint": "L Arm numbness, L Arm swelling",
+   "nurse": 2,
+   "frontdoor": 3
+  }
+ ]
+}
